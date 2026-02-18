@@ -7,9 +7,24 @@ from datetime import datetime
 st.set_page_config(layout="wide", page_title="업무 관리 시스템")
 
 # 구글 스프레드시트 연결 설정 (시트 URL을 입력하세요)
-SHEET_URL = https://docs.google.com/spreadsheets/d/1vzUWmoyOgo1TwahtedmncfXhEL7kiNIfpjh0t4jvn0k/edit?usp=drivesdk
+# SHEET_URL = "https://docs.google.com/spreadsheets/d/1vzUWmoyOgo1TwahtedmncfXhEL7kiNIfpjh0t4jvn0k/edit?usp=drivesdk"
 
 conn = st.connection("gsheets", type=GSheetsConnection)
+# 기존 방식: 주소를 코드에 직접 입력
+# SHEET_URL = "https://..." 
+
+# 시크릿 활용 방식: 자동으로 시크릿 파일에서 정보를 가져옵니다.
+conn = st.connection("gsheets", type=GSheetsConnection)
+
+def get_users():
+    # spreadsheet 인자를 생략하면 시크릿에 저장된 기본 주소를 읽습니다.
+    return conn.read(worksheet="users")
+
+def get_data():
+    return conn.read(worksheet="data")
+
+
+
 
 # --- 데이터 로드 및 저장 함수 ---
 def get_users():
@@ -125,4 +140,5 @@ else:
     # --- 메인 목록 ---
     st.subheader("📋 전체 목록")
     st.dataframe(work_df, use_container_width=True)
+
 
