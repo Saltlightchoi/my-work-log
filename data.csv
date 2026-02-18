@@ -44,3 +44,11 @@ DRY RUNNING CONDITION 진행.",
     - Mask 연속 동작시 이전과 다르게 소음은 미발생하나 간헐적 걸림 증상, 배한수 수석 동행하에 체크 완료.
     - 금일 퇴근시 연속동작 후 퇴근 예정,(내구도 검증)
   ③ LD Hand Pitch Jig Setting Check 완료. 정상. 촬영 완료.",
+2026-02-14,SLH1,최염광,"우익 반도체 Set-UP
+1. SLH1 #4호기 
+  ① Auto/Teaching Key Door Interlock 해제 안됨으로 확인
+    - 개별 Door Key, Sensor 부착, 동일
+    - Key Box 교체 장착, 동일
+    - Econ 및 Cable 재확인, 재결합 , 동일
+    - Safty PLC Error 출력 확인되어 해당 Si2,3 Line Cable 통전 확인, 정상
+    - 명절 이후 내방 점검 예정",
