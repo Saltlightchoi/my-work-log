@@ -91,3 +91,15 @@ DRY RUNNING CONDITION 진행.",
    - 작일 Cylinder Align Shaft 고정 Bolt 재조정 후 재발생
     -> 우측 Cylinder Shaft 휨으로 동작간 부하 발생, 간헐적 동작 안됨 발생
     -> 해당 Part 구매 요청 완료, 입고 시 교체 예정.",
+2026-02-10,SLH1,최염광,"우익 반도체 Set-UP
+1. SLH1 #4호기 
+  ① Tester Docking 완료
+    - Hander-Tester Align 조정 Jig Pin 없어 본사 퀵 요청 반입 후 Align Setting 완료
+    - 명일 Utility 연결 예정.
+2. SLH1 #1호기
+  ① LD Hand 3,8 Unclamp Error
+    - Set-Plate Pos' 기준 Teaching 재조정, T-Tray Pos' Teaching 재조정
+  ② ULD Hand 1-1 Picking Error
+    - Tray Rear 1 Pos' 동일 재발생으로 Teaching 조정
+  ③ ULD Set-Plate Up Error
+    - 동작간 Air 량 조정",
