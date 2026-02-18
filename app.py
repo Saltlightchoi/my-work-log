@@ -77,7 +77,7 @@ else:
                                               format_func=lambda x: f"{work_df.iloc[x]['date']} | {work_df.iloc[x]['content'][:15]}")
                 with st.sidebar.form("edit_form"):
                     e_content = st.text_area("내용 수정", value=work_df.loc[edit_idx, "content"])
-                    e_note = st.text_input("비고 수정", value=work_df.loc[edit_idx, "note"])
+                    e_note = st.text_input("비고 수정", value=work_df.loc[edit_idx, "비고"])
                     if st.form_submit_button("수정 완료"):
                         work_df.loc[edit_idx, ["content", "note"]] = [e_content, e_note]
                         conn.update(worksheet="data", data=work_df)
