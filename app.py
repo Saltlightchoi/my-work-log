@@ -4,34 +4,44 @@ from github import Github
 import io
 from datetime import datetime
 
-# --- 1. UI 설정 및 스타일 (버튼 위치 및 정렬 최적화) ---
+# --- 1. UI 설정 및 스타일 (레이아웃 최적화) ---
 st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
 
 st.markdown("""
     <style>
-        .block-container { padding-top: 2rem; }
+        .block-container { padding-top: 1.5rem; }
         [data-testid="stSidebar"] { left: auto; right: 0; width: 420px !important; }
         [data-testid="stSidebar"] .block-container { padding-top: 0rem; }
         
-        /* 헤더 부분 가로 배치 스타일 */
+        /* 헤더 가로 배치 및 글자 잘림 방지 */
         .header-container {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            margin-bottom: 10px;
+            align-items: flex-end; /* 하단 정렬로 잘림 방지 */
+            margin-bottom: 20px;
+            width: 100%;
         }
+        
+        /* [요청반영] 메인 대시보드 제목 디자인 및 여백 */
         .main-title {
             font-size: 1.8rem;
             font-weight: bold;
+            line-height: 1.2;
+            margin: 0;
+            padding-bottom: 5px;
         }
         
-        /* 다운로드 버튼 사이즈 축소 및 스타일 */
+        /* [요청반영] 엑셀 다운로드 버튼 크기 1/2 축소 및 폰트 조정 */
+        div.stDownloadButton {
+            text-align: right;
+        }
         div.stDownloadButton > button {
-            padding: 5px 15px !important;
-            font-size: 0.8rem !important;
+            width: 150px !important; /* 버튼 전체 크기 축소 */
+            padding: 2px 5px !important;
+            font-size: 0.7rem !important; /* 글자 크기 축소 */
             height: auto !important;
-            min-height: 30px !important;
+            min-height: 28px !important;
+            border-radius: 5px;
         }
 
         /* 업무 내용 입력창 높이 확대 */
@@ -39,7 +49,10 @@ st.markdown("""
             min-height: 450px !important;
         }
         
-        /* 표 내부 줄바꿈 스타일 */
+        /* [요청반영] 표 내부 줄바꿈 및 하단 여백 제거 스타일 */
+        div[data-testid="stDataFrame"] {
+            height: auto !important;
+        }
         div[data-testid="stDataFrame"] td {
             white-space: pre-wrap !important;
             vertical-align: top !important;
@@ -56,17 +69,18 @@ except Exception as e:
     st.error(f"⚠️ 연결 설정 오류: {e}")
     st.stop()
 
-# --- 3. 데이터 함수 ---
+# --- 3. 데이터 함수 (날짜순 정렬 유지) ---
 def get_github_data():
     try:
         file_content = repo.get_contents(FILE_PATH)
         df = pd.read_csv(io.StringIO(file_content.decoded_content.decode('utf-8-sig')))
         df = df.loc[:, ~df.columns.duplicated()]
+        
         cols_order = ["날짜", "장비", "작성자", "업무내용", "비고"]
         for col in cols_order:
             if col not in df.columns: df[col] = ""
         
-        # [요청 반영] 날짜 기준 내림차순 정렬 (최신순)
+        # 날짜 기준 내림차순 정렬 (최신순)
         df['날짜'] = pd.to_datetime(df['날짜']).dt.date.astype(str)
         df = df.sort_values(by='날짜', ascending=False).reset_index(drop=True)
         
@@ -76,13 +90,13 @@ def get_github_data():
 
 def save_to_github(df, sha, message):
     csv_buffer = io.StringIO()
-    # 저장할 때는 날짜순으로 정렬해서 저장 (데이터 무결성)
     df = df.sort_values(by='날짜', ascending=False)
     df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
     content = csv_buffer.getvalue()
     if sha: repo.update_file(FILE_PATH, message, content, sha)
     else: repo.create_file(FILE_PATH, "Initial Creation", content)
 
+# 장비 목록 (이미지 기반)
 EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
 
 # --- 4. 세션 및 메인 로직 ---
@@ -99,13 +113,12 @@ if not st.session_state['logged_in']:
                 st.session_state['logged_in'] = True
                 st.session_state['user_name'] = name
                 st.rerun()
-            else:
-                st.error("성함을 입력해주세요.")
+            else: st.error("성함을 입력해주세요.")
 else:
-    # --- 사이드바 최상단 정보 ---
+    # 사이드바 상단 정보
     side_col1, side_col2 = st.sidebar.columns([2, 1])
     with side_col1:
-        st.markdown(f"<div style='font-size: 0.85rem; color: #666;'>👤 {st.session_state['user_name']}님</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size: 0.85rem; color: #666; padding-top:10px;'>👤 {st.session_state['user_name']}님</div>", unsafe_allow_html=True)
     with side_col2:
         if st.button("로그아웃"):
             st.session_state['logged_in'] = False
@@ -151,20 +164,17 @@ else:
                     save_to_github(df.drop(del_idx), sha, "Delete Log")
                     st.rerun()
 
-        # --- [요청 반영] 헤더 컨테이너 (타이틀 + 다운로드 버튼) ---
-        header_col1, header_col2 = st.columns([5, 1])
+        # --- [개선] 헤더 레이아웃 (타이틀 + 작아진 다운로드 버튼) ---
+        header_col1, header_col2 = st.columns([4, 1])
         with header_col1:
             st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
         with header_col2:
-            # 우측 정렬을 위해 마진 추가
-            st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
             csv_download = df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
             st.download_button(
                 label="📥 엑셀(CSV) 다운로드",
                 data=csv_download,
                 file_name=f"work_log_{datetime.now().strftime('%m%d')}.csv",
-                mime="text/csv",
-                use_container_width=True
+                mime="text/csv"
             )
 
         search = st.text_input("🔍 검색어 입력", label_visibility="collapsed")
@@ -173,9 +183,11 @@ else:
         if search:
             display_df = display_df[display_df.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
 
+        # [요청반영] 표 높이를 자동(None)으로 설정하여 여백 제거 및 전체 노출
         st.dataframe(
             display_df,
             use_container_width=True,
+            height=None, 
             column_config={
                 "날짜": st.column_config.TextColumn("📅 날짜", width="small"),
                 "장비": st.column_config.TextColumn("🔧 장비", width="small"),
