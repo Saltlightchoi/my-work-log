@@ -9,4 +9,4 @@ Auto/Teaching Key - DOOR INTERLOCK LED 전환 동작 이상
 
 INIT 동작 간 ERROR 발생
 ㄴ LD,ULD FLOW UP/DOWN 동작 이상
-UP 속도 조절 regulator In/Out단 반대로 꼿혀있어 정상화",1호기 teaching 후 육안확인하였으나 실제 양산 중 모니터링해야함
+UP 속도 조절 regulator In/Out단 반대로 꼿혀있어 정상화","1호기 teaching 후 육안확인하였으나 실제 양산 중 모니터링해야함, 4호기 init 동작 후 Dry run 진행 명일 부터 long run 하여 condition check 진행해야함"
