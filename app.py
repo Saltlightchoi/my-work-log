@@ -7,7 +7,7 @@ from datetime import datetime
 st.set_page_config(layout="wide", page_title="업무 관리 시스템")
 
 # 구글 스프레드시트 연결 설정 (시트 URL을 입력하세요)
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1vzUWmoyOgo1TwahtedmncfXhEL7kiNIfpjh0t4jvn0k/edit?usp=drivesdk"
+SHEET_URL = https://docs.google.com/spreadsheets/d/1vzUWmoyOgo1TwahtedmncfXhEL7kiNIfpjh0t4jvn0k/edit?usp=drivesdk
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
@@ -125,3 +125,4 @@ else:
     # --- 메인 목록 ---
     st.subheader("📋 전체 목록")
     st.dataframe(work_df, use_container_width=True)
+
