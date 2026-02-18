@@ -26,7 +26,7 @@ st.markdown("""
         [data-testid="stSidebar"] {
             left: auto;
             right: 0;
-            width: 400px !important; /* 사이드바 넓이를 400px로 설정 (기본은 약 300px) */
+            width: 600px !important; /* 사이드바 넓이를 400px로 설정 (기본은 약 300px) */
         }
         
         /* 2. 메인 콘텐츠 여백 조정 (사이드바가 오른쪽에 있으므로 왼쪽 여백 제거) */
@@ -121,3 +121,4 @@ if not df.empty:
     st.download_button("📥 목록 다운로드 (CSV)", data=csv, file_name="work_log.csv", mime="text/csv")
 else:
     st.info("데이터가 없습니다. 오른쪽 Daily 메뉴에서 작성을 시작하세요!")
+
