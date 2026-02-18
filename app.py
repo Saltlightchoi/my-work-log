@@ -31,10 +31,10 @@ st.markdown("""
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def get_users():
-    return conn.read(worksheet="users", ttl=0) # ttl=0은 실시간 데이터를 가져오기 위함입니다.
+    return conn.read(worksheet="users") # ttl=0은 실시간 데이터를 가져오기 위함입니다.
 
 def get_data():
-    return conn.read(worksheet="data", ttl=0)
+    return conn.read(worksheet="data")
 
 def save_users(df):
     conn.update(worksheet="users", data=df)
@@ -166,3 +166,4 @@ else:
 
     st.subheader("📋 전체 업무 기록")
     st.dataframe(display_df, use_container_width=True, hide_index=False)
+
