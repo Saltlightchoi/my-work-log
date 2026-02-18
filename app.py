@@ -4,7 +4,7 @@ from github import Github
 import io
 from datetime import datetime
 
-# --- 1. UI 설정 및 스타일 ---
+# --- 1. UI 설정 및 스타일 (글자 크기 및 여백 조정) ---
 st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
 
 st.markdown("""
@@ -12,6 +12,19 @@ st.markdown("""
         .block-container { padding-top: 1rem; }
         [data-testid="stSidebar"] { left: auto; right: 0; width: 420px !important; }
         .main .block-container { margin-right: 420px; margin-left: 0; }
+        
+        /* 사이드바 상단 텍스트 및 버튼 크기 축소 */
+        .user-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: -10px;
+        }
+        div[data-testid="stSidebar"] button {
+            padding: 2px 10px;
+            font-size: 0.75rem;
+        }
+        
+        /* 표 내부의 줄바꿈 스타일 */
         div[data-testid="stDataFrame"] td {
             white-space: pre-wrap !important;
             vertical-align: top !important;
@@ -28,33 +41,27 @@ except Exception as e:
     st.error(f"⚠️ 연결 설정 오류: {e}")
     st.stop()
 
-# --- 3. 데이터 읽기/쓰기 함수 (중복 제거 로직 추가) ---
+# --- 3. 데이터 읽기/쓰기 함수 ---
 def get_github_data():
     try:
         file_content = repo.get_contents(FILE_PATH)
-        # 1. 파일 읽기
         df = pd.read_csv(io.StringIO(file_content.decoded_content.decode('utf-8-sig')))
-        
-        # 2. 중복된 열 이름 강제 정리
         df = df.loc[:, ~df.columns.duplicated()]
         
-        # 3. '장비종류'가 남아있다면 '장비'로 통합
         if "장비종류" in df.columns:
             if "장비" not in df.columns:
                 df = df.rename(columns={"장비종류": "장비"})
             else:
-                # 둘 다 있다면 '장비' 열로 데이터를 합치고 '장비종류' 삭제
                 df["장비"] = df["장비"].fillna(df["장비종류"])
                 df = df.drop(columns=["장비종류"])
         
-        # 4. 필수 열 확인 및 순서 고정
         cols_order = ["날짜", "장비", "작성자", "업무내용", "비고"]
         for col in cols_order:
             if col not in df.columns:
                 df[col] = ""
         
         return df[cols_order].fillna("").astype(str), file_content.sha
-    except Exception as e:
+    except Exception:
         df = pd.DataFrame(columns=["날짜", "장비", "작성자", "업무내용", "비고"])
         return df, None
 
@@ -90,10 +97,13 @@ if not st.session_state['logged_in']:
             else:
                 st.error("성함을 입력해주세요.")
 else:
-    st.sidebar.title(f"👋 {st.session_state['user_name']}님")
-    if st.sidebar.button("로그아웃"):
+    # --- [개선] 사이드바 최상단에 접속자 정보 및 로그아웃 배치 ---
+    st.sidebar.markdown(f"<div class='user-info'>👤 {st.session_state['user_name']}님 접속 중</div>", unsafe_allow_html=True)
+    if st.sidebar.button("로그아웃", use_container_width=False):
         st.session_state['logged_in'] = False
         st.rerun()
+    
+    st.sidebar.markdown("---") # 구분선 추가
 
     try:
         df, sha = get_github_data()
@@ -156,7 +166,6 @@ else:
         if search:
             display_df = display_df[display_df.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
 
-        # 최신순 정렬
         display_df = display_df.iloc[::-1]
 
         st.dataframe(
@@ -177,4 +186,3 @@ else:
 
     except Exception as e:
         st.error(f"데이터 처리 오류: {e}")
-
