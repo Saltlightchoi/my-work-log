@@ -135,3 +135,19 @@ DRY RUNNING CONDITION 진행.",
 2. SLH1 #5호기
  ① LD Hand 공압 포설 수정 완료, 명일 장착 예정
  ② ULD Hand Z축 평탄 조정 완료.",
+2026-02-03,SLH1,최염광,"오전 07:30~12:30 SK Hynix 기본안전교육 수료.
+1. SLH1 #4호기
+ ① 삼성 이우철 TL 검수
+   - LD Hand Z축 평탄도 Fail
+    -> Z축 즉시 조정
+   - LD Hand Pitch JIG 장착시 1번 Picker Align 이상
+    -> 1번 Picker Align 즉시 조정
+   - 명일 재방문시 ULD Hand Z, Pitch , Press 평탄도 검수 예정
+     -> ULD Hand Z축 높이 상이
+     -> All Picker 높이 재조정
+     -> Pitch JIG 기준 재조정 완료
+ ② LD/ULD Mask 탈거 후 수정 출고.
+   - Run 진행 불가.
+
+2. SLH1 #5호기
+ ① LD Hand 공압 포설 반대로 되어 있어 탈거 후 전장 수정 대기중.    ",
