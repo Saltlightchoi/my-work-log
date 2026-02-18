@@ -52,3 +52,15 @@ DRY RUNNING CONDITION 진행.",
     - Econ 및 Cable 재확인, 재결합 , 동일
     - Safty PLC Error 출력 확인되어 해당 Si2,3 Line Cable 통전 확인, 정상
     - 명절 이후 내방 점검 예정",
+2026-02-13,SLH1,최염광,"우익 반도체 Set-UP
+1. SLH1 #4호기 
+  ① 이성배수석 내방하여 OS 관련 처리 완료.
+   - EMS Switch 눌림 확인, 해당 EMS 눌린 상태 Booting 안됨 현상은 비정상으로 수정 예정.
+  ② LD/ULD Middle Rail Docking 및 Align 조정 완료.
+   - Align 조정간 편차 및 조정 난이도 높음으로 Roller 하단 Rail 두께 확장 관련 최병수책임 Inform 완료.
+  ③ CCTV Lan Cable 포설 완료(LD,ULD Stacker, LD,ULD Flow 단)
+  ④ Init 진행 전 Door Key Interlock 관련 이상 확인 중
+
+2. SLH1 #1호기
+  ① Input Bottom Rear X Motor Init&Motor Reset 시 Error 발생
+    -> Parameter 재설정 후 증상 재현시 정상.",
