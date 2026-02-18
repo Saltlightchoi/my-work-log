@@ -1,1 +1,12 @@
 날짜,장비,작성자,업무내용,비고
+2026-02-16,SLH1,조건희,"1호기
+HAND picker 균일화 작업 후 모니터링하며 정밀 티칭 진행
+ㄴ FRONT 2 Y Teaching -0.2
+
+4호기
+Auto/Teaching Key - DOOR INTERLOCK LED 전환 동작 이상
+ㄴ 커넥터 핀 접촉 불량 확인하여 재연결 후 컨택하여 DOOR 동작확인
+
+INIT 동작 간 ERROR 발생
+ㄴ LD,ULD FLOW UP/DOWN 동작 이상
+UP 속도 조절 regulator In/Out단 반대로 꼿혀있어 정상화",
