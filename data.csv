@@ -64,3 +64,16 @@ DRY RUNNING CONDITION 진행.",
 2. SLH1 #1호기
   ① Input Bottom Rear X Motor Init&Motor Reset 시 Error 발생
     -> Parameter 재설정 후 증상 재현시 정상.",
+2026-02-12,SLH1,최염광,"우익 반도체 Set-UP
+1. SLH1 #4호기 
+  ① Utility 연결 완료
+    - Turn-On 후 OS Booting 시 꺼짐 현상 발생
+    -> 이성배 수석 연락 후 동글이, Cable, Amp Error Code 등 확인 시 특이사항 없음, 명일 내방 예정
+  ② LoadCell 결선 이상 수정 완료.
+  ③ 작일 파손된 후면부 Main Regulater 입고되어 교체 완료.
+2. SLH1 #1호기
+  ① ULD Hand Clamp Setting
+    - LD Hand 동일하게 적용 후 Re-Teahing 완료
+    - Dummy Run 진행시 Picking Error는 미발생하나 Side 물결 Scratch 발생
+     -> Teaching 재조정 후 미발생.
+     -> Retest 2Hour 진행긴 특이사항 없음.",
