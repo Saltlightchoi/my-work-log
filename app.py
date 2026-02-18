@@ -4,27 +4,50 @@ from github import Github
 import io
 from datetime import datetime
 
-# --- 1. UI 설정 및 스타일 (글자 크기 및 여백 조정) ---
+# --- 1. UI 설정 및 스타일 (상단 여백 및 글자 크기 조정) ---
 st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
 
 st.markdown("""
     <style>
-        .block-container { padding-top: 1rem; }
+        /* 메인 화면 상단 여백 조정 */
+        .block-container { padding-top: 2rem; }
+        
+        /* 사이드바 최상단 여백 제거 */
         [data-testid="stSidebar"] { left: auto; right: 0; width: 420px !important; }
-        .main .block-container { margin-right: 420px; margin-left: 0; }
+        [data-testid="stSidebar"] .block-container { padding-top: 0rem; }
         
-        /* 사이드바 상단 텍스트 및 버튼 크기 축소 */
+        /* [개선] 접속자 이름과 로그아웃 버튼 가로 병렬 배치 */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            margin-top: -10px;
+            margin-bottom: 5px;
+        }
         .user-info {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #666;
-            margin-bottom: -10px;
-        }
-        div[data-testid="stSidebar"] button {
-            padding: 2px 10px;
-            font-size: 0.75rem;
+            white-space: nowrap;
         }
         
-        /* 표 내부의 줄바꿈 스타일 */
+        /* 로그아웃 버튼 디자인 미세조정 */
+        div[data-testid="stSidebar"] button {
+            padding: 2px 8px !important;
+            font-size: 0.75rem !important;
+            height: auto !important;
+            min-height: 25px !important;
+        }
+        
+        /* [요청반영] 메인 대시보드 제목 크기 2pt 축소 및 상단 여백 */
+        .main-title {
+            font-size: 1.8rem; /* 기존보다 약 2pt 축소 */
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* 표 내부 줄바꿈 스타일 */
         div[data-testid="stDataFrame"] td {
             white-space: pre-wrap !important;
             vertical-align: top !important;
@@ -48,13 +71,6 @@ def get_github_data():
         df = pd.read_csv(io.StringIO(file_content.decoded_content.decode('utf-8-sig')))
         df = df.loc[:, ~df.columns.duplicated()]
         
-        if "장비종류" in df.columns:
-            if "장비" not in df.columns:
-                df = df.rename(columns={"장비종류": "장비"})
-            else:
-                df["장비"] = df["장비"].fillna(df["장비종류"])
-                df = df.drop(columns=["장비종류"])
-        
         cols_order = ["날짜", "장비", "작성자", "업무내용", "비고"]
         for col in cols_order:
             if col not in df.columns:
@@ -74,10 +90,10 @@ def save_to_github(df, sha, message):
     else:
         repo.create_file(FILE_PATH, "Initial Log Creation", content)
 
-# --- 4. 드롭다운 장비 목록 ---
+# --- 4. 드롭다운 장비 목록 (이미지 기반) ---
 EQUIPMENT_OPTIONS = [
-    "SLH1", "4010H", "3208H", "3208AT", "3208M", 
-    "3208C", "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"
+    "SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", 
+    "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"
 ]
 
 # --- 5. 세션 관리 ---
@@ -97,13 +113,17 @@ if not st.session_state['logged_in']:
             else:
                 st.error("성함을 입력해주세요.")
 else:
-    # --- [개선] 사이드바 최상단에 접속자 정보 및 로그아웃 배치 ---
-    st.sidebar.markdown(f"<div class='user-info'>👤 {st.session_state['user_name']}님 접속 중</div>", unsafe_allow_html=True)
-    if st.sidebar.button("로그아웃", use_container_width=False):
-        st.session_state['logged_in'] = False
-        st.rerun()
+    # --- [개선] 사이드바 최상단 병렬 배치 ---
+    # col1에는 이름, col2에는 로그아웃 버튼 배치
+    side_col1, side_col2 = st.sidebar.columns([2, 1])
+    with side_col1:
+        st.markdown(f"<div class='user-info'>👤 {st.session_state['user_name']}님</div>", unsafe_allow_html=True)
+    with side_col2:
+        if st.button("로그아웃"):
+            st.session_state['logged_in'] = False
+            st.rerun()
     
-    st.sidebar.markdown("---") # 구분선 추가
+    st.sidebar.markdown("<div style='margin-top: -15px;'><hr></div>", unsafe_allow_html=True)
 
     try:
         df, sha = get_github_data()
@@ -121,11 +141,9 @@ else:
                 if st.form_submit_button("저장하기"):
                     if c_val:
                         new_row = pd.DataFrame([{
-                            "날짜": str(d_val), 
-                            "장비": e_type,
+                            "날짜": str(d_val), "장비": e_type,
                             "작성자": st.session_state['user_name'], 
-                            "업무내용": c_val, 
-                            "비고": n_val
+                            "업무내용": c_val, "비고": n_val
                         }])
                         updated_df = pd.concat([df, new_row], ignore_index=True)
                         save_to_github(updated_df, sha, f"Add: {d_val}")
@@ -135,7 +153,7 @@ else:
         elif mode == "✏️ 수정":
             if not df.empty:
                 display_options = df.index[::-1]
-                edit_idx = st.sidebar.selectbox("수정 대상 선택", options=display_options, 
+                edit_idx = st.sidebar.selectbox("수정 대상", options=display_options, 
                                               format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']} | {df.iloc[x]['업무내용'][:10]}...")
                 with st.sidebar.form("edit_form"):
                     e_date = st.date_input("날짜 수정", value=pd.to_datetime(df.loc[edit_idx, "날짜"]))
@@ -144,7 +162,6 @@ else:
                     e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=etype_idx)
                     e_content = st.text_area("내용 수정", value=df.loc[edit_idx, "업무내용"])
                     e_note = st.text_input("비고 수정", value=df.loc[edit_idx, "비고"])
-                    
                     if st.form_submit_button("수정 완료"):
                         df.loc[edit_idx, ["날짜", "장비", "업무내용", "비고"]] = [str(e_date), e_etype, e_content, e_note]
                         save_to_github(df, sha, f"Edit: {e_date}")
@@ -158,8 +175,8 @@ else:
                     save_to_github(updated_df, sha, "Delete Log")
                     st.rerun()
 
-        # --- 메인 대시보드 출력 ---
-        st.title("📊 팀 업무일지 대시보드")
+        # --- [요청반영] 메인 대시보드 제목 디자인 ---
+        st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
         search = st.text_input("🔍 검색어 입력")
         
         display_df = df.copy()
