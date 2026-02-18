@@ -77,3 +77,17 @@ DRY RUNNING CONDITION 진행.",
     - Dummy Run 진행시 Picking Error는 미발생하나 Side 물결 Scratch 발생
      -> Teaching 재조정 후 미발생.
      -> Retest 2Hour 진행긴 특이사항 없음.",
+2026-02-11,SLH1,최염광,"우익 반도체 Set-UP
+1. SLH1 #4호기 
+  ① Utility 연결 중, 작업 Delay 중
+2. SLH1 #1호기
+  ① LD Hand Clamp Setting
+    - 자재 Pick 진행시 Picker 별 Clamp 좌우 간격 상이
+    - 자재 없이 Pick 좌우 2.9~3.1 Setting 완료.
+      -> LPCAMM2, R-DIMM Pick 동일하게 적용됨 확인 완료.
+    - 해당 Pick 기준 LD Hand Pos' 재 Teaching 완료
+    - Dummy Run 진행간 특이사항 미발생
+  ② Reject Stacker 2단 Cylinder Error
+   - 작일 Cylinder Align Shaft 고정 Bolt 재조정 후 재발생
+    -> 우측 Cylinder Shaft 휨으로 동작간 부하 발생, 간헐적 동작 안됨 발생
+    -> 해당 Part 구매 요청 완료, 입고 시 교체 예정.",
