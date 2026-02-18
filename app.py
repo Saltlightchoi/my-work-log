@@ -19,15 +19,27 @@ def save_all_data(df):
 # --- UI 설정 ---
 st.set_page_config(layout="wide", page_title="업무일지 시스템")
 
-# 상단 여백을 줄이기 위한 CSS 삽입
+# CSS: 사이드바 우측 이동 및 넓이 조절
 st.markdown("""
     <style>
-        /* 메인 화면 여백 줄이기 */
-        .block-container {
-            padding-top: 1rem;
-            padding-bottom: 0rem;
+        /* 1. 사이드바를 오른쪽으로 이동 */
+        [data-testid="stSidebar"] {
+            left: auto;
+            right: 0;
+            width: 400px !important; /* 사이드바 넓이를 400px로 설정 (기본은 약 300px) */
         }
-        /* 사이드바 여백 줄이기 */
+        
+        /* 2. 메인 콘텐츠 여백 조정 (사이드바가 오른쪽에 있으므로 왼쪽 여백 제거) */
+        [data-testid="stSidebarNav"] {
+            display: none;
+        }
+        .main .block-container {
+            margin-right: 400px; /* 사이드바 넓이만큼 메인 화면에 오른쪽 여백 부여 */
+            margin-left: 0;
+            padding-top: 1rem;
+        }
+
+        /* 3. 사이드바 내부 여백 조절 */
         section[data-testid="stSidebar"] .block-container {
             padding-top: 1.5rem;
         }
@@ -38,8 +50,8 @@ st.title("📊 팀 업무일지 시스템")
 
 df = load_data()
 
-# --- 1. 사이드바: Daily (작성/수정/삭제) ---
-st.sidebar.title("📅 Daily") # 이름을 Daily로 변경
+# --- 1. 사이드바: Daily (이제 우측에 위치함) ---
+st.sidebar.title("📅 Daily")
 
 mode = st.sidebar.selectbox("작업을 선택하세요", ["➕ 새 일지 작성", "✏️ 기존 일지 수정", "❌ 일지 삭제"])
 
@@ -108,4 +120,4 @@ if not df.empty:
     csv = display_df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
     st.download_button("📥 목록 다운로드 (CSV)", data=csv, file_name="work_log.csv", mime="text/csv")
 else:
-    st.info("데이터가 없습니다. 왼쪽 Daily 메뉴에서 작성을 시작하세요!")
+    st.info("데이터가 없습니다. 오른쪽 Daily 메뉴에서 작성을 시작하세요!")
