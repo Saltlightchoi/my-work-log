@@ -35,3 +35,12 @@ DRY RUNNING CONDITION 진행.",
   -> Insert Latch C.O.K 없음으로 Mask Down 후 Handling Open 동작 후 Teaching 조정
   -> 차후에 재확인 필요.  
 4. Motor 반복 정밀도 측정 완료.",
+2026-02-15,SLH1,최염광,"SLH1 #5호기 제작
+1. SLH1 #5호기
+  ① Transfer JIG Setting
+    - 작일 진행한 Transfer JIG Setting Check 중 Transfer Grip Jig X,Y 고정 안되어 Setting 불가, 해당 내용 최병수 책임 Inform 완료.
+  ② LD Mask , Insert 검증
+    - Mask Part 장착, Insert Open 관련 COK, Latch Open 제외 장착 후 동작 검증 진행
+    - Mask 연속 동작시 이전과 다르게 소음은 미발생하나 간헐적 걸림 증상, 배한수 수석 동행하에 체크 완료.
+    - 금일 퇴근시 연속동작 후 퇴근 예정,(내구도 검증)
+  ③ LD Hand Pitch Jig Setting Check 완료. 정상. 촬영 완료.",
