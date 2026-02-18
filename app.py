@@ -54,8 +54,8 @@ def save_to_github(df, sha, message):
 
 # --- 4. [요청반영] 드롭다운 장비 목록 (이미지 기반) ---
 EQUIPMENT_OPTIONS = [
-    "노트북", "데스크탑", "모니터", "복합기", "프린터", 
-    "서버", "네트워크", "전화기", "주변기기", "소프트웨어", "기타"
+    "SLH1", "4010H", "3208H", "3208AT", "3208M", 
+    "3208C", "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"
 ]
 
 # --- 5. 세션 관리 ---
@@ -146,3 +146,22 @@ else:
 
         # 최신순 정렬
         display_df = display_df.iloc[::-1]
+
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            column_config={
+                "날짜": st.column_config.TextColumn("📅 날짜", width="small"),
+                "장비": st.column_config.TextColumn("🔧 장비", width="small"),
+                "작성자": st.column_config.TextColumn("👤 작성자", width="small"),
+                "업무내용": st.column_config.TextColumn("📝 업무내용", width="large"),
+                "비고": st.column_config.TextColumn("💡 비고", width="medium"),
+            },
+            hide_index=False
+        )
+
+        csv_download = display_df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
+        st.download_button(label="📥 현재 목록 엑셀 다운로드", data=csv_download, file_name=f"work_log.csv", mime="text/csv")
+
+    except Exception as e:
+        st.error(f"데이터 오류: {e}")
