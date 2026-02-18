@@ -114,3 +114,24 @@ DRY RUNNING CONDITION 진행.",
   ③ 전면부 Leveling 및 후면부 임시 Docking Align 조정
     -> 전면부 전장 Cable 장착 완료.",
 2026-02-05,SLH1,최염광,① 장비 출하 대비 최종 검수 및 포장,
+2026-02-05,SLH1,최염광,"1. SLH1 #4호기
+ ① 삼성 이우철 TL 검수
+   - LD Hand 1번 Pitch 조정 후 JIG 삽입 정상
+   - ULD Hand Pitch JIG 삽입 정상, ULD Hand Z축 Indigator 측정 정상
+   - Press 평탄 측정 정상, Press 압력 측정 정상
+   - Mask 입고 동작 확인
+    -> Tray 1ea에 Insert 16ea 장착시 동작간 소음 동일 발생
+    -> 좌측 Mask 늦게 Down 되게 조정하여 Roller 이상 동작 조정
+  - Hand Pitch 관련 조정 방법 문의
+   -> Hand Picker Pitch LM 고정 Block Pin 2ea, 하단 Bolt 풀면 Align 조정 가능
+   -> 해당 사항에 대해 조성현 수석 답변 및 Cylinder Floating Block 개선 여부 5호기 검증 예정
+  - Hand 평탄 Sensor 관련 영점 수정
+   -> C-Tray 완전 불안착 경우 Sensing Pos' Down 시 Picker가 제품 Damage 발생 가능성 有
+   -> Sensing 영점 Z축 상향 5mm 조정
+   -> LD/ULD Hand Sensing Pos Teaching 조정
+ ② Running Check
+  - Tray 2매, 짝수열 Insert 장착 후 Looping Mode 진행 중
+
+2. SLH1 #5호기
+ ① LD Hand 공압 포설 수정 완료, 명일 장착 예정
+ ② ULD Hand Z축 평탄 조정 완료.",
