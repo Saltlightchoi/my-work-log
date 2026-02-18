@@ -9,35 +9,33 @@ st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
 
 st.markdown("""
     <style>
-        /* 전체 화면 상단 여백 */
-        .block-container { padding-top: 1.5rem !important; }
+        /* 메인 화면 상단 여백 확보 */
+        .block-container { padding-top: 3rem !important; }
         
-        /* 사이드바 너비 및 여백 최적화 */
+        /* 사이드바 여백 최적화 */
         [data-testid="stSidebar"] { width: 420px !important; }
         [data-testid="stSidebar"] .block-container { padding-top: 0rem !important; }
         
-        /* [핵심] 메인 대시보드 제목 디자인 - 잘림 방지를 위해 line-height와 padding 넉넉히 */
+        /* [요청반영] 메인 대시보드 제목 디자인 - 잘림 방지를 위해 충분한 높이 확보 */
         .main-title {
             font-size: 1.8rem !important;
             font-weight: bold !important;
             color: white !important;
-            line-height: 1.6 !important;
-            margin-top: 5px !important;
-            margin-bottom: 5px !important;
-            display: block !important;
+            line-height: 2.0 !important; /* 행간을 넓혀 잘림 방지 */
+            margin: 0 !important;
+            padding-bottom: 10px !important;
         }
         
-        /* [요청반영] 엑셀 다운로드 버튼 크기 축소 및 폰트 조정 */
+        /* [요청반영] 엑셀 다운로드 버튼 크기 축소 (1/2 사이즈) */
         div.stDownloadButton {
             text-align: right;
-            margin-top: 10px;
+            margin-top: 5px;
         }
         div.stDownloadButton > button {
-            width: 130px !important; /* 전체 크기 더 축소 */
+            width: 140px !important; 
             padding: 2px 5px !important;
-            font-size: 0.7rem !important; /* 글자 크기 축소 */
-            height: auto !important;
-            min-height: 30px !important;
+            font-size: 0.75rem !important;
+            height: 32px !important;
             border-radius: 4px;
         }
 
@@ -63,7 +61,7 @@ except Exception as e:
     st.error(f"⚠️ 연결 설정 오류: {e}")
     st.stop()
 
-# --- 3. 데이터 함수 (날짜 기준 최신순 정렬) ---
+# --- 3. 데이터 함수 (최신순 정렬 및 데이터 정리) ---
 def get_github_data():
     try:
         file_content = repo.get_contents(FILE_PATH)
@@ -74,7 +72,7 @@ def get_github_data():
         for col in cols_order:
             if col not in df.columns: df[col] = ""
         
-        # [요청반영] 날짜 기준 내림차순 정렬 (최신순)
+        # 날짜 기준 내림차순 정렬
         df['날짜'] = pd.to_datetime(df['날짜']).dt.date.astype(str)
         df = df.sort_values(by='날짜', ascending=False).reset_index(drop=True)
         
@@ -84,14 +82,13 @@ def get_github_data():
 
 def save_to_github(df, sha, message):
     csv_buffer = io.StringIO()
-    # 저장 시에도 날짜 정렬 상태 유지
     df = df.sort_values(by='날짜', ascending=False)
     df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
     content = csv_buffer.getvalue()
     if sha: repo.update_file(FILE_PATH, message, content, sha)
     else: repo.create_file(FILE_PATH, "Initial Creation", content)
 
-# 장비 목록 반영
+# 장비 목록
 EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
 
 # --- 4. 세션 및 메인 로직 ---
@@ -110,7 +107,7 @@ if not st.session_state['logged_in']:
                 st.rerun()
             else: st.error("성함을 입력해주세요.")
 else:
-    # 사이드바 상단 정보 (한 줄 배치)
+    # 사이드바 상단 정보
     side_col1, side_col2 = st.sidebar.columns([2, 1])
     with side_col1:
         st.markdown(f"<div style='font-size: 0.85rem; color: #aaa; padding-top:10px;'>👤 {st.session_state['user_name']}님</div>", unsafe_allow_html=True)
@@ -138,7 +135,8 @@ else:
                         new_row = pd.DataFrame([{"날짜": str(d_val), "장비": e_type, "작성자": st.session_state['user_name'], "업무내용": c_val, "비고": n_val}])
                         save_to_github(pd.concat([df, new_row], ignore_index=True), sha, f"Add: {d_val}")
                         st.rerun()
-
+        
+        # --- 수정/삭제 로직 (기존과 동일) ---
         elif mode == "✏️ 수정":
             if not df.empty:
                 edit_idx = st.sidebar.selectbox("대상 선택", options=df.index, format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']}", label_visibility="collapsed")
@@ -151,7 +149,6 @@ else:
                         df.loc[edit_idx, ["날짜", "장비", "업무내용", "비고"]] = [str(e_date), e_etype, e_content, e_note]
                         save_to_github(df, sha, f"Edit: {e_date}")
                         st.rerun()
-
         elif mode == "❌ 삭제":
             if not df.empty:
                 del_idx = st.sidebar.selectbox("삭제 선택", options=df.index, format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']}", label_visibility="collapsed")
@@ -159,19 +156,15 @@ else:
                     save_to_github(df.drop(del_idx), sha, "Delete Log")
                     st.rerun()
 
-        # --- [개선] 헤더 레이아웃 (타이틀 글자 잘림 완전 방지) ---
-        header_col1, header_col2 = st.columns([4, 1])
+        # --- 메인 헤더 레이아웃 ---
+        header_col1, header_col2 = st.columns([5, 1])
         with header_col1:
-            # HTML div로 감싸고 line-height와 padding을 충분히 주어 절대 안 잘리게 설정
             st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
         with header_col2:
+            # 여백을 주어 버튼 위치 조정
+            st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
             csv_download = df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
-            st.download_button(
-                label="📥 엑셀 다운로드",
-                data=csv_download,
-                file_name=f"work_log_{datetime.now().strftime('%m%d')}.csv",
-                mime="text/csv"
-            )
+            st.download_button(label="📥 엑셀 다운로드", data=csv_download, file_name="work_log.csv", mime="text/csv")
 
         search = st.text_input("🔍 검색어 입력", label_visibility="collapsed")
         
@@ -179,11 +172,10 @@ else:
         if search:
             display_df = display_df[display_df.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
 
-        # [핵심] 'None' 대신 'content'를 사용하여 오류 해결 및 높이 최적화
+        # [수정] height 옵션을 완전히 제거하여 오류 해결 및 자동 높이 적용
         st.dataframe(
             display_df,
             use_container_width=True,
-            height=None, # 최신 버전 대응: None 혹은 고정 숫자를 쓰되 CSS로 제어
             column_config={
                 "날짜": st.column_config.TextColumn("📅 날짜", width="small"),
                 "장비": st.column_config.TextColumn("🔧 장비", width="small"),
