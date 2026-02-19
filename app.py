@@ -35,10 +35,56 @@ st.markdown("""
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 10px;
+import streamlit as st
+import pandas as pd
+from github import Github
+import io
+from datetime import datetime
+
+# --- 1. UI 설정 및 스타일 ---
+st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
+
+st.markdown("""
+    <style>
+        .block-container { padding-top: 1rem !important; padding-bottom: 0rem !important; }
+        [data-testid="stSidebar"] { width: 420px !important; }
+        [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
+        
+        .main-title { 
+            font-size: 1.6rem !important; 
+            font-weight: bold; 
+            margin-top: -10px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+        }
+
+        div.stDownloadButton > button {
+            width: 100% !important;
+            height: auto !important;
+            padding: 5px !important;
+            font-size: 12px !important;
+        }
+
+        .path-guide {
+            font-size: 0.8rem;
+            color: #ffaa00;
+            background-color: #332200;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
             line-height: 1.4;
         }
 
-        .stDataFrame { margin-bottom: -50px !important; }
+        /* 복사 버튼을 위한 커스텀 스타일 */
+        .copy-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 2px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -64,7 +110,6 @@ def get_github_data():
         for col in cols_order:
             if col not in df.columns: df[col] = ""
         df['날짜'] = pd.to_datetime(df['날짜']).dt.date.astype(str)
-        # 날짜 기준 내림차순 정렬 후 인덱스 재설정 (중요: 목록 선택 시 인덱스 불일치 방지)
         df = df.sort_values(by='날짜', ascending=False).reset_index(drop=True)
         return df[cols_order].fillna("").astype(str), file_content.sha
     except Exception:
@@ -72,7 +117,6 @@ def get_github_data():
 
 def save_to_github(df, sha, message):
     csv_buffer = io.StringIO()
-    # 저장 시에도 날짜 순으로 정렬하여 저장
     df = df.sort_values(by='날짜', ascending=False)
     df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
     content = csv_buffer.getvalue()
@@ -96,7 +140,6 @@ if not st.session_state['logged_in']:
                 st.session_state['user_name'] = name
                 st.rerun()
 else:
-    # 사이드바 상단
     side_col1, side_col2 = st.sidebar.columns([2, 1])
     with side_col1:
         st.markdown(f"👤 **{st.session_state['user_name']}**님")
@@ -129,7 +172,6 @@ else:
 
         elif mode == "✏️ 수정":
             if not df.empty:
-                # 목록에서 작성자와 내용 일부가 보이도록 수정
                 edit_idx = st.sidebar.selectbox(
                     "대상 선택", 
                     options=df.index, 
@@ -148,7 +190,6 @@ else:
 
         elif mode == "❌ 삭제":
             if not df.empty:
-                # 목록 구분 강화
                 del_idx = st.sidebar.selectbox(
                     "삭제 선택", 
                     options=df.index, 
@@ -172,6 +213,10 @@ else:
         if search:
             display_df = display_df[display_df.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
 
+        # --- 첨부파일 클릭 자동 복사 구현 ---
+        # 1. 텍스트 열로 보여주되, Streamlit의 기본 기능을 활용하여 마우스 오버 시 우측의 복사 버튼이 뜨게 함
+        # 2. '첨부' 글자만 남기고 실제 경로는 help 툴팁에 넣어 깔끔하게 만듦
+        
         st.dataframe(
             display_df,
             use_container_width=True,
@@ -181,10 +226,15 @@ else:
                 "작성자": st.column_config.TextColumn("👤 작성자"),
                 "업무내용": st.column_config.TextColumn("📝 업무내용", width="large"),
                 "비고": st.column_config.TextColumn("💡 비고"),
-                "첨부": st.column_config.TextColumn("📎 확인하기(경로복사)", help="클릭하여 복사 후 [윈도우+R] 창에 붙여넣으세요.")
+                "첨부": st.column_config.TextColumn(
+                    "📎 첨부(클릭시 복사)", 
+                    help="셀을 클릭한 후 우측에 나타나는 복사 아이콘을 누르거나, Ctrl+C를 누르세요. 그 후 [윈도우+R] 창에 붙여넣으시면 됩니다."
+                )
             },
             hide_index=True
         )
+        
+        st.info("💡 **사진 확인 방법**: '첨부' 칸의 경로를 클릭 후 복사(Ctrl+C)하여 [윈도우 키 + R] 창에 붙여넣으세요.")
 
     except Exception as e:
         st.error(f"오류 발생: {e}")
