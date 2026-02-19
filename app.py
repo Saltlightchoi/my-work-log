@@ -9,14 +9,10 @@ st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
 
 st.markdown("""
     <style>
-        /* 상단 여백 제거 및 전체 여백 최적화 */
         .block-container { padding-top: 1rem !important; padding-bottom: 0rem !important; }
-        
-        /* 사이드바 너비 및 요소 간격 축소 */
         [data-testid="stSidebar"] { width: 420px !important; }
         [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
         
-        /* 메인 타이틀: 글자 크기 축소 및 여백 조정 */
         .main-title { 
             font-size: 1.6rem !important; 
             font-weight: bold; 
@@ -25,7 +21,6 @@ st.markdown("""
             white-space: nowrap;
         }
 
-        /* 엑셀 다운로드 버튼: 크기 축소 및 폰트 조절 */
         div.stDownloadButton > button {
             width: 100% !important;
             height: auto !important;
@@ -33,7 +28,6 @@ st.markdown("""
             font-size: 12px !important;
         }
 
-        /* 경로 안내 가이드 스타일 */
         .path-guide {
             font-size: 0.8rem;
             color: #ffaa00;
@@ -44,14 +38,11 @@ st.markdown("""
             line-height: 1.4;
         }
 
-        /* 데이터프레임 하단 여백 제거 */
         .stDataFrame { margin-bottom: -50px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# 공통 경로 설정
 BASE_PATH_DISPLAY = r"\\192.168.0.100\500 생산\550 국내CS\공유사진"
-# 실제 윈도우 탐색기에서 사용할 수 있는 경로 형식으로 유지
 BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 
 # --- 2. GitHub 연결 설정 ---
@@ -73,6 +64,7 @@ def get_github_data():
         for col in cols_order:
             if col not in df.columns: df[col] = ""
         df['날짜'] = pd.to_datetime(df['날짜']).dt.date.astype(str)
+        # 날짜 기준 내림차순 정렬 후 인덱스 재설정 (중요: 목록 선택 시 인덱스 불일치 방지)
         df = df.sort_values(by='날짜', ascending=False).reset_index(drop=True)
         return df[cols_order].fillna("").astype(str), file_content.sha
     except Exception:
@@ -80,6 +72,7 @@ def get_github_data():
 
 def save_to_github(df, sha, message):
     csv_buffer = io.StringIO()
+    # 저장 시에도 날짜 순으로 정렬하여 저장
     df = df.sort_values(by='날짜', ascending=False)
     df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
     content = csv_buffer.getvalue()
@@ -103,7 +96,7 @@ if not st.session_state['logged_in']:
                 st.session_state['user_name'] = name
                 st.rerun()
 else:
-    # 사이드바 상단 레이아웃
+    # 사이드바 상단
     side_col1, side_col2 = st.sidebar.columns([2, 1])
     with side_col1:
         st.markdown(f"👤 **{st.session_state['user_name']}**님")
@@ -124,19 +117,11 @@ else:
                 e_type = st.selectbox("장비", EQUIPMENT_OPTIONS)
                 c_val = st.text_area("업무 내용", height=250)
                 n_val = st.text_input("비고")
-                
-                st.markdown(f"""
-                <div class='path-guide'>
-                📂 <b>자동 경로 적용 중:</b><br>{BASE_PATH_DISPLAY}<br>
-                위 폴더에 사진을 넣고 <b>파일명</b>만 입력하세요.
-                </div>
-                """, unsafe_allow_html=True)
-                
+                st.markdown(f"<div class='path-guide'>📂 <b>자동 경로:</b> {BASE_PATH_DISPLAY}</div>", unsafe_allow_html=True)
                 f_name = st.text_input("파일명 (예: 사진1.jpg)")
                 
                 if st.form_submit_button("저장하기", use_container_width=True):
                     if c_val:
-                        # 윈도우 경로 형식으로 저장
                         full_path = BASE_PATH_RAW + f_name if f_name else BASE_PATH_RAW
                         new_row = pd.DataFrame([{"날짜": str(d_val), "장비": e_type, "작성자": st.session_state['user_name'], "업무내용": c_val, "비고": n_val, "첨부": full_path}])
                         save_to_github(pd.concat([df, new_row], ignore_index=True), sha, f"Add: {d_val}")
@@ -144,10 +129,11 @@ else:
 
         elif mode == "✏️ 수정":
             if not df.empty:
+                # 목록에서 작성자와 내용 일부가 보이도록 수정
                 edit_idx = st.sidebar.selectbox(
                     "대상 선택", 
                     options=df.index, 
-                    format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']} | {df.iloc[x]['작성자']} | {df.iloc[x]['업무내용'][:15]}..."
+                    format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']} | {df.iloc[x]['작성자']} | {df.iloc[x]['업무내용'][:10]}..."
                 )
                 with st.sidebar.form("edit_form"):
                     e_date = st.date_input("날짜 수정", pd.to_datetime(df.loc[edit_idx, "날짜"]))
@@ -162,17 +148,18 @@ else:
 
         elif mode == "❌ 삭제":
             if not df.empty:
+                # 목록 구분 강화
                 del_idx = st.sidebar.selectbox(
                     "삭제 선택", 
                     options=df.index, 
                     format_func=lambda x: f"[{df.iloc[x]['날짜']}] {df.iloc[x]['장비']} | {df.iloc[x]['작성자']} | {df.iloc[x]['업무내용'][:15]}..."
                 )
-                st.sidebar.warning(f"⚠️ 선택된 내용 상세:\n\n{df.loc[del_idx, '업무내용']}")
+                st.sidebar.warning(f"⚠️ 선택 상세:\n\n{df.loc[del_idx, '업무내용']}")
                 if st.sidebar.button("🗑️ 최종 삭제", use_container_width=True):
                     save_to_github(df.drop(del_idx), sha, "Delete Log")
                     st.rerun()
 
-        # --- 메인 대시보드 화면 ---
+        # --- 메인 화면 ---
         header_col1, header_col2 = st.columns([4, 1])
         with header_col1:
             st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
@@ -185,7 +172,6 @@ else:
         if search:
             display_df = display_df[display_df.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
 
-        # --- 경로 복사 기능이 포함된 데이터프레임 ---
         st.dataframe(
             display_df,
             use_container_width=True,
@@ -195,16 +181,10 @@ else:
                 "작성자": st.column_config.TextColumn("👤 작성자"),
                 "업무내용": st.column_config.TextColumn("📝 업무내용", width="large"),
                 "비고": st.column_config.TextColumn("💡 비고"),
-                # 복사 기능을 위해 TextColumn으로 설정
-                "첨부": st.column_config.TextColumn(
-                    "📎 확인하기(경로복사)", 
-                    help="경로를 클릭하면 복사할 수 있습니다. 복사 후 [윈도우+R] 창에 붙여넣으세요."
-                ),
+                "첨부": st.column_config.TextColumn("📎 확인하기(경로복사)", help="클릭하여 복사 후 [윈도우+R] 창에 붙여넣으세요.")
             },
             hide_index=True
         )
 
     except Exception as e:
-        st.error(f"오류 발생: {e}") except Exception as e:
         st.error(f"오류 발생: {e}")
-
