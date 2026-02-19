@@ -7,42 +7,50 @@ from datetime import datetime
 # --- 1. UI 설정 및 스타일 ---
 st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
 
-# CSS 레이아웃 최적화: 메인 상단 여백 복구
+# CSS 레이아웃 최적화 (강제로 위로 당기는 margin을 모두 제거하고 여백 확보)
 st.markdown("""
     <style>
-        /* 메인 화면 상단 여백을 충분히 확보하여 대시보드 글자가 잘리지 않게 고정 */
-        .block-container { padding-top: 3.5rem !important; padding-bottom: 1rem !important; }
-        
-        /* 사이드바 너비 및 간격 최적화 */
-        [data-testid="stSidebar"] { width: 320px !important; }
-        [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.2rem !important; }
-        
-        /* 사이드바 로그인 정보 및 로그아웃 버튼 크기 최소화 */
-        .sidebar-user-text { font-size: 11px !important; color: #aaaaaa; margin-top: 8px !important; margin-bottom: 0px !important; }
-        
-        div[data-testid="stSidebar"] button {
-            padding: 1px 5px !important;
-            height: 22px !important;
-            min-height: 22px !important;
-            font-size: 11px !important;
-            line-height: 1 !important;
+        /* 메인 화면 상단 여백을 충분히 확보하여 절대 잘리지 않도록 함 */
+        .block-container { 
+            padding-top: 3rem !important; 
+            padding-bottom: 2rem !important; 
         }
-
-        /* 엑셀 다운로드 버튼 스타일 및 높이 맞춤 */
-        div.stDownloadButton > button {
-            width: 100% !important;
-            padding: 4px 8px !important;
+        
+        /* 사이드바 너비 고정 */
+        [data-testid="stSidebar"] { width: 330px !important; }
+        
+        /* 로그아웃 버튼과 로그인 텍스트 크기 통일 (12px), 줄바꿈 방지 */
+        div[data-testid="stSidebar"] button[kind="secondary"] {
+            padding: 2px 5px !important;
             font-size: 12px !important;
+            min-height: 28px !important;
+            height: 28px !important;
+            white-space: nowrap !important; /* 글자 줄바꿈 방지 */
         }
 
-        /* 안내 가이드 박스 디자인 */
+        /* 메인 대시보드 타이틀 (음수 margin 제거) */
+        .main-title { 
+            font-size: 1.5rem !important; 
+            font-weight: bold; 
+            margin: 0 !important;
+            padding-bottom: 10px !important;
+        }
+
+        /* 엑셀 다운로드 버튼 크기 조절 */
+        div.stDownloadButton > button {
+            padding: 4px 10px !important;
+            font-size: 12px !important;
+            width: 100% !important;
+        }
+
+        /* 안내 가이드 박스 */
         .info-box {
             background-color: #1e212b;
-            padding: 10px;
+            padding: 12px;
             border-radius: 4px;
             border-left: 3px solid #4CAF50;
             margin-bottom: 15px;
-            font-size: 12px;
+            font-size: 13px;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -100,11 +108,12 @@ if not st.session_state['logged_in']:
                 st.rerun()
 else:
     # --- 사이드바 로그인 정보 및 로그아웃 버튼 ---
-    side_col1, side_col2 = st.sidebar.columns([2.5, 1])
+    # 버튼 공간을 넉넉하게 주어 줄바꿈(깨짐) 현상 방지
+    side_col1, side_col2 = st.sidebar.columns([5, 3], vertical_alignment="center")
     with side_col1:
-        st.markdown(f"<p class='sidebar-user-text'>👤 {st.session_state['user_name']} 로그인 중</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 12px; color: #aaaaaa; margin: 0;'>👤 {st.session_state['user_name']} 로그인 중</p>", unsafe_allow_html=True)
     with side_col2:
-        if st.button("로그아웃", key="logout_btn"):
+        if st.button("로그아웃", key="logout_btn", use_container_width=True):
             st.session_state['logged_in'] = False
             st.rerun()
     
@@ -157,11 +166,11 @@ else:
                     save_to_github(df.drop(del_idx), sha, "Delete Log")
                     st.rerun()
 
-        # --- 메인 헤더 레이아웃 (잘림 방지) ---
-        # 타이틀을 더 안정적인 Streamlit 기본 헤더 포맷으로 변경
+        # --- 메인 헤더 레이아웃 ---
+        # 비율을 5:1로 넉넉하게 주어 겹치거나 잘리지 않게 함
         head_c1, head_c2 = st.columns([5, 1], vertical_alignment="bottom")
         with head_c1:
-            st.markdown("### 📊 팀 업무일지 대시보드")
+            st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
         with head_c2:
             csv_data = df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
             st.download_button(label="📥 엑셀 다운로드", data=csv_data, file_name=f"work_log_{datetime.now().strftime('%Y%m%d')}.csv")
