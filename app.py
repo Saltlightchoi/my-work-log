@@ -3,47 +3,12 @@ import pandas as pd
 from github import Github
 import io
 from datetime import datetime
+import streamlit.components.v1 as components
 
 # --- 1. UI 설정 및 스타일 ---
 st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
 
-st.markdown("""
-    <style>
-        .block-container { padding-top: 1rem !important; padding-bottom: 0rem !important; }
-        [data-testid="stSidebar"] { width: 420px !important; }
-        [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
-        
-        .main-title { 
-            font-size: 1.6rem !important; 
-            font-weight: bold; 
-            margin-top: -10px;
-            margin-bottom: 5px;
-            white-space: nowrap;
-        }
-
-        div.stDownloadButton > button {
-            width: 100% !important;
-            height: auto !important;
-            padding: 5px !important;
-            font-size: 12px !important;
-        }
-
-        .path-guide {
-            font-size: 0.8rem;
-            color: #ffaa00;
-            background-color: #332200;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-import streamlit as st
-import pandas as pd
-from github import Github
-import io
-from datetime import datetime
-
-# --- 1. UI 설정 및 스타일 ---
-st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
-
+# CSS 에러 수정 및 스타일 적용
 st.markdown("""
     <style>
         .block-container { padding-top: 1rem !important; padding-bottom: 0rem !important; }
@@ -74,21 +39,36 @@ st.markdown("""
             margin-bottom: 10px;
             line-height: 1.4;
         }
+    </style>
+    """, unsafe_allow_html=True)
 
-        /* 복사 버튼을 위한 커스텀 스타일 */
-        .copy-btn {
+# 자바스크립트를 이용한 클립보드 복사 함수 정의
+def copy_to_clipboard(text):
+    copy_script = f"""
+        <script>
+        function copyToClipboard() {{
+            const text = "{text.replace('\\', '\\\\')}";
+            navigator.clipboard.writeText(text).then(function() {{
+                alert('경로가 복사되었습니다! [윈도우+R] 창에 붙여넣으세요.\\n\\n' + text);
+            }}, function(err) {{
+                console.error('복사 실패: ', err);
+            }});
+        }}
+        </script>
+        <button onclick="copyToClipboard()" style="
+            padding: 5px 10px;
             background-color: #4CAF50;
             color: white;
-            padding: 2px 8px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
-        }
-    </style>
-    """, unsafe_allow_html=True)
+            font-weight: bold;
+            ">📎 첨부</button>
+    """
+    return copy_script
 
-BASE_PATH_DISPLAY = r"\\192.168.0.100\500 생산\550 국내CS\공유사진"
+# 공통 경로 설정
 BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 
 # --- 2. GitHub 연결 설정 ---
@@ -144,7 +124,7 @@ else:
     with side_col1:
         st.markdown(f"👤 **{st.session_state['user_name']}**님")
     with side_col2:
-        if st.button("로그아웃", key="logout_btn"):
+        if st.button("로그아웃"):
             st.session_state['logged_in'] = False
             st.rerun()
     
@@ -160,9 +140,7 @@ else:
                 e_type = st.selectbox("장비", EQUIPMENT_OPTIONS)
                 c_val = st.text_area("업무 내용", height=250)
                 n_val = st.text_input("비고")
-                st.markdown(f"<div class='path-guide'>📂 <b>자동 경로:</b> {BASE_PATH_DISPLAY}</div>", unsafe_allow_html=True)
                 f_name = st.text_input("파일명 (예: 사진1.jpg)")
-                
                 if st.form_submit_button("저장하기", use_container_width=True):
                     if c_val:
                         full_path = BASE_PATH_RAW + f_name if f_name else BASE_PATH_RAW
@@ -173,8 +151,7 @@ else:
         elif mode == "✏️ 수정":
             if not df.empty:
                 edit_idx = st.sidebar.selectbox(
-                    "대상 선택", 
-                    options=df.index, 
+                    "대상 선택", options=df.index, 
                     format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']} | {df.iloc[x]['작성자']} | {df.iloc[x]['업무내용'][:10]}..."
                 )
                 with st.sidebar.form("edit_form"):
@@ -182,7 +159,7 @@ else:
                     e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(df.loc[edit_idx, "장비"]) if df.loc[edit_idx, "장비"] in EQUIPMENT_OPTIONS else 0)
                     e_content = st.text_area("내용 수정", value=df.loc[edit_idx, "업무내용"], height=200)
                     e_note = st.text_input("비고 수정", value=df.loc[edit_idx, "비고"])
-                    e_link = st.text_input("첨부 경로 수정", value=df.loc[edit_idx, "첨부"])
+                    e_link = st.text_input("첨부 수정", value=df.loc[edit_idx, "첨부"])
                     if st.form_submit_button("수정 완료"):
                         df.loc[edit_idx, ["날짜", "장비", "업무내용", "비고", "첨부"]] = [str(e_date), e_etype, e_content, e_note, e_link]
                         save_to_github(df, sha, f"Edit: {e_date}")
@@ -191,50 +168,58 @@ else:
         elif mode == "❌ 삭제":
             if not df.empty:
                 del_idx = st.sidebar.selectbox(
-                    "삭제 선택", 
-                    options=df.index, 
+                    "삭제 선택", options=df.index,
                     format_func=lambda x: f"[{df.iloc[x]['날짜']}] {df.iloc[x]['장비']} | {df.iloc[x]['작성자']} | {df.iloc[x]['업무내용'][:15]}..."
                 )
-                st.sidebar.warning(f"⚠️ 선택 상세:\n\n{df.loc[del_idx, '업무내용']}")
+                st.sidebar.warning(f"⚠️ 상세:\n\n{df.loc[del_idx, '업무내용']}")
                 if st.sidebar.button("🗑️ 최종 삭제", use_container_width=True):
                     save_to_github(df.drop(del_idx), sha, "Delete Log")
                     st.rerun()
 
-        # --- 메인 화면 ---
+        # --- 메인 화면: 커스텀 리스트로 복사 기능 구현 ---
         header_col1, header_col2 = st.columns([4, 1])
         with header_col1:
             st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
         with header_col2:
             csv_download = df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
-            st.download_button(label="📥 엑셀 다운로드", data=csv_download, file_name="work_log.csv", mime="text/csv")
+            st.download_button(label="📥 엑셀 다운로드", data=csv_download, file_name="work_log.csv")
 
         search = st.text_input("🔍 검색어 입력", label_visibility="collapsed")
         display_df = df.copy()
         if search:
             display_df = display_df[display_df.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
 
-        # --- 첨부파일 클릭 자동 복사 구현 ---
-        # 1. 텍스트 열로 보여주되, Streamlit의 기본 기능을 활용하여 마우스 오버 시 우측의 복사 버튼이 뜨게 함
-        # 2. '첨부' 글자만 남기고 실제 경로는 help 툴팁에 넣어 깔끔하게 만듦
+        # --- 표 대신 커스텀 복사 버튼을 포함한 인터페이스 구성 ---
+        # Streamlit 표 내부에는 버튼 삽입이 불가하므로, 상단에 배치하거나 리스트형으로 보여줌
+        # 여기서는 표 하단에 '최신 내역 복사' 기능을 제공하거나 표를 대신하여 복사 버튼을 포함한 HTML 표를 렌더링함
         
-        st.dataframe(
-            display_df,
-            use_container_width=True,
-            column_config={
-                "날짜": st.column_config.TextColumn("📅 날짜"),
-                "장비": st.column_config.TextColumn("🔧 장비"),
-                "작성자": st.column_config.TextColumn("👤 작성자"),
-                "업무내용": st.column_config.TextColumn("📝 업무내용", width="large"),
-                "비고": st.column_config.TextColumn("💡 비고"),
-                "첨부": st.column_config.TextColumn(
-                    "📎 첨부(클릭시 복사)", 
-                    help="셀을 클릭한 후 우측에 나타나는 복사 아이콘을 누르거나, Ctrl+C를 누르세요. 그 후 [윈도우+R] 창에 붙여넣으시면 됩니다."
-                )
-            },
-            hide_index=True
-        )
+        st.markdown("##### 📝 업무 내역 (경로 확인 시 '첨부' 버튼 클릭)")
         
-        st.info("💡 **사진 확인 방법**: '첨부' 칸의 경로를 클릭 후 복사(Ctrl+C)하여 [윈도우 키 + R] 창에 붙여넣으세요.")
+        # HTML 기반의 커스텀 표 생성 (복사 버튼 포함)
+        html_table = f"""
+        <table style="width:100%; border-collapse: collapse; font-size: 13px;">
+            <tr style="background-color: #333; color: white; text-align: left;">
+                <th style="padding: 10px; border: 1px solid #444;">날짜</th>
+                <th style="padding: 10px; border: 1px solid #444;">장비</th>
+                <th style="padding: 10px; border: 1px solid #444;">작성자</th>
+                <th style="padding: 10px; border: 1px solid #444;">업무내용</th>
+                <th style="padding: 10px; border: 1px solid #444;">첨부</th>
+            </tr>
+        """
+        
+        for idx, row in display_df.head(20).iterrows(): # 성능을 위해 최근 20개만 우선 표시
+            html_table += f"""
+            <tr style="border-bottom: 1px solid #444;">
+                <td style="padding: 8px; border: 1px solid #444;">{row['날짜']}</td>
+                <td style="padding: 8px; border: 1px solid #444;">{row['장비']}</td>
+                <td style="padding: 8px; border: 1px solid #444;">{row['작성자']}</td>
+                <td style="padding: 8px; border: 1px solid #444;">{row['업무내용']}</td>
+                <td style="padding: 8px; border: 1px solid #444;">{copy_to_clipboard(row['첨부'])}</td>
+            </tr>
+            """
+        html_table += "</table>"
+        
+        components.html(html_table, height=600, scrolling=True)
 
     except Exception as e:
         st.error(f"오류 발생: {e}")
