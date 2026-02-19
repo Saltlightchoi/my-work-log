@@ -16,7 +16,7 @@ st.markdown("""
         [data-testid="stSidebar"] { width: 420px !important; }
         [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
         
-        /* 메인 타이틀: 글자 크기 2포인트 축소 및 여백 조정 */
+        /* 메인 타이틀: 글자 크기 축소 및 여백 조정 */
         .main-title { 
             font-size: 1.6rem !important; 
             font-weight: bold; 
@@ -51,7 +51,8 @@ st.markdown("""
 
 # 공통 경로 설정
 BASE_PATH_DISPLAY = r"\\192.168.0.100\500 생산\550 국내CS\공유사진"
-BASE_PATH_LINK = "file://192.168.0.100/500%20생산/550%20국내CS/공유사진/"
+# 실제 윈도우 탐색기에서 사용할 수 있는 경로 형식으로 유지
+BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 
 # --- 2. GitHub 연결 설정 ---
 try:
@@ -102,7 +103,7 @@ if not st.session_state['logged_in']:
                 st.session_state['user_name'] = name
                 st.rerun()
 else:
-    # 사이드바 상단: 사용자 이름과 로그아웃 버튼 나란히 배치
+    # 사이드바 상단 레이아웃
     side_col1, side_col2 = st.sidebar.columns([2, 1])
     with side_col1:
         st.markdown(f"👤 **{st.session_state['user_name']}**님")
@@ -121,7 +122,7 @@ else:
             with st.sidebar.form("add_form", clear_on_submit=True):
                 d_val = st.date_input("날짜", datetime.today())
                 e_type = st.selectbox("장비", EQUIPMENT_OPTIONS)
-                c_val = st.text_area("업무 내용", height=250) # 작성칸 크게 확대
+                c_val = st.text_area("업무 내용", height=250)
                 n_val = st.text_input("비고")
                 
                 st.markdown(f"""
@@ -135,14 +136,14 @@ else:
                 
                 if st.form_submit_button("저장하기", use_container_width=True):
                     if c_val:
-                        full_link = BASE_PATH_LINK + f_name if f_name else BASE_PATH_LINK
-                        new_row = pd.DataFrame([{"날짜": str(d_val), "장비": e_type, "작성자": st.session_state['user_name'], "업무내용": c_val, "비고": n_val, "첨부": full_link}])
+                        # 윈도우 경로 형식으로 저장
+                        full_path = BASE_PATH_RAW + f_name if f_name else BASE_PATH_RAW
+                        new_row = pd.DataFrame([{"날짜": str(d_val), "장비": e_type, "작성자": st.session_state['user_name'], "업무내용": c_val, "비고": n_val, "첨부": full_path}])
                         save_to_github(pd.concat([df, new_row], ignore_index=True), sha, f"Add: {d_val}")
                         st.rerun()
 
         elif mode == "✏️ 수정":
             if not df.empty:
-                # 수정 시 목록에서 내용 확인 가능하도록 format_func 개선
                 edit_idx = st.sidebar.selectbox(
                     "대상 선택", 
                     options=df.index, 
@@ -153,7 +154,7 @@ else:
                     e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(df.loc[edit_idx, "장비"]) if df.loc[edit_idx, "장비"] in EQUIPMENT_OPTIONS else 0)
                     e_content = st.text_area("내용 수정", value=df.loc[edit_idx, "업무내용"], height=200)
                     e_note = st.text_input("비고 수정", value=df.loc[edit_idx, "비고"])
-                    e_link = st.text_input("첨부 경로 수정(전체URL)", value=df.loc[edit_idx, "첨부"])
+                    e_link = st.text_input("첨부 경로 수정", value=df.loc[edit_idx, "첨부"])
                     if st.form_submit_button("수정 완료"):
                         df.loc[edit_idx, ["날짜", "장비", "업무내용", "비고", "첨부"]] = [str(e_date), e_etype, e_content, e_note, e_link]
                         save_to_github(df, sha, f"Edit: {e_date}")
@@ -161,16 +162,12 @@ else:
 
         elif mode == "❌ 삭제":
             if not df.empty:
-                # 삭제 시 목록에서 상세 내용 확인 가능하도록 개선
                 del_idx = st.sidebar.selectbox(
                     "삭제 선택", 
                     options=df.index, 
                     format_func=lambda x: f"[{df.iloc[x]['날짜']}] {df.iloc[x]['장비']} | {df.iloc[x]['작성자']} | {df.iloc[x]['업무내용'][:15]}..."
                 )
-                
-                # 선택된 항목의 상세 내용을 미리 보여줌 (실수 방지)
                 st.sidebar.warning(f"⚠️ 선택된 내용 상세:\n\n{df.loc[del_idx, '업무내용']}")
-                
                 if st.sidebar.button("🗑️ 최종 삭제", use_container_width=True):
                     save_to_github(df.drop(del_idx), sha, "Delete Log")
                     st.rerun()
@@ -188,6 +185,7 @@ else:
         if search:
             display_df = display_df[display_df.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
 
+        # --- 경로 복사 기능이 포함된 데이터프레임 ---
         st.dataframe(
             display_df,
             use_container_width=True,
@@ -197,10 +195,16 @@ else:
                 "작성자": st.column_config.TextColumn("👤 작성자"),
                 "업무내용": st.column_config.TextColumn("📝 업무내용", width="large"),
                 "비고": st.column_config.TextColumn("💡 비고"),
-                "첨부": st.column_config.LinkColumn("📎 사진보기", display_text="확인하기"), # placeholder 오류 수정 완료
+                # 복사 기능을 위해 TextColumn으로 설정
+                "첨부": st.column_config.TextColumn(
+                    "📎 확인하기(경로복사)", 
+                    help="경로를 클릭하면 복사할 수 있습니다. 복사 후 [윈도우+R] 창에 붙여넣으세요."
+                ),
             },
             hide_index=True
         )
 
     except Exception as e:
+        st.error(f"오류 발생: {e}") except Exception as e:
         st.error(f"오류 발생: {e}")
+
