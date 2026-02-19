@@ -9,10 +9,30 @@ st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
 
 st.markdown("""
     <style>
-        .block-container { padding-top: 1.5rem !important; }
-        [data-testid="stSidebar"] { width: 420px !important; }
-        .main-title { font-size: 1.8rem !important; font-weight: bold; line-height: 2.0; }
+        /* 상단 여백 제거 */
+        .block-container { padding-top: 1rem !important; padding-bottom: 0rem !important; }
         
+        /* 사이드바 너비 및 간격 최적화 */
+        [data-testid="stSidebar"] { width: 420px !important; }
+        [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
+        
+        /* 메인 타이틀: 글자 크기 2포인트 축소 (기존 1.8rem -> 1.6rem) 및 여백 조정 */
+        .main-title { 
+            font-size: 1.6rem !important; 
+            font-weight: bold; 
+            margin-top: -10px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+        }
+
+        /* 엑셀 다운로드 버튼 스타일: 크기 절반 및 글자 크기 축소 */
+        div.stDownloadButton > button {
+            width: 100% !important;
+            height: auto !important;
+            padding: 5px !important;
+            font-size: 12px !important;
+        }
+
         /* 안내 문구 스타일 */
         .path-guide {
             font-size: 0.8rem;
@@ -23,11 +43,13 @@ st.markdown("""
             margin-bottom: 10px;
             line-height: 1.4;
         }
+
+        /* 표 하단 여백 제거 */
+        .stDataFrame { margin-bottom: -50px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# 공통 경로 설정 (윈도우 경로를 웹 링크 가능 형태로 변환하기 위한 베이스)
-# 브라우저에서 열기 위해서는 file:// 형식이 필요합니다.
+# 공통 경로 설정
 BASE_PATH_DISPLAY = r"\\192.168.0.100\500 생산\550 국내CS\공유사진"
 BASE_PATH_LINK = "file://192.168.0.100/500%20생산/550%20국내CS/공유사진/"
 
@@ -80,11 +102,15 @@ if not st.session_state['logged_in']:
                 st.session_state['user_name'] = name
                 st.rerun()
 else:
-    # 사이드바 상단
-    st.sidebar.markdown(f"👤 **{st.session_state['user_name']}**님 로그인 중")
-    if st.sidebar.button("로그아웃"):
-        st.session_state['logged_in'] = False
-        st.rerun()
+    # 사이드바 상단 구성: 이름과 로그아웃 버튼을 한 줄에 배치
+    side_col1, side_col2 = st.sidebar.columns([2, 1])
+    with side_col1:
+        st.write(f"👤 **{st.session_state['user_name']}**님")
+    with side_col2:
+        if st.button("로그아웃", key="logout_btn"):
+            st.session_state['logged_in'] = False
+            st.rerun()
+    
     st.sidebar.divider()
 
     try:
@@ -93,37 +119,36 @@ else:
 
         if mode == "➕ 작성":
             with st.sidebar.form("add_form", clear_on_submit=True):
+                # 입력칸 간격 조절을 위해 columns 활용 가능하나 기본 간격도 좁힘
                 d_val = st.date_input("날짜", datetime.today())
                 e_type = st.selectbox("장비", EQUIPMENT_OPTIONS)
-                c_val = st.text_area("업무 내용")
+                c_val = st.text_area("업무 내용", height=200) # 업무 내용 작성칸을 더 크게 조절
                 n_val = st.text_input("비고")
                 
-                # 경로 안내 가이드
                 st.markdown(f"""
                 <div class='path-guide'>
-                📂 <b>자동 경로 적용 중:</b><br>
-                {BASE_PATH_DISPLAY}<br>
-                위 폴더에 사진을 넣고 <b>파일명</b>만 아래에 입력하세요.
+                📂 <b>자동 경로 적용 중:</b><br>{BASE_PATH_DISPLAY}<br>
+                위 폴더에 사진을 넣고 <b>파일명</b>만 입력하세요.
                 </div>
                 """, unsafe_allow_html=True)
                 
-                f_name = st.text_input("파일명 (예: 사진1.jpg / 미입력 시 폴더연결)")
+                f_name = st.text_input("파일명 (예: 사진1.jpg)")
                 
                 if st.form_submit_button("저장하기", use_container_width=True):
                     if c_val:
-                        # 파일명을 입력하면 풀경로, 안하면 폴더경로 저장
                         full_link = BASE_PATH_LINK + f_name if f_name else BASE_PATH_LINK
                         new_row = pd.DataFrame([{"날짜": str(d_val), "장비": e_type, "작성자": st.session_state['user_name'], "업무내용": c_val, "비고": n_val, "첨부": full_link}])
                         save_to_github(pd.concat([df, new_row], ignore_index=True), sha, f"Add: {d_val}")
                         st.rerun()
 
+        # ... (수정/삭제 로직은 동일하므로 중략 가능하나 흐름상 유지)
         elif mode == "✏️ 수정":
             if not df.empty:
                 edit_idx = st.sidebar.selectbox("대상 선택", options=df.index, format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']}")
                 with st.sidebar.form("edit_form"):
                     e_date = st.date_input("날짜 수정", pd.to_datetime(df.loc[edit_idx, "날짜"]))
                     e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(df.loc[edit_idx, "장비"]) if df.loc[edit_idx, "장비"] in EQUIPMENT_OPTIONS else 0)
-                    e_content = st.text_area("내용 수정", value=df.loc[edit_idx, "업무내용"])
+                    e_content = st.text_area("내용 수정", value=df.loc[edit_idx, "업무내용"], height=150)
                     e_note = st.text_input("비고 수정", value=df.loc[edit_idx, "비고"])
                     e_link = st.text_input("첨부 경로 수정(전체URL)", value=df.loc[edit_idx, "첨부"])
                     if st.form_submit_button("수정 완료"):
@@ -138,12 +163,11 @@ else:
                     save_to_github(df.drop(del_idx), sha, "Delete Log")
                     st.rerun()
 
-        # 메인 화면
-        header_col1, header_col2 = st.columns([5, 1])
+        # --- 메인 화면 출력 ---
+        header_col1, header_col2 = st.columns([4, 1]) # 비율 조절로 버튼 크기 간접 제어
         with header_col1:
             st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
         with header_col2:
-            st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
             csv_download = df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
             st.download_button(label="📥 엑셀 다운로드", data=csv_download, file_name="work_log.csv", mime="text/csv")
 
@@ -161,10 +185,11 @@ else:
                 "작성자": st.column_config.TextColumn("👤 작성자"),
                 "업무내용": st.column_config.TextColumn("📝 업무내용", width="large"),
                 "비고": st.column_config.TextColumn("💡 비고"),
-                "첨부": st.column_config.LinkColumn("📎 사진보기", placeholder="확인하기"),
+                # placeholder 대신 display_text 사용 (오류 해결 지점)
+                "첨부": st.column_config.LinkColumn("📎 사진보기", display_text="확인하기"),
             },
-            hide_index=False
+            hide_index=True # 인덱스 숨기기로 가독성 높임
         )
 
     except Exception as e:
-        st.error(f"오류: {e}")
+        st.error(f"오류 발생: {e}")
