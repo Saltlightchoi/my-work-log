@@ -9,14 +9,14 @@ st.set_page_config(layout="wide", page_title="GitHub 업무일지 시스템")
 
 st.markdown("""
     <style>
-        /* 상단 여백 제거 */
+        /* 상단 여백 제거 및 전체 여백 최적화 */
         .block-container { padding-top: 1rem !important; padding-bottom: 0rem !important; }
         
-        /* 사이드바 너비 및 간격 최적화 */
+        /* 사이드바 너비 및 요소 간격 축소 */
         [data-testid="stSidebar"] { width: 420px !important; }
         [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
         
-        /* 메인 타이틀: 글자 크기 2포인트 축소 (기존 1.8rem -> 1.6rem) 및 여백 조정 */
+        /* 메인 타이틀: 글자 크기 2포인트 축소 및 여백 조정 */
         .main-title { 
             font-size: 1.6rem !important; 
             font-weight: bold; 
@@ -25,7 +25,7 @@ st.markdown("""
             white-space: nowrap;
         }
 
-        /* 엑셀 다운로드 버튼 스타일: 크기 절반 및 글자 크기 축소 */
+        /* 엑셀 다운로드 버튼: 크기 축소 및 폰트 조절 */
         div.stDownloadButton > button {
             width: 100% !important;
             height: auto !important;
@@ -33,7 +33,7 @@ st.markdown("""
             font-size: 12px !important;
         }
 
-        /* 안내 문구 스타일 */
+        /* 경로 안내 가이드 스타일 */
         .path-guide {
             font-size: 0.8rem;
             color: #ffaa00;
@@ -44,7 +44,7 @@ st.markdown("""
             line-height: 1.4;
         }
 
-        /* 표 하단 여백 제거 */
+        /* 데이터프레임 하단 여백 제거 */
         .stDataFrame { margin-bottom: -50px !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -102,10 +102,10 @@ if not st.session_state['logged_in']:
                 st.session_state['user_name'] = name
                 st.rerun()
 else:
-    # 사이드바 상단 구성: 이름과 로그아웃 버튼을 한 줄에 배치
+    # 사이드바 상단: 사용자 이름과 로그아웃 버튼 나란히 배치
     side_col1, side_col2 = st.sidebar.columns([2, 1])
     with side_col1:
-        st.write(f"👤 **{st.session_state['user_name']}**님")
+        st.markdown(f"👤 **{st.session_state['user_name']}**님")
     with side_col2:
         if st.button("로그아웃", key="logout_btn"):
             st.session_state['logged_in'] = False
@@ -119,10 +119,9 @@ else:
 
         if mode == "➕ 작성":
             with st.sidebar.form("add_form", clear_on_submit=True):
-                # 입력칸 간격 조절을 위해 columns 활용 가능하나 기본 간격도 좁힘
                 d_val = st.date_input("날짜", datetime.today())
                 e_type = st.selectbox("장비", EQUIPMENT_OPTIONS)
-                c_val = st.text_area("업무 내용", height=200) # 업무 내용 작성칸을 더 크게 조절
+                c_val = st.text_area("업무 내용", height=250) # 작성칸 크게 확대
                 n_val = st.text_input("비고")
                 
                 st.markdown(f"""
@@ -141,14 +140,18 @@ else:
                         save_to_github(pd.concat([df, new_row], ignore_index=True), sha, f"Add: {d_val}")
                         st.rerun()
 
-        # ... (수정/삭제 로직은 동일하므로 중략 가능하나 흐름상 유지)
         elif mode == "✏️ 수정":
             if not df.empty:
-                edit_idx = st.sidebar.selectbox("대상 선택", options=df.index, format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']}")
+                # 수정 시 목록에서 내용 확인 가능하도록 format_func 개선
+                edit_idx = st.sidebar.selectbox(
+                    "대상 선택", 
+                    options=df.index, 
+                    format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']} | {df.iloc[x]['작성자']} | {df.iloc[x]['업무내용'][:15]}..."
+                )
                 with st.sidebar.form("edit_form"):
                     e_date = st.date_input("날짜 수정", pd.to_datetime(df.loc[edit_idx, "날짜"]))
                     e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(df.loc[edit_idx, "장비"]) if df.loc[edit_idx, "장비"] in EQUIPMENT_OPTIONS else 0)
-                    e_content = st.text_area("내용 수정", value=df.loc[edit_idx, "업무내용"], height=150)
+                    e_content = st.text_area("내용 수정", value=df.loc[edit_idx, "업무내용"], height=200)
                     e_note = st.text_input("비고 수정", value=df.loc[edit_idx, "비고"])
                     e_link = st.text_input("첨부 경로 수정(전체URL)", value=df.loc[edit_idx, "첨부"])
                     if st.form_submit_button("수정 완료"):
@@ -158,13 +161,22 @@ else:
 
         elif mode == "❌ 삭제":
             if not df.empty:
-                del_idx = st.sidebar.selectbox("삭제 선택", options=df.index, format_func=lambda x: f"{df.iloc[x]['날짜']} | {df.iloc[x]['장비']}")
-                if st.sidebar.button("🗑️ 최종 삭제"):
+                # 삭제 시 목록에서 상세 내용 확인 가능하도록 개선
+                del_idx = st.sidebar.selectbox(
+                    "삭제 선택", 
+                    options=df.index, 
+                    format_func=lambda x: f"[{df.iloc[x]['날짜']}] {df.iloc[x]['장비']} | {df.iloc[x]['작성자']} | {df.iloc[x]['업무내용'][:15]}..."
+                )
+                
+                # 선택된 항목의 상세 내용을 미리 보여줌 (실수 방지)
+                st.sidebar.warning(f"⚠️ 선택된 내용 상세:\n\n{df.loc[del_idx, '업무내용']}")
+                
+                if st.sidebar.button("🗑️ 최종 삭제", use_container_width=True):
                     save_to_github(df.drop(del_idx), sha, "Delete Log")
                     st.rerun()
 
-        # --- 메인 화면 출력 ---
-        header_col1, header_col2 = st.columns([4, 1]) # 비율 조절로 버튼 크기 간접 제어
+        # --- 메인 대시보드 화면 ---
+        header_col1, header_col2 = st.columns([4, 1])
         with header_col1:
             st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
         with header_col2:
@@ -185,10 +197,9 @@ else:
                 "작성자": st.column_config.TextColumn("👤 작성자"),
                 "업무내용": st.column_config.TextColumn("📝 업무내용", width="large"),
                 "비고": st.column_config.TextColumn("💡 비고"),
-                # placeholder 대신 display_text 사용 (오류 해결 지점)
-                "첨부": st.column_config.LinkColumn("📎 사진보기", display_text="확인하기"),
+                "첨부": st.column_config.LinkColumn("📎 사진보기", display_text="확인하기"), # placeholder 오류 수정 완료
             },
-            hide_index=True # 인덱스 숨기기로 가독성 높임
+            hide_index=True
         )
 
     except Exception as e:
