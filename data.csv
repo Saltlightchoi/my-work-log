@@ -1,14 +1,31 @@
 날짜,장비,작성자,업무내용,비고,첨부
-2026-02-20,SLH1,김승수,"SLH1 5호기
-환경 검수 미비 사항 진행
-ㄴ전장 박스 FAN Bracket 고무 장착
-ㄴTransper Grip Motor Cover장착
-ㄴ전장 박스 접지 Cable 연결 
-ㄴHand  z축 COVER  장착
-SLH1 6,7호기
-Stacker  L/D 1,2, UL/D 1,2  Belt Cover 장착
+2026-02-21,SLH1,최염광,"2월 20일 SLH1 #5호기 제작
 
-SLH 1 작업 리스트 작성 진행중 차주 월요일까지 작성 예정.",,
+1. SLH1 #5호기
+ - 상단 전면부 Cover 수정가공 입고, 장착
+   -> 지게차 작업간 로프 걸림으로 휨 발생 건으로 Frame Align 맞게 Cutting 가공.
+ - 환경 안전 대비 Check
+   -> LD/ULD Conveyor Inverter 장착 Braket 고정 Block 장착 및 Hole 가공 고정 완료.
+   -> ESD Cable 미장착 위치 장착 완료.
+ - LD/ULD Mask 탈착, 우익 출고 완료.
+   -> 우익 반출 Mask 본사 도착, 명일 장착 Running 예정.
+ - Long Run 진행
+   -> LD Preciser Rail Back Sensor 이상, E-con 빠짐, 연결
+   -> LD/ULD Middle Gripper Block Motor 동작간 걸림 발생
+    -> Up Stroke 길이 조정, 정상
+  - LD Trnasfer Z-Axis Motor 동작 후 T-Axis Servo Power Off 발생
+   -> LD Stacker Align Guide 2번 For 동작 후에 Z-Axis Down 동작하여 Shaft 걸림으로 Power Off 발생
+   -> Sequence 동작 확인시 Cylinder 기준 For/Back 설정 문제
+    -> 4호기는 현재 For 동작시 Align 동작, Back 동작시 뒤로 빠짐
+    -> Cylinder Load 상태 기준으로 변경 예정, For(빠진 상태), Back(Align 동작 상태)
+    -> 코드 수정 후 Long Run 1.5H 정상 동작.
+
+2. SLH1 #6,7호기
+  - All Stacker Conveyor Belt Motor Cover 장착 완료.
+   -> 위치별 지주 길이 LD/ULD/EMPTY/REJECT Main Motor(35mm 4ea, 40mm 2ea)
+                            REJECT 1,2(15mm 6ea)
+
+  - Fix, Moving Buffer Sensor 위치 R--Dimm Setting 되어 SoCAMM Setting 변경 완료.",,
 2026-02-20,SLH1,김기혁,"SLH1 5호기
 ㄴ전면부 천정 Cover 장착
 -현품수정 Cover 입고 되어 장착
@@ -21,6 +38,16 @@ SLH 1 작업 리스트 작성 진행중 차주 월요일까지 작성 예정.",,
 ㄴEmpty 통신 연결 이상
 -커넥터 블럭 핀 빠짐으로 간헐적 통신 이상 상태
 -핀 재 연결 하여 정상상태 확인","Transfer gripper 반대 동작 -Unload Transfer gripper가 반대인줄 알았으나 전장 외주측 문의 전장 외주측에서 Load transfer gripper가 반대라 하여 Load transfer gripper motor cable 스왑 -1호기 및 4호기 비교 하였을때 Load transfer gripper가 정상 Unload transfer gripper가 반대로 명일 재 작업 진행(6,7호기도 동일 문제)",
+2026-02-20,SLH1,김승수,"SLH1 5호기
+환경 검수 미비 사항 진행
+ㄴ전장 박스 FAN Bracket 고무 장착
+ㄴTransper Grip Motor Cover장착
+ㄴ전장 박스 접지 Cable 연결 
+ㄴHand  z축 COVER  장착
+SLH1 6,7호기
+Stacker  L/D 1,2, UL/D 1,2  Belt Cover 장착
+
+SLH 1 작업 리스트 작성 진행중 차주 월요일까지 작성 예정.",,
 2026-02-20,SLH1,윤창섭,"4호기
 -> 천장 cover 및 mask 우익반도체로 반출
 
@@ -145,6 +172,13 @@ DRY RUNNING CONDITION 진행.",,
 3. INIT 진행간 Alarm 발생
  - DC Fan Connector 연결 및 불량 Fan 교체(6.7호기분)
  - Ionizer Setting 이상으로 Alarm 발생, ULD Setting 후 정상",환경안전 검수 대비 데이터 취득완료 후 Init 완료 상태,
+2026-02-16,SLH1,최염광,"1. LD/ULD Hand Pitch Jig 장착 및 사진 촬영 완료, 박진규 차장님  카톡 전송
+2. Door Safty 관련 Auto/Teaching 전환 Lamp Led 변경 안됨
+  -> 전장 업체 확인 후 정상(최종 LED 전환 Sol 배선 이상)
+3. LD/ULD Hand All Pos' Teaching 조정 완료.
+  -> Insert Latch C.O.K 없음으로 Mask Down 후 Handling Open 동작 후 Teaching 조정
+  -> 차후에 재확인 필요.  
+4. Motor 반복 정밀도 측정 완료.",,
 2026-02-16,SLH1,조건희,"1호기
 HAND picker 균일화 작업 후 모니터링하며 정밀 티칭 진행
 ㄴ FRONT 2 Y Teaching -0.2
@@ -156,13 +190,6 @@ Auto/Teaching Key - DOOR INTERLOCK LED 전환 동작 이상
 INIT 동작 간 ERROR 발생
 ㄴ LD,ULD FLOW UP/DOWN 동작 이상
 UP 속도 조절 regulator In/Out단 반대로 꼿혀있어 정상화","1호기 teaching 후 육안확인하였으나 실제 양산 중 모니터링해야함, 4호기 init 동작 후 Dry run 진행 명일 부터 long run 하여 condition check 진행해야함",
-2026-02-16,SLH1,최염광,"1. LD/ULD Hand Pitch Jig 장착 및 사진 촬영 완료, 박진규 차장님  카톡 전송
-2. Door Safty 관련 Auto/Teaching 전환 Lamp Led 변경 안됨
-  -> 전장 업체 확인 후 정상(최종 LED 전환 Sol 배선 이상)
-3. LD/ULD Hand All Pos' Teaching 조정 완료.
-  -> Insert Latch C.O.K 없음으로 Mask Down 후 Handling Open 동작 후 Teaching 조정
-  -> 차후에 재확인 필요.  
-4. Motor 반복 정밀도 측정 완료.",,
 2026-02-15,SLH1,최염광,"SLH1 #5호기 제작
 1. SLH1 #5호기
   ① Transfer JIG Setting
