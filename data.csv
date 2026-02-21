@@ -45,16 +45,24 @@ BRK 조립 방향 오류
 
 ㄴFan Filter Cover 수량 부족(2호기 출하시 파손으로 베트남 보냈음)
 -6호기 자재 사용(3ea 사용)",,
-2026-02-20,SLH1,김승수,"SLH1 5호기
-환경 검수 미비 사항 진행
-ㄴ전장 박스 FAN Bracket 고무 장착
-ㄴTransper Grip Motor Cover장착
-ㄴ전장 박스 접지 Cable 연결 
-ㄴHand  z축 COVER  장착
-SLH1 6,7호기
-Stacker  L/D 1,2, UL/D 1,2  Belt Cover 장착
+2026-02-21,SLH1,김승수,"02.21
+SLH1 5호기
+Transfer Gripper Left Right  동작 반대
+ㄴ 전장 배선 수정 
+ㄴDirection SENSOR  반대 장착 (조립 문제)
+추후 SENSOR  이동 필요 90도 기준 Front  -> Rear 로 변경
+Long Run 진행 
+ㄴ Mask  Up/Down Sensor Error  발생 
+-센서 위치 조정
 
-SLH 1 작업 리스트 작성 진행중 차주 월요일까지 작성 예정.",,
+Dry Run 준비 
+- In feeder   for stopper,  Out feeder  For/Back  stopper  길이 조절
+
+환경 검수 대비
+하단 COVER  밑 Block  조정(COVER  밀착)
+월요일에 Ionizer  Nut Fitting  입고
+바코드 리더기 수리반출 - 차주 화요일까지 입고 안될시에 6호기 파트 장착 예정
+FAN COVER  3개 장착 완료",,
 2026-02-20,SLH1,김기혁,"SLH1 5호기
 ㄴ전면부 천정 Cover 장착
 -현품수정 Cover 입고 되어 장착
@@ -67,6 +75,16 @@ SLH 1 작업 리스트 작성 진행중 차주 월요일까지 작성 예정.",,
 ㄴEmpty 통신 연결 이상
 -커넥터 블럭 핀 빠짐으로 간헐적 통신 이상 상태
 -핀 재 연결 하여 정상상태 확인","Transfer gripper 반대 동작 -Unload Transfer gripper가 반대인줄 알았으나 전장 외주측 문의 전장 외주측에서 Load transfer gripper가 반대라 하여 Load transfer gripper motor cable 스왑 -1호기 및 4호기 비교 하였을때 Load transfer gripper가 정상 Unload transfer gripper가 반대로 명일 재 작업 진행(6,7호기도 동일 문제)",
+2026-02-20,SLH1,김승수,"SLH1 5호기
+환경 검수 미비 사항 진행
+ㄴ전장 박스 FAN Bracket 고무 장착
+ㄴTransper Grip Motor Cover장착
+ㄴ전장 박스 접지 Cable 연결 
+ㄴHand  z축 COVER  장착
+SLH1 6,7호기
+Stacker  L/D 1,2, UL/D 1,2  Belt Cover 장착
+
+SLH 1 작업 리스트 작성 진행중 차주 월요일까지 작성 예정.",,
 2026-02-20,SLH1,윤창섭,"4호기
 -> 천장 cover 및 mask 우익반도체로 반출
 
