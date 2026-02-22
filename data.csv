@@ -54,7 +54,25 @@ BRK 조립 방향 오류
 
 ㄴFan Filter Cover 수량 부족(2호기 출하시 파손으로 베트남 보냈음)
 -6호기 자재 사용(3ea 사용)",,
-2026-02-21,SLH1,최염광,"2월 20일 SLH1 #5호기 제작
+2026-02-21,SLH1,김승수,"02.21
+SLH1 5호기
+Transfer Gripper Left Right  동작 반대
+ㄴ 전장 배선 수정 
+ㄴDirection SENSOR  반대 장착 (조립 문제)
+추후 SENSOR  이동 필요 90도 기준 Front  -> Rear 로 변경
+Long Run 진행 
+ㄴ Mask  Up/Down Sensor Error  발생 
+-센서 위치 조정
+
+Dry Run 준비 
+- In feeder   for stopper,  Out feeder  For/Back  stopper  길이 조절
+
+환경 검수 대비
+하단 COVER  밑 Block  조정(COVER  밀착)
+월요일에 Ionizer  Nut Fitting  입고
+바코드 리더기 수리반출 - 차주 화요일까지 입고 안될시에 6호기 파트 장착 예정
+FAN COVER  3개 장착 완료",,
+2026-02-20,SLH1,최염광,"2월 20일 SLH1 #5호기 제작
 
 1. SLH1 #5호기
  - 상단 전면부 Cover 수정가공 입고, 장착
@@ -81,24 +99,6 @@ BRK 조립 방향 오류
                             REJECT 1,2(15mm 6ea)
 
   - Fix, Moving Buffer Sensor 위치 R--Dimm Setting 되어 SoCAMM Setting 변경 완료.",,
-2026-02-21,SLH1,김승수,"02.21
-SLH1 5호기
-Transfer Gripper Left Right  동작 반대
-ㄴ 전장 배선 수정 
-ㄴDirection SENSOR  반대 장착 (조립 문제)
-추후 SENSOR  이동 필요 90도 기준 Front  -> Rear 로 변경
-Long Run 진행 
-ㄴ Mask  Up/Down Sensor Error  발생 
--센서 위치 조정
-
-Dry Run 준비 
-- In feeder   for stopper,  Out feeder  For/Back  stopper  길이 조절
-
-환경 검수 대비
-하단 COVER  밑 Block  조정(COVER  밀착)
-월요일에 Ionizer  Nut Fitting  입고
-바코드 리더기 수리반출 - 차주 화요일까지 입고 안될시에 6호기 파트 장착 예정
-FAN COVER  3개 장착 완료",,
 2026-02-20,SLH1,조건희,"SLH1 
 
 1호기
