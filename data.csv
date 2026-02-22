@@ -1,4 +1,51 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-02-22,SLH1,김기혁,"SLH1 5호기
+ㄴRejeck Cable 정리캡 교체 진행
+
+ㄴFlow In Feeder 및 Out Feeder 스토퍼 쇼바 길이 조정
+-Flow Stopper On/Off Cylinder double nut 제거 후 록타이트 작업
+-In Feeder hard stopper 제거 및 Sensor 조정
+
+ㄴTray Flow 진행
+-Testsite R-dimm check sensor 미인식 error발생
+인식이 필요없는 Sensor라고 생각되어  (X960 - X964) (X966-X970)Anywire에서 스왑 후 가동 ",,
+2026-02-21,SLH1,김기혁,"SLH1 5호기
+ㄴTransfer Gripper Left,Right 반대 동작
+-1,4호기 기준으로 변경 (90도 돌렸을 경우 Rear-Right, Front-Left)
+ㄴTransfer Head Tray Direction Check Sensor 
+BRK 조립 방향 오류
+-위치 90도 기준 Front 위치로 변경 필요(4호기도 변경 필요)
+
+ㄴLong run 진행 
+
+ㄴDry run 진행 준비
+-PRECIZER 스토퍼 쇼바 길이 조절
+-FLOW In Feeder Out Feeder 스토퍼 쇼바 길이 조정
+-In Feeder stopper 길이 조절 필요 명일 이어서 작업 진행 예정
+
+ㄴEmfty Light Curtain Cable 파손
+-6호기 자재 사용(1ea 사용)
+
+ㄴFan Filter Cover 수량 부족(2호기 출하시 파손으로 베트남 보냈음)
+-6호기 자재 사용(3ea 사용)",,
+2026-02-21,SLH1,김승수,"02.21
+SLH1 5호기
+Transfer Gripper Left Right  동작 반대
+ㄴ 전장 배선 수정 
+ㄴDirection SENSOR  반대 장착 (조립 문제)
+추후 SENSOR  이동 필요 90도 기준 Front  -> Rear 로 변경
+Long Run 진행 
+ㄴ Mask  Up/Down Sensor Error  발생 
+-센서 위치 조정
+
+Dry Run 준비 
+- In feeder   for stopper,  Out feeder  For/Back  stopper  길이 조절
+
+환경 검수 대비
+하단 COVER  밑 Block  조정(COVER  밀착)
+월요일에 Ionizer  Nut Fitting  입고
+바코드 리더기 수리반출 - 차주 화요일까지 입고 안될시에 6호기 파트 장착 예정
+FAN COVER  3개 장착 완료",,
 2026-02-21,SLH1,최염광,"2월 20일 SLH1 #5호기 제작
 
 1. SLH1 #5호기
@@ -26,24 +73,6 @@
                             REJECT 1,2(15mm 6ea)
 
   - Fix, Moving Buffer Sensor 위치 R--Dimm Setting 되어 SoCAMM Setting 변경 완료.",,
-2026-02-21,SLH1,김승수,"02.21
-SLH1 5호기
-Transfer Gripper Left Right  동작 반대
-ㄴ 전장 배선 수정 
-ㄴDirection SENSOR  반대 장착 (조립 문제)
-추후 SENSOR  이동 필요 90도 기준 Front  -> Rear 로 변경
-Long Run 진행 
-ㄴ Mask  Up/Down Sensor Error  발생 
--센서 위치 조정
-
-Dry Run 준비 
-- In feeder   for stopper,  Out feeder  For/Back  stopper  길이 조절
-
-환경 검수 대비
-하단 COVER  밑 Block  조정(COVER  밀착)
-월요일에 Ionizer  Nut Fitting  입고
-바코드 리더기 수리반출 - 차주 화요일까지 입고 안될시에 6호기 파트 장착 예정
-FAN COVER  3개 장착 완료",,
 2026-02-21,SLH1,윤창섭,"SLH1
 
 5호기
@@ -53,25 +82,6 @@ Direction SENSOR  도면 문제로 인해 반대 장착
 추후 1호기 4호기 확인 후에 변경예정
 
 차주 월요일에 transfer 도면 업데이트로 문의예정",,
-2026-02-21,SLH1,김기혁,"SLH1 5호기
-ㄴTransfer Gripper Left,Right 반대 동작
--1,4호기 기준으로 변경 (90도 돌렸을 경우 Rear-Right, Front-Left)
-ㄴTransfer Head Tray Direction Check Sensor 
-BRK 조립 방향 오류
--위치 90도 기준 Front 위치로 변경 필요(4호기도 변경 필요)
-
-ㄴLong run 진행 
-
-ㄴDry run 진행 준비
--PRECIZER 스토퍼 쇼바 길이 조절
--FLOW In Feeder Out Feeder 스토퍼 쇼바 길이 조정
--In Feeder stopper 길이 조절 필요 명일 이어서 작업 진행 예정
-
-ㄴEmfty Light Curtain Cable 파손
--6호기 자재 사용(1ea 사용)
-
-ㄴFan Filter Cover 수량 부족(2호기 출하시 파손으로 베트남 보냈음)
--6호기 자재 사용(3ea 사용)",,
 2026-02-20,SLH1,김기혁,"SLH1 5호기
 ㄴ전면부 천정 Cover 장착
 -현품수정 Cover 입고 되어 장착
@@ -200,15 +210,6 @@ SLH1 #6,7호기
 -> L/D transfer teaching 확인 완료.
 -> U/D transfer sensor 반대로 장착되어있어 cable 모두 제거후 제작업 진행
 -> U/D transfer 전체 position teaching 진행 중",,\\192.168.0.100\500 생산\550 국내CS\공유사진\\명일 이어서 U/D transfer teaching 후 long run 예정입니다
-2026-02-18,SLH1,김범규,"SLH1 4호기
-ULD MASK OPEN/CLOSE 시 소음 발생
-ㄴ AIR BALANCE 조절 및 ALIGN 점검 진행.
-
-DOOR <-> SAFETY KEY 재장착.
-
-MAIN AIR HAND V/V COVER 자석 장착.
-
-DRY RUNNING CONDITION 진행.",,
 2026-02-18,SLH1,최염광,"SLH1 #5호기
 1.  전/후면부 상단 Cover 장착
  - 도번 2800-11~15 수정 가공 나간 상태
@@ -218,6 +219,15 @@ DRY RUNNING CONDITION 진행.",,
 3. INIT 진행간 Alarm 발생
  - DC Fan Connector 연결 및 불량 Fan 교체(6.7호기분)
  - Ionizer Setting 이상으로 Alarm 발생, ULD Setting 후 정상",환경안전 검수 대비 데이터 취득완료 후 Init 완료 상태,
+2026-02-18,SLH1,김범규,"SLH1 4호기
+ULD MASK OPEN/CLOSE 시 소음 발생
+ㄴ AIR BALANCE 조절 및 ALIGN 점검 진행.
+
+DOOR <-> SAFETY KEY 재장착.
+
+MAIN AIR HAND V/V COVER 자석 장착.
+
+DRY RUNNING CONDITION 진행.",,
 2026-02-16,SLH1,조건희,"1호기
 HAND picker 균일화 작업 후 모니터링하며 정밀 티칭 진행
 ㄴ FRONT 2 Y Teaching -0.2
