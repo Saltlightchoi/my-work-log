@@ -9,24 +9,6 @@
 ㄴTray Flow 진행
 -Testsite R-dimm check sensor 미인식 error발생
 인식이 필요없는 Sensor라고 생각되어  (X960 - X964) (X966-X970)Anywire에서 스왑 후 가동 ",,
-2026-02-21,SLH1,김승수,"02.21
-SLH1 5호기
-Transfer Gripper Left Right  동작 반대
-ㄴ 전장 배선 수정 
-ㄴDirection SENSOR  반대 장착 (조립 문제)
-추후 SENSOR  이동 필요 90도 기준 Front  -> Rear 로 변경
-Long Run 진행 
-ㄴ Mask  Up/Down Sensor Error  발생 
--센서 위치 조정
-
-Dry Run 준비 
-- In feeder   for stopper,  Out feeder  For/Back  stopper  길이 조절
-
-환경 검수 대비
-하단 COVER  밑 Block  조정(COVER  밀착)
-월요일에 Ionizer  Nut Fitting  입고
-바코드 리더기 수리반출 - 차주 화요일까지 입고 안될시에 6호기 파트 장착 예정
-FAN COVER  3개 장착 완료",,
 2026-02-21,SLH1,최염광,"2월 20일 SLH1 #5호기 제작
 
 1. SLH1 #5호기
@@ -82,6 +64,24 @@ BRK 조립 방향 오류
 
 ㄴFan Filter Cover 수량 부족(2호기 출하시 파손으로 베트남 보냈음)
 -6호기 자재 사용(3ea 사용)",,
+2026-02-21,SLH1,김승수,"02.21
+SLH1 5호기
+Transfer Gripper Left Right  동작 반대
+ㄴ 전장 배선 수정 
+ㄴDirection SENSOR  반대 장착 (조립 문제)
+추후 SENSOR  이동 필요 90도 기준 Front  -> Rear 로 변경
+Long Run 진행 
+ㄴ Mask  Up/Down Sensor Error  발생 
+-센서 위치 조정
+
+Dry Run 준비 
+- In feeder   for stopper,  Out feeder  For/Back  stopper  길이 조절
+
+환경 검수 대비
+하단 COVER  밑 Block  조정(COVER  밀착)
+월요일에 Ionizer  Nut Fitting  입고
+바코드 리더기 수리반출 - 차주 화요일까지 입고 안될시에 6호기 파트 장착 예정
+FAN COVER  3개 장착 완료",,
 2026-02-20,SLH1,윤창섭,"4호기
 -> 천장 cover 및 mask 우익반도체로 반출
 
@@ -402,3 +402,16 @@ UP 속도 조절 regulator In/Out단 반대로 꼿혀있어 정상화","1호기 
  ② 전면부 후면부 Leveling 작업시 후면부 좌우 평탄 이상, Test Site 기준 중간값 Setting
 
  ③ 후면부 Cylinder Take Time 측정",,
+2026-02-02,SLH1,김범규,"2.2
+
+SLH1
+
+우익 측 야간 CONVERSION간 ULD TRANSFER GRIPPER 파손 발생.
+ㄴ SPARE PART 보유중으로 정비사측 해당 PART 장착하여 가동.
+
+LD HANDPICKER T-TRAY SHOOTING 간 Err. 다량 발생.
+ㄴ 검증 진행중이던 TRAY 4장 이외 구형 INSERT TRAY 투입 가동하여 발생.
+ㄴ 구형 INSERT TRAY 배출 후 양산자재 투입 후 미발생.
+
+LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
+ㄴ 수요일 검증 진행 예정.",,
