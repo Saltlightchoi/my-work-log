@@ -388,6 +388,24 @@ UP 속도 조절 regulator In/Out단 반대로 꼿혀있어 정상화","1호기 
 
 2. SLH1 #5호기
  ① LD Hand 공압 포설 반대로 되어 있어 탈거 후 전장 수정 대기중.    ",,
+2026-02-03,SLH1,김범규,"02.03 
+
+SLH1 
+
+REJECT STACKER REAR ALIGN GUIDE BAR와
+2단 Cyl. STOPPER BLOCK 간섭 발생.
+ㄴ ALIGN GUIDE BAR POS 조정
+
+R-DIMM C-TRAY B, K TYPE SET PLATE 안착 확인
+ㄴ K Type은 안착시 고정되나, B Type은 안착시 조금 흔들림.
+ㄴ Type 간 SETPLATE UP/LOCK 시 더 눌리거나 덜 눌리는 것 없음.
+ㄴ 주로 넘어오는건 B Type이며, 간혹 K Type이 섞여들어올수 있다고 함.
+ㄴ 명일 설계팀 최병수 책임 내방 시 문의 예정.
+
+LD2 SETPLATE ALIGN 점검 이상 없음.
+
+명일 LPCAMM2 SIDE 이물 관련 DUMMY 확보 완료.
+ㄴ 정비사 측 오전 9시에 전달해준다고 함.",,
 2026-02-02,SLH1,최염광,"1. SLH1 #4호기
  ① 신규 Insert 가공 불량
   - Open 동작시 가공 불량으로 동작 안됨, Mask Up 후 Insert Auto Close 안됨
