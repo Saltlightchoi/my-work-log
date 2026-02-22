@@ -9,34 +9,6 @@
 ㄴTray Flow 진행
 -Testsite R-dimm check sensor 미인식 error발생
 인식이 필요없는 Sensor라고 생각되어  (X960 - X964) (X966-X970)Anywire에서 스왑 후 가동 ",,
-2026-02-21,SLH1,윤창섭,"SLH1
-
-5호기
--> L/D, U/D Transfer Gripper Left/Right  동작이상으로 전장 배선 수정 및 다회전 클리어 진행
-
-Direction SENSOR  도면 문제로 인해 반대 장착 
-추후 1호기 4호기 확인 후에 변경예정
-
-차주 월요일에 transfer 도면 업데이트로 문의예정",,
-2026-02-21,SLH1,김기혁,"SLH1 5호기
-ㄴTransfer Gripper Left,Right 반대 동작
--1,4호기 기준으로 변경 (90도 돌렸을 경우 Rear-Right, Front-Left)
-ㄴTransfer Head Tray Direction Check Sensor 
-BRK 조립 방향 오류
--위치 90도 기준 Front 위치로 변경 필요(4호기도 변경 필요)
-
-ㄴLong run 진행 
-
-ㄴDry run 진행 준비
--PRECIZER 스토퍼 쇼바 길이 조절
--FLOW In Feeder Out Feeder 스토퍼 쇼바 길이 조정
--In Feeder stopper 길이 조절 필요 명일 이어서 작업 진행 예정
-
-ㄴEmfty Light Curtain Cable 파손
--6호기 자재 사용(1ea 사용)
-
-ㄴFan Filter Cover 수량 부족(2호기 출하시 파손으로 베트남 보냈음)
--6호기 자재 사용(3ea 사용)",,
 2026-02-21,SLH1,김승수,"02.21
 SLH1 5호기
 Transfer Gripper Left Right  동작 반대
@@ -82,6 +54,34 @@ FAN COVER  3개 장착 완료",,
                             REJECT 1,2(15mm 6ea)
 
   - Fix, Moving Buffer Sensor 위치 R--Dimm Setting 되어 SoCAMM Setting 변경 완료.",,
+2026-02-21,SLH1,윤창섭,"SLH1
+
+5호기
+-> L/D, U/D Transfer Gripper Left/Right  동작이상으로 전장 배선 수정 및 다회전 클리어 진행
+
+Direction SENSOR  도면 문제로 인해 반대 장착 
+추후 1호기 4호기 확인 후에 변경예정
+
+차주 월요일에 transfer 도면 업데이트로 문의예정",,
+2026-02-21,SLH1,김기혁,"SLH1 5호기
+ㄴTransfer Gripper Left,Right 반대 동작
+-1,4호기 기준으로 변경 (90도 돌렸을 경우 Rear-Right, Front-Left)
+ㄴTransfer Head Tray Direction Check Sensor 
+BRK 조립 방향 오류
+-위치 90도 기준 Front 위치로 변경 필요(4호기도 변경 필요)
+
+ㄴLong run 진행 
+
+ㄴDry run 진행 준비
+-PRECIZER 스토퍼 쇼바 길이 조절
+-FLOW In Feeder Out Feeder 스토퍼 쇼바 길이 조정
+-In Feeder stopper 길이 조절 필요 명일 이어서 작업 진행 예정
+
+ㄴEmfty Light Curtain Cable 파손
+-6호기 자재 사용(1ea 사용)
+
+ㄴFan Filter Cover 수량 부족(2호기 출하시 파손으로 베트남 보냈음)
+-6호기 자재 사용(3ea 사용)",,
 2026-02-20,SLH1,김승수,"SLH1 5호기
 환경 검수 미비 사항 진행
 ㄴ전장 박스 FAN Bracket 고무 장착
@@ -301,6 +301,17 @@ UP 속도 조절 regulator In/Out단 반대로 꼿혀있어 정상화","1호기 
     - Mask 연속 동작시 이전과 다르게 소음은 미발생하나 간헐적 걸림 증상, 배한수 수석 동행하에 체크 완료.
     - 금일 퇴근시 연속동작 후 퇴근 예정,(내구도 검증)
   ③ LD Hand Pitch Jig Setting Check 완료. 정상. 촬영 완료.",,
+2026-02-14,SLH1,김범규,"02.14
+
+SLH1 4호기
+
+Auto/Teaching Key - DOOR INTERLOCK LED 전환 동작 이상으로 DOOR INTERLOCK 점검 진행.
+ㄴ 전장팀 손석현 수석님과 연락하여 CABLE 및 단자대 DVM 저항 점검 진행하였으나, 해결되지 않음.
+ㄴ 명절 이후 전장팀 내방하여 점검 예정.
+
+1호기
+HAND CLAMP TENSION BLOCK STROKE 균일화 작업 이후 ULD HAND PICKING ERR. 발생하여 티칭 진행.
+ㄴ FRONT 1 X-Axis Teaching.",,
 2026-02-14,SLH1,최염광,"우익 반도체 Set-UP
 1. SLH1 #4호기 
   ① Auto/Teaching Key Door Interlock 해제 안됨으로 확인
@@ -392,14 +403,6 @@ SLH1 2호기 (SOCAMM)
 - 전면부 LEVELING 완료.
 - 후면부 임시 LEVEL 및 임시 DOCKING 완료.
 - 전면부 후면부 전장 CABLE 연결 완료.",,
-2026-02-05,SLH1,김범규,"02.05
-
-SLH1
-
-- 명일 장비 반입으로 우익 측 정비사 동행하여,
-장비 안착 위치, 동선 및 간섭물 확인 진행.
-
-- 반입 시 필요한 핸드카, 대형 공구류 확보 요청.",,
 2026-02-05,SLH1,최염광,① 장비 출하 대비 최종 검수 및 포장,,
 2026-02-05,SLH1,최염광,"1. SLH1 #4호기
  ① 삼성 이우철 TL 검수
@@ -422,6 +425,14 @@ SLH1
 2. SLH1 #5호기
  ① LD Hand 공압 포설 수정 완료, 명일 장착 예정
  ② ULD Hand Z축 평탄 조정 완료.",,
+2026-02-05,SLH1,김범규,"02.05
+
+SLH1
+
+- 명일 장비 반입으로 우익 측 정비사 동행하여,
+장비 안착 위치, 동선 및 간섭물 확인 진행.
+
+- 반입 시 필요한 핸드카, 대형 공구류 확보 요청.",,
 2026-02-04,SLH1,김범규,"02.04
 
 SLH1 
