@@ -9,6 +9,34 @@
 ㄴTray Flow 진행
 -Testsite R-dimm check sensor 미인식 error발생
 인식이 필요없는 Sensor라고 생각되어  (X960 - X964) (X966-X970)Anywire에서 스왑 후 가동 ",,
+2026-02-21,SLH1,윤창섭,"SLH1
+
+5호기
+-> L/D, U/D Transfer Gripper Left/Right  동작이상으로 전장 배선 수정 및 다회전 클리어 진행
+
+Direction SENSOR  도면 문제로 인해 반대 장착 
+추후 1호기 4호기 확인 후에 변경예정
+
+차주 월요일에 transfer 도면 업데이트로 문의예정",,
+2026-02-21,SLH1,김기혁,"SLH1 5호기
+ㄴTransfer Gripper Left,Right 반대 동작
+-1,4호기 기준으로 변경 (90도 돌렸을 경우 Rear-Right, Front-Left)
+ㄴTransfer Head Tray Direction Check Sensor 
+BRK 조립 방향 오류
+-위치 90도 기준 Front 위치로 변경 필요(4호기도 변경 필요)
+
+ㄴLong run 진행 
+
+ㄴDry run 진행 준비
+-PRECIZER 스토퍼 쇼바 길이 조절
+-FLOW In Feeder Out Feeder 스토퍼 쇼바 길이 조정
+-In Feeder stopper 길이 조절 필요 명일 이어서 작업 진행 예정
+
+ㄴEmfty Light Curtain Cable 파손
+-6호기 자재 사용(1ea 사용)
+
+ㄴFan Filter Cover 수량 부족(2호기 출하시 파손으로 베트남 보냈음)
+-6호기 자재 사용(3ea 사용)",,
 2026-02-21,SLH1,김승수,"02.21
 SLH1 5호기
 Transfer Gripper Left Right  동작 반대
@@ -54,34 +82,6 @@ FAN COVER  3개 장착 완료",,
                             REJECT 1,2(15mm 6ea)
 
   - Fix, Moving Buffer Sensor 위치 R--Dimm Setting 되어 SoCAMM Setting 변경 완료.",,
-2026-02-21,SLH1,윤창섭,"SLH1
-
-5호기
--> L/D, U/D Transfer Gripper Left/Right  동작이상으로 전장 배선 수정 및 다회전 클리어 진행
-
-Direction SENSOR  도면 문제로 인해 반대 장착 
-추후 1호기 4호기 확인 후에 변경예정
-
-차주 월요일에 transfer 도면 업데이트로 문의예정",,
-2026-02-21,SLH1,김기혁,"SLH1 5호기
-ㄴTransfer Gripper Left,Right 반대 동작
--1,4호기 기준으로 변경 (90도 돌렸을 경우 Rear-Right, Front-Left)
-ㄴTransfer Head Tray Direction Check Sensor 
-BRK 조립 방향 오류
--위치 90도 기준 Front 위치로 변경 필요(4호기도 변경 필요)
-
-ㄴLong run 진행 
-
-ㄴDry run 진행 준비
--PRECIZER 스토퍼 쇼바 길이 조절
--FLOW In Feeder Out Feeder 스토퍼 쇼바 길이 조정
--In Feeder stopper 길이 조절 필요 명일 이어서 작업 진행 예정
-
-ㄴEmfty Light Curtain Cable 파손
--6호기 자재 사용(1ea 사용)
-
-ㄴFan Filter Cover 수량 부족(2호기 출하시 파손으로 베트남 보냈음)
--6호기 자재 사용(3ea 사용)",,
 2026-02-20,SLH1,김승수,"SLH1 5호기
 환경 검수 미비 사항 진행
 ㄴ전장 박스 FAN Bracket 고무 장착
@@ -205,25 +205,6 @@ C-Tray Overlap Pitch 변경.
 
 LPCAMM2 CLAMP JIG PRECIZER 장착 HOLE 제거되었으나, 삼성 이우철 프로-최병수 책임 통화 후 HOLE 원복으로
 JIG 반출 예정.",,\\192.168.0.100\500 생산\550 국내CS\공유사진\\
-2026-02-19,SLH1,김승수,"02.19
-SLH1 작업 리스트, 총 공수 작성 중
-
-SLH1 5호기
-품질 환경검수 시트 부족한 부분 서포트 
-
-SLH1 6,7호기
-emt,Reject 장착
-Stacker belt Tension 조정 및 측정
-part 조립 진행 중
-",,
-2026-02-19,SLH1,김기혁,"SLH1 5호기
-ㄴ전면부 전장박스 Cover 장착
-
-ㄴTransfer 티칭 재작업 진핸
--C-Tray 기준으로 티칭 값 수정
--Unload Transfer Sensor BRK 앞 뒤 반대로 장착 되어 있어 재 장착 진행
-
-ㄴRejeck Pulley cover 개선품으로 교체 설치",명일 Unload Transfer 티칭 이어서 진행 예정 ,\\192.168.0.100\500 생산\550 국내CS\공유사진\\
 2026-02-19,SLH1,최염광,"SLH1 #5호기
  - Door Align 조정
  - Transfer JIG 관련 최병수 책임 Infrom 완료
@@ -236,6 +217,25 @@ SLH1 #6,7호기
  - All Stacker Motor Belt Tension 조정 및 측정 완료.
  - Transfer 기구물 관련 Part 장착
 "," Transfer JIG Grip 상태로 Set-Plate, Stacker 동시 삽입 가능하도록 설계 수정 요청",
+2026-02-19,SLH1,김기혁,"SLH1 5호기
+ㄴ전면부 전장박스 Cover 장착
+
+ㄴTransfer 티칭 재작업 진핸
+-C-Tray 기준으로 티칭 값 수정
+-Unload Transfer Sensor BRK 앞 뒤 반대로 장착 되어 있어 재 장착 진행
+
+ㄴRejeck Pulley cover 개선품으로 교체 설치",명일 Unload Transfer 티칭 이어서 진행 예정 ,\\192.168.0.100\500 생산\550 국내CS\공유사진\\
+2026-02-19,SLH1,김승수,"02.19
+SLH1 작업 리스트, 총 공수 작성 중
+
+SLH1 5호기
+품질 환경검수 시트 부족한 부분 서포트 
+
+SLH1 6,7호기
+emt,Reject 장착
+Stacker belt Tension 조정 및 측정
+part 조립 진행 중
+",,
 2026-02-18,SLH1,김범규,"SLH1 4호기
 ULD MASK OPEN/CLOSE 시 소음 발생
 ㄴ AIR BALANCE 조절 및 ALIGN 점검 진행.
@@ -274,13 +274,6 @@ LD MIDDLE FEEDER DOCKING ERR.
 (우익 임가현 사원.)
 LOT ID-4012P90529
 수량-282",,
-2026-02-16,SLH1,최염광,"1. LD/ULD Hand Pitch Jig 장착 및 사진 촬영 완료, 박진규 차장님  카톡 전송
-2. Door Safty 관련 Auto/Teaching 전환 Lamp Led 변경 안됨
-  -> 전장 업체 확인 후 정상(최종 LED 전환 Sol 배선 이상)
-3. LD/ULD Hand All Pos' Teaching 조정 완료.
-  -> Insert Latch C.O.K 없음으로 Mask Down 후 Handling Open 동작 후 Teaching 조정
-  -> 차후에 재확인 필요.  
-4. Motor 반복 정밀도 측정 완료.",,
 2026-02-16,SLH1,조건희,"1호기
 HAND picker 균일화 작업 후 모니터링하며 정밀 티칭 진행
 ㄴ FRONT 2 Y Teaching -0.2
@@ -292,6 +285,13 @@ Auto/Teaching Key - DOOR INTERLOCK LED 전환 동작 이상
 INIT 동작 간 ERROR 발생
 ㄴ LD,ULD FLOW UP/DOWN 동작 이상
 UP 속도 조절 regulator In/Out단 반대로 꼿혀있어 정상화","1호기 teaching 후 육안확인하였으나 실제 양산 중 모니터링해야함, 4호기 init 동작 후 Dry run 진행 명일 부터 long run 하여 condition check 진행해야함",
+2026-02-16,SLH1,최염광,"1. LD/ULD Hand Pitch Jig 장착 및 사진 촬영 완료, 박진규 차장님  카톡 전송
+2. Door Safty 관련 Auto/Teaching 전환 Lamp Led 변경 안됨
+  -> 전장 업체 확인 후 정상(최종 LED 전환 Sol 배선 이상)
+3. LD/ULD Hand All Pos' Teaching 조정 완료.
+  -> Insert Latch C.O.K 없음으로 Mask Down 후 Handling Open 동작 후 Teaching 조정
+  -> 차후에 재확인 필요.  
+4. Motor 반복 정밀도 측정 완료.",,
 2026-02-15,SLH1,최염광,"SLH1 #5호기 제작
 1. SLH1 #5호기
   ① Transfer JIG Setting
@@ -320,6 +320,16 @@ HAND CLAMP TENSION BLOCK STROKE 균일화 작업 이후 ULD HAND PICKING ERR. �
     - Econ 및 Cable 재확인, 재결합 , 동일
     - Safty PLC Error 출력 확인되어 해당 Si2,3 Line Cable 통전 확인, 정상
     - 명절 이후 내방 점검 예정",,
+2026-02-13,SLH1,김범규,"02.13 
+
+SLH1 4호기 
+
+-S/W 이성배 책임님 내방하여 OS BOOTING 해결.
+-LD,ULD MIDDLER FEEDER DOCKING 및 RAIL ALIGN 완료.
+-CCTV CABLE 포설 완료. 
+
+1호기
+-INPUT REAR BOTTOM FEEDER MOTOR HOME PARAMETER 재설정 완료.",,
 2026-02-13,SLH1,최염광,"우익 반도체 Set-UP
 1. SLH1 #4호기 
   ① 이성배수석 내방하여 OS 관련 처리 완료.
@@ -389,11 +399,6 @@ SLH1 2호기
   ② Transfer 고정 Block 탈거
   ③ 전,후면부 Signal Tower Lamp 장착
  - 명일 Tester Docking 예정",,
-2026-02-06,SLH1,최염광,"우익 반도체 Set-UP 
- ① 장비 반입 및 Lay-Out 위치 안착
-  ② 장비 랩핑 제거 및 상태 확인, 정상
-  ③ 전면부 Leveling 및 후면부 임시 Docking Align 조정
-    -> 전면부 전장 Cable 장착 완료.",,
 2026-02-06,SLH1,김범규,"02.06
 
 SLH1 2호기 (SOCAMM)
@@ -403,6 +408,11 @@ SLH1 2호기 (SOCAMM)
 - 전면부 LEVELING 완료.
 - 후면부 임시 LEVEL 및 임시 DOCKING 완료.
 - 전면부 후면부 전장 CABLE 연결 완료.",,
+2026-02-06,SLH1,최염광,"우익 반도체 Set-UP 
+ ① 장비 반입 및 Lay-Out 위치 안착
+  ② 장비 랩핑 제거 및 상태 확인, 정상
+  ③ 전면부 Leveling 및 후면부 임시 Docking Align 조정
+    -> 전면부 전장 Cable 장착 완료.",,
 2026-02-05,SLH1,최염광,① 장비 출하 대비 최종 검수 및 포장,,
 2026-02-05,SLH1,최염광,"1. SLH1 #4호기
  ① 삼성 이우철 TL 검수
