@@ -49,6 +49,7 @@ FAN COVER  3개 장착 완료",,
   -> 진행 전 Transfer Gripper 조치 관련 Teaching 재확인
   ->  Long Run Strat 시 LD Transfer 동작간 전일 동일 증상 재발생(Align Guide 2번 Back 상태 Transfer 동작하여 T-Axis Motor Power Off)
  ->  바탕화면 OS 실행파일 상태에서 발생, 이성배 수석 통화 후 Visual Studio 컴파일 실행시 정상 동작(월요일 조치 예정)
+ -> Transfer 동작간 T-Axis Power Off 시 Alarm 발생 추가 요청
  -> Long Run 2H 진행간 특이사항 없음(LD Flow Rail Back Sensor 조정)
  -> Tray 2매 삽입 후 진행 전, InFeeder, OutFeeder Stopper 조정
 ",,
