@@ -16,28 +16,6 @@ SLH1
 
 -LD/ULD FLOATING 개선 PART 장착. 검증 진행예정.
 ㄴ LD HAND 가포설 진행후 정상 동작 확인되면, DEVICE RUNNING 하며 검증 진행 예정.",,
-2026-02-26,SLH1,최염광,"SLH1 #5 
-1. LD Transfer Jig Setting 후 재촬영
- - Transfer Gripper 길이 상이하여 작일 삽입한 Nut 제거 후 정상
- - 기구물 문제로 Front 부 쳐짐으로 길이 상이해짐. 해당 내용 유관부서 전달, 조치 필요.
-
-2. Dummy Run 진행
- - 작일 진행간 C-Tray 단수 및 Grip 위치 이상 관련 Soft팀 점검 요청
- - C-Tray 단수 Check 정상이나 Grip 위치 C-Tray 장수에 따라 공차발생하여 Pick 이상
- - Grip 관련 Code에 전체 C-Tray 높이 측정후에 C-Tray와 Overrap Pitch 적용하여 Sensor 측정시 발생한 오차만큼 동일하게 증가토록 적용.
- - C-Tray 상태가 상이하여 간헐적 Grip 위치 이상정도는 있으나 오차범위 내에 가동 가능한 상태로 Code 수정 완료.
- - LD Stacker JIG 장착 상태로 Align Guide 1번 Setting 검증 진행시 정상
-  -> Align Guide 2번은 Align 상태시 JIG 들어 올림 발생하여 1만 For 상태로 Setting 해야함.
- - Manual Port 조립 및 장착 완료.
- - ULD Hand Y축 동작간 소음 발생
-  -> Y축 Rail 고정 Bolt 풀림 다량 확인되어 Rejoint
-  -> Hand X,Y All Bolt Rejoint 완료. 풀림 발생 Bolt 다량, 이후 Rail 작업 후 재확인 필수.
- - Reject Stacker JIG 입고, 명일 사진 재촬영 예정.(개선 JIG Pin Hole 위치 추가 가공 입고됨)",,
-2026-02-26,SLH1,김기혁,"ㄴ하이닉스 입문안전교육 REMIND 교육  
-
-SLH1 5호기
-ㄴMANUAL STACKER 제작
--Load,Unload 제작 하여 장착 테스트 진행",,
 2026-02-26,SLH1,조건희,"SLH1
 
 4호기 
@@ -88,6 +66,28 @@ Hynix 입문안전교육 REMIND 교육 3시간 이수 완료
 
 SLH1 6호기
 Monitor Accessories Part 조립 중",,
+2026-02-26,SLH1,최염광,"SLH1 #5 
+1. LD Transfer Jig Setting 후 재촬영
+ - Transfer Gripper 길이 상이하여 작일 삽입한 Nut 제거 후 정상
+ - 기구물 문제로 Front 부 쳐짐으로 길이 상이해짐. 해당 내용 유관부서 전달, 조치 필요.
+
+2. Dummy Run 진행
+ - 작일 진행간 C-Tray 단수 및 Grip 위치 이상 관련 Soft팀 점검 요청
+ - C-Tray 단수 Check 정상이나 Grip 위치 C-Tray 장수에 따라 공차발생하여 Pick 이상
+ - Grip 관련 Code에 전체 C-Tray 높이 측정후에 C-Tray와 Overrap Pitch 적용하여 Sensor 측정시 발생한 오차만큼 동일하게 증가토록 적용.
+ - C-Tray 상태가 상이하여 간헐적 Grip 위치 이상정도는 있으나 오차범위 내에 가동 가능한 상태로 Code 수정 완료.
+ - LD Stacker JIG 장착 상태로 Align Guide 1번 Setting 검증 진행시 정상
+  -> Align Guide 2번은 Align 상태시 JIG 들어 올림 발생하여 1만 For 상태로 Setting 해야함.
+ - Manual Port 조립 및 장착 완료.
+ - ULD Hand Y축 동작간 소음 발생
+  -> Y축 Rail 고정 Bolt 풀림 다량 확인되어 Rejoint
+  -> Hand X,Y All Bolt Rejoint 완료. 풀림 발생 Bolt 다량, 이후 Rail 작업 후 재확인 필수.
+ - Reject Stacker JIG 입고, 명일 사진 재촬영 예정.(개선 JIG Pin Hole 위치 추가 가공 입고됨)",,
+2026-02-26,SLH1,김기혁,"ㄴ하이닉스 입문안전교육 REMIND 교육  
+
+SLH1 5호기
+ㄴMANUAL STACKER 제작
+-Load,Unload 제작 하여 장착 테스트 진행",,
 2026-02-25,SLH1,김기혁,"SLH1 5호기
 ㄴDummy Run 진행
 -정밀 티칭 작업 진행 중(후면부 티칭 값 문제 없음,Transfer 및 Hand 티칭)
@@ -180,6 +180,30 @@ SLH1
 ㄴ DUT 17 지속 FAIL 발생. DUT 16 SOCKET 문제로 확인됨 나머지 DUT PASS 완료.
 ㄴ FRONT/REAR/RAIL AIR 조절하며 진행중.
 ㄴ 명일 이어서 진행 예정.",,
+2026-02-24,SLH1,김승수,"SLH1 5호기
+
+최병수 책임에게 도면 최신화 문의 
+-> 3D Modelling에 Prat 최신화 안되어있어 도면 개선파트 적용되어있는지 확인 ( 적용되어있음)
+-> 3D Modelling 최신화 필요 생산관리에 요청 예정
+
+작업중 리어 메인 Regulator Sensor 파손
+-> 7호기 Prat로 교체 (생산관리 보고 후 교체 완료)
+
+L/D, UL/D PRECIZER UP Cylindr Rod 길이 57mm로 Setting 완료
+-> Rod 나사선 시작 지점부터 Cylindr LINK Block 상단까지 
+
+
+Front 전장 Cover 장착 
+-> Cover 장착 시 Rear Monitor HDMI Cable 간섭 발생 
+ㄴRear Monitor HDMI Cable 우회해서 연결 완료
+
+FAN 고정 Bracket Bolt로 고정
+전장박스 FAN 손끼임 방지 Prat 미장착
+-> 장착 완료
+
+작업 리스트 내용중 
+제조 기초 Setting에 필요한 Shoba, cylinder rod 길이 측정 
+리스트에 사진첨부하여 적용 예정",,
 2026-02-24,SLH1,최염광,"2월 25일 
 
 오전 SK Hynix 이천 입문 안전 Remind 교육
@@ -231,58 +255,6 @@ Overlap Pitch 8.78 변경 후 검증 진행간 정상감지 완료.
 - 삼성 이우철 프로 C-Tray 30장 투입 가능한지 여부 확인 요청
 ㄴ 기구설계 최병수 책임 확인 결과 ALIGN SHAFT 위로 벗어나서 불가하다고 함.
 ",,
-2026-02-24,SLH1,김승수,"SLH1 5호기
-
-최병수 책임에게 도면 최신화 문의 
--> 3D Modelling에 Prat 최신화 안되어있어 도면 개선파트 적용되어있는지 확인 ( 적용되어있음)
--> 3D Modelling 최신화 필요 생산관리에 요청 예정
-
-작업중 리어 메인 Regulator Sensor 파손
--> 7호기 Prat로 교체 (생산관리 보고 후 교체 완료)
-
-L/D, UL/D PRECIZER UP Cylindr Rod 길이 57mm로 Setting 완료
--> Rod 나사선 시작 지점부터 Cylindr LINK Block 상단까지 
-
-
-Front 전장 Cover 장착 
--> Cover 장착 시 Rear Monitor HDMI Cable 간섭 발생 
-ㄴRear Monitor HDMI Cable 우회해서 연결 완료
-
-FAN 고정 Bracket Bolt로 고정
-전장박스 FAN 손끼임 방지 Prat 미장착
--> 장착 완료
-
-작업 리스트 내용중 
-제조 기초 Setting에 필요한 Shoba, cylinder rod 길이 측정 
-리스트에 사진첨부하여 적용 예정",,
-2026-02-24,SLH1,김기혁,"SLH1 5호기
-ㄴTest Site sensor 미감지 err
--최병수 책임에게 문의 하여 기존에 설치되어 있는 센서 위치순이 맞는거 확인(1호기는 모르겠으나 4호기는 센서 순서 변경 필요)
--이성배수석님이 소프트적으로 사용가능하게 수정
-
-ㄴStacker align guide 1 cylinder 개선 part검증 확인
--최병수책임 검증완료 고객사측 컨펌 확인후 확산 진행 예정
-
-ㄴ4호기 필요 파트 구분 및 정리
-
-ㄴManual port 개선 파트 및 Buffer Block 입고 되어 분배
--하단 지지 BRK, 하단 풋, Buffer block
-
-ㄴPRECIZER 작업
--UP Sol 공압라인을 regulator 추가 장착 하여 공압 연결 (6호기 regulator 1ea 가져와서 사용,Load Unload 작업 완료)
--Load, UnLoad Flow Shaft 길이 조절(57mm)
-
-ㄴUSB HUB Hand Barcode 검증
--오늘까지 입고 되기로 한 Hand Barcode 입고되지 않아 6호기 자재 사용 동작 확인 완료
-
-ㄴCover 장착
--전면부 전장박스 상부 Cover 장착
--전면부 모니터 후면 상부 cover 장착
-
-ㄴ후면부 Regulator sensor 파손
-- 7호기 sensor 자재 사용
-
-ㄴTransfer JIG 사용하여 검증 진행 중 ",,
 2026-02-24,SLH1,조건희,"SLH1 4호기
 
 1. VACUUM/BLOW 이젝터 검증 진행
@@ -336,53 +308,34 @@ L/D, U/D Insert pitch up/down air line 중간에 speed con 장착
 -> 동작 확인 완료
 
 L/D, U/D transfer jig 개선타입 입고되어 jig 검증 진행 중이며 현재 transfer 자체에 bending이 발견되어 명일 추가 확인 후 이어서 작업 예정입니다.",,
-2026-02-23,SLH1,최염광,"2월 23일 SLH1 #5호기 제작
-
-SLH1 #5 
-1. Testsite R-dimm Check Sensor Error
- - 전장 도면상 #5~7 장착 상태로 되어있으나 #1~4 Sensor 위치 변경 후 해당 작업자 Infrom 누락 추정
-
-2. Init 시점 Set-Plate Up상태의 경우 Reverse Check Sensor Errork 발생
-  -> Set-Plate Manual Down 후에 정상 Init 되는 현상 Software 팀 Infrom
-  -> #4호기는 이성배수석이 Init Sensor Check Skip 후 출하, #4호기와 동일하게 적용 후 진행
-
-4. L/D, U/D Transfer T-Axis Motor Power Off 시 Alarm 미발생 관련 수정 요청
-  -> Alarm 추가 시간 소요 됨으로 현재 Transfer X,Z 동작 전 T축 Power 상태 Check Sequence 추가 진행.
-
-5. 우익 현장 Main 공압 0.5Mpa 이하 Setting 요청(삼성 이우철TL)
- - 0.5Mpa 이하 조정시 LD/ULD 개별 Hand Blow 동작 안됨, Vaccum Level 값 60대 확인(정상 90 이상)
-  -> 개별 Sol Valve Blow 조절기 조정
-  -> 기존 Main -> ManiFolder - Regulator(8파이)-Sol Assy' 좌우 분기(8파이)
-  -> 변경시 Main -> ManiFolder(10파이) - Regulator(10파이) - Sol Assy' 좌우 분기(8파이)
-    공압 수치 60대 -> 80대 상향 및 Blow 값 정상
-  -> 26일(목) 이우철프로 내방시 해당 내용 공유, 공압포설 변경 여부 확인 후 출하포장 전 재포설 예정. 
-
-6. LD Stacker Align Guide 1번 개선 Part 입고
-  -> LD Stacker 장착 후 Align 동작시 개선전과 비교하여 양호하나 정위치 Setting 재조정 필요하여 명일 진행 예정.",,
-2026-02-23,SLH1,김기혁,"SLH1 5호기
-
-ㄴInit시 Set-plate up상태일때 reverse sensor 감지로 Init 불가
--이성배 수석님께 문의 4호기에서는 프로그램으로 시퀀스 제거하였으나 5호기는 미적용으로 적용후 가동
-
-ㄴTransfer z축 움직이기전 t축이 90°인지 체크 후 동작하도록 OS수정
--메뉴얼 동작시에는 적용되어있지 않으며 z축 움직이는 동안에 t축이 꺼져도 알람띄우지 않아 재확인 후에 z축 동작 해야합니다.(명일 장비 가동시 확인 필요)
-
-ㄴEMS BRK 변경
--손가락 끼임 방지 BRK 6호기꺼 사용하였으나 자재 찾아서 6호기에 반납 완료
-
-ㄴTray flow 진행 중
--Press tray lock/unlock 시 소음발생 및 속도 빨라 cylinder tack time 조정
--Press rail air 0.3bar에서 0.4bar로 변경
-
-ㄴTransfer 직진도 영상 촬영하여 품질팀 인계
-
-ㄴStacker align guide 1 cylinder 개선 part검증 진행
--기존 모델보단 보강은 잘되었지만 추가적으로 확인 필요하여 명일 이어서 검증 진행 예정
-
+2026-02-24,SLH1,김기혁,"SLH1 5호기
 ㄴTest Site sensor 미감지 err
 -최병수 책임에게 문의 하여 기존에 설치되어 있는 센서 위치순이 맞는거 확인(1호기는 모르겠으나 4호기는 센서 순서 변경 필요)
--이 위치로 하였을 경우 정위치 핀이 내려왔을때 sensor 미감지됨
--명일 어떻게 진행 할건지 확인 필요",,
+-이성배수석님이 소프트적으로 사용가능하게 수정
+
+ㄴStacker align guide 1 cylinder 개선 part검증 확인
+-최병수책임 검증완료 고객사측 컨펌 확인후 확산 진행 예정
+
+ㄴ4호기 필요 파트 구분 및 정리
+
+ㄴManual port 개선 파트 및 Buffer Block 입고 되어 분배
+-하단 지지 BRK, 하단 풋, Buffer block
+
+ㄴPRECIZER 작업
+-UP Sol 공압라인을 regulator 추가 장착 하여 공압 연결 (6호기 regulator 1ea 가져와서 사용,Load Unload 작업 완료)
+-Load, UnLoad Flow Shaft 길이 조절(57mm)
+
+ㄴUSB HUB Hand Barcode 검증
+-오늘까지 입고 되기로 한 Hand Barcode 입고되지 않아 6호기 자재 사용 동작 확인 완료
+
+ㄴCover 장착
+-전면부 전장박스 상부 Cover 장착
+-전면부 모니터 후면 상부 cover 장착
+
+ㄴ후면부 Regulator sensor 파손
+- 7호기 sensor 자재 사용
+
+ㄴTransfer JIG 사용하여 검증 진행 중 ",,
 2026-02-23,SLH1,윤창섭,"02.23
 
 SLH1
@@ -417,43 +370,53 @@ Reject stacker c-tray align guide sensor 인식률을 높이기위해 홀 확공
 
 Stacker align guide 1 cylinder 보강 part검증 진행
 -> 기존 모델보단 보강은 잘되었지만 추가적으로 확인 필요하여 명일 이어서 검증 진행 예정입니다.",,
-2026-02-23,SLH1,김승수,"SLH 5호기
-1.부속 파트 장착
--> EMS  손가락 끼임 방지 BRK 개선 Prat 로 교체 진행 완료
--> PRESS Moto Motor belt cover장착 완료
--> Input, Output Bottom Feeder Motor Belt Cover장착
--미장착 파트 : 모니터 뒤쪽 커버, 핸드리더기, L/D, UL/D 핸드 커버. 프론트 전장 Cover 등.
+2026-02-23,SLH1,김기혁,"SLH1 5호기
 
- 2.PRESS TRAY LOCK/UNLOCK speed controller 조정 
- 3.Front, Rear PRESS RAIL 정밀 Regulator 0.3 -> 0.4 Bar 변경
-ㄴ 소음 문제로 변경
-4.품질팀 소음 측정 완료
-5.Transfer z축 반복도 측정 
-6.Middle Rail UP/DOWN Shoba Double Nut 미장착
-ㄴ 생산 관리 구매요청 입고시 장착 예정 (현장 수정 필요)
-7. Stacker align guide 1 개선 파트로 장착 검증 중
-8. Middle Feeder Gripper Cylinder Rod 조정
--> Cylinder 상단에서 Joint Nut상단 까지 37mm",,
-2026-02-23,SLH1,김범규,"SLH1
+ㄴInit시 Set-plate up상태일때 reverse sensor 감지로 Init 불가
+-이성배 수석님께 문의 4호기에서는 프로그램으로 시퀀스 제거하였으나 5호기는 미적용으로 적용후 가동
 
-4호기
+ㄴTransfer z축 움직이기전 t축이 90°인지 체크 후 동작하도록 OS수정
+-메뉴얼 동작시에는 적용되어있지 않으며 z축 움직이는 동안에 t축이 꺼져도 알람띄우지 않아 재확인 후에 z축 동작 해야합니다.(명일 장비 가동시 확인 필요)
 
-환경안전 불합리 관련
-- DOOR 접지 CABLE 교체
-- 천장 COVER 장착.
-- 전면부 MONITOR KEYBOARD 쪽 COVER 장착
-> 영업 김지수 차장님께 해당 조치 사진 송부 완료.
+ㄴEMS BRK 변경
+-손가락 끼임 방지 BRK 6호기꺼 사용하였으나 자재 찾아서 6호기에 반납 완료
 
-- ULD FLOW UP 시 T-TRAY와 PRECIZER 간 2mm 유격 발생
-ㄴ ULD FLOW UP Cyl. SHAFT 조절하여 조치 완료.
--> 5호기도 조치 필요.
+ㄴTray flow 진행 중
+-Press tray lock/unlock 시 소음발생 및 속도 빨라 cylinder tack time 조정
+-Press rail air 0.3bar에서 0.4bar로 변경
 
-- MAIN AIR 0.5Mpa <-> 0.6Mpa 에서 HAND VACUUM/BLOW 비교 검증 진행
-ㄴ> 삼성 이우철 프로 0.6Mpa 증압은 불가하다하여 0.5Mpa로 HAND VACUUM/BLOW 동작 
-    가능하도록 5호기에서 검증 필요.
--> 4호기는  0.6Mpa로 일단 사용하기로 이우철 프로와 협의 완료.
+ㄴTransfer 직진도 영상 촬영하여 품질팀 인계
 
-4호기 후면부 MAIN AIR 포설 잘못되어 1호기와 같도록 재포설 필요.",,
+ㄴStacker align guide 1 cylinder 개선 part검증 진행
+-기존 모델보단 보강은 잘되었지만 추가적으로 확인 필요하여 명일 이어서 검증 진행 예정
+
+ㄴTest Site sensor 미감지 err
+-최병수 책임에게 문의 하여 기존에 설치되어 있는 센서 위치순이 맞는거 확인(1호기는 모르겠으나 4호기는 센서 순서 변경 필요)
+-이 위치로 하였을 경우 정위치 핀이 내려왔을때 sensor 미감지됨
+-명일 어떻게 진행 할건지 확인 필요",,
+2026-02-23,SLH1,최염광,"2월 23일 SLH1 #5호기 제작
+
+SLH1 #5 
+1. Testsite R-dimm Check Sensor Error
+ - 전장 도면상 #5~7 장착 상태로 되어있으나 #1~4 Sensor 위치 변경 후 해당 작업자 Infrom 누락 추정
+
+2. Init 시점 Set-Plate Up상태의 경우 Reverse Check Sensor Errork 발생
+  -> Set-Plate Manual Down 후에 정상 Init 되는 현상 Software 팀 Infrom
+  -> #4호기는 이성배수석이 Init Sensor Check Skip 후 출하, #4호기와 동일하게 적용 후 진행
+
+4. L/D, U/D Transfer T-Axis Motor Power Off 시 Alarm 미발생 관련 수정 요청
+  -> Alarm 추가 시간 소요 됨으로 현재 Transfer X,Z 동작 전 T축 Power 상태 Check Sequence 추가 진행.
+
+5. 우익 현장 Main 공압 0.5Mpa 이하 Setting 요청(삼성 이우철TL)
+ - 0.5Mpa 이하 조정시 LD/ULD 개별 Hand Blow 동작 안됨, Vaccum Level 값 60대 확인(정상 90 이상)
+  -> 개별 Sol Valve Blow 조절기 조정
+  -> 기존 Main -> ManiFolder - Regulator(8파이)-Sol Assy' 좌우 분기(8파이)
+  -> 변경시 Main -> ManiFolder(10파이) - Regulator(10파이) - Sol Assy' 좌우 분기(8파이)
+    공압 수치 60대 -> 80대 상향 및 Blow 값 정상
+  -> 26일(목) 이우철프로 내방시 해당 내용 공유, 공압포설 변경 여부 확인 후 출하포장 전 재포설 예정. 
+
+6. LD Stacker Align Guide 1번 개선 Part 입고
+  -> LD Stacker 장착 후 Align 동작시 개선전과 비교하여 양호하나 정위치 Setting 재조정 필요하여 명일 진행 예정.",,
 2026-02-23,SLH1,조건희,"SLH1
 
 4호기
@@ -474,6 +437,43 @@ Stacker align guide 1 cylinder 보강 part검증 진행
 -> 4호기는  0.6Mpa로 일단 사용하기로 이우철 프로와 협의 완료.
 
 5. 4호기 후면부 MAIN AIR 포설 잘못되어 1호기와 같도록 재포설 필요.",,
+2026-02-23,SLH1,김범규,"SLH1
+
+4호기
+
+환경안전 불합리 관련
+- DOOR 접지 CABLE 교체
+- 천장 COVER 장착.
+- 전면부 MONITOR KEYBOARD 쪽 COVER 장착
+> 영업 김지수 차장님께 해당 조치 사진 송부 완료.
+
+- ULD FLOW UP 시 T-TRAY와 PRECIZER 간 2mm 유격 발생
+ㄴ ULD FLOW UP Cyl. SHAFT 조절하여 조치 완료.
+-> 5호기도 조치 필요.
+
+- MAIN AIR 0.5Mpa <-> 0.6Mpa 에서 HAND VACUUM/BLOW 비교 검증 진행
+ㄴ> 삼성 이우철 프로 0.6Mpa 증압은 불가하다하여 0.5Mpa로 HAND VACUUM/BLOW 동작 
+    가능하도록 5호기에서 검증 필요.
+-> 4호기는  0.6Mpa로 일단 사용하기로 이우철 프로와 협의 완료.
+
+4호기 후면부 MAIN AIR 포설 잘못되어 1호기와 같도록 재포설 필요.",,
+2026-02-23,SLH1,김승수,"SLH 5호기
+1.부속 파트 장착
+-> EMS  손가락 끼임 방지 BRK 개선 Prat 로 교체 진행 완료
+-> PRESS Moto Motor belt cover장착 완료
+-> Input, Output Bottom Feeder Motor Belt Cover장착
+-미장착 파트 : 모니터 뒤쪽 커버, 핸드리더기, L/D, UL/D 핸드 커버. 프론트 전장 Cover 등.
+
+ 2.PRESS TRAY LOCK/UNLOCK speed controller 조정 
+ 3.Front, Rear PRESS RAIL 정밀 Regulator 0.3 -> 0.4 Bar 변경
+ㄴ 소음 문제로 변경
+4.품질팀 소음 측정 완료
+5.Transfer z축 반복도 측정 
+6.Middle Rail UP/DOWN Shoba Double Nut 미장착
+ㄴ 생산 관리 구매요청 입고시 장착 예정 (현장 수정 필요)
+7. Stacker align guide 1 개선 파트로 장착 검증 중
+8. Middle Feeder Gripper Cylinder Rod 조정
+-> Cylinder 상단에서 Joint Nut상단 까지 37mm",,
 2026-02-22,SLH1,김기혁,"SLH1 5호기
 ㄴRejeck Cable 정리캡 교체 진행
 
@@ -556,6 +556,33 @@ Direction SENSOR  도면 문제로 인해 반대 장착
 추후 1호기 4호기 확인 후에 변경예정
 
 차주 월요일에 transfer 도면 업데이트로 문의예정",,
+2026-02-20,SLH1,윤창섭,"4호기
+-> 천장 cover 및 mask 우익반도체로 반출
+
+5호기
+-> 작일 이어서 U/D transfer teaching 진행 
+ㄴ L/D, U/D transfer teaching 완료
+
+-> L/D, U/D hand bcr block 장착 S/W 확인 완료
+-> Init 동작 후 long run 진행
+-> 상부 Cover 장착
+-> Invertor 고정 block 장착 및 탭작업후 bolt 고정
+-> L/D, U/D transfer cable 가림 brk 장착
+-> U/D transfer gripper가 반대로 되어있어 전장팀 문의
+ㄴ 전장팀 갖고있는 도면상 L/D transfer gripper가 반대라고 하여 조치진행
+ㄴ S/W팀 이성배 수석님께서 확인후 transfer gripper재문의 이후 우익반도체에 있는 1,4호기 확인시 본사에있는 5 6 7호기와 반대로되어있어 명일 gripper motor cable 스왑 작업 및 motor servo pack 다회전 클리어 후 teaching 확인후 재가동 예정입니다","명일 transfer gripper left, right 변경예정",
+2026-02-20,SLH1,김기혁,"SLH1 5호기
+ㄴ전면부 천정 Cover 장착
+-현품수정 Cover 입고 되어 장착
+-4호기 현품수정 Cover 및 mask 전달
+
+ㄴLong Run 진행
+-Load Stacker 1 Align Guide 2 Back 상태로 Transfer가 내려와 T축이 죽는 현상
+-이성배 수석님 문의 하여 프로그램 수정
+
+ㄴEmpty 통신 연결 이상
+-커넥터 블럭 핀 빠짐으로 간헐적 통신 이상 상태
+-핀 재 연결 하여 정상상태 확인","Transfer gripper 반대 동작 -Unload Transfer gripper가 반대인줄 알았으나 전장 외주측 문의 전장 외주측에서 Load transfer gripper가 반대라 하여 Load transfer gripper motor cable 스왑 -1호기 및 4호기 비교 하였을때 Load transfer gripper가 정상 Unload transfer gripper가 반대로 명일 재 작업 진행(6,7호기도 동일 문제)",
 2026-02-20,SLH1,최염광,"2월 20일 SLH1 #5호기 제작
 
 1. SLH1 #5호기
@@ -583,28 +610,6 @@ Direction SENSOR  도면 문제로 인해 반대 장착
                             REJECT 1,2(15mm 6ea)
 
   - Fix, Moving Buffer Sensor 위치 R--Dimm Setting 되어 SoCAMM Setting 변경 완료.",,
-2026-02-20,SLH1,김기혁,"SLH1 5호기
-ㄴ전면부 천정 Cover 장착
--현품수정 Cover 입고 되어 장착
--4호기 현품수정 Cover 및 mask 전달
-
-ㄴLong Run 진행
--Load Stacker 1 Align Guide 2 Back 상태로 Transfer가 내려와 T축이 죽는 현상
--이성배 수석님 문의 하여 프로그램 수정
-
-ㄴEmpty 통신 연결 이상
--커넥터 블럭 핀 빠짐으로 간헐적 통신 이상 상태
--핀 재 연결 하여 정상상태 확인","Transfer gripper 반대 동작 -Unload Transfer gripper가 반대인줄 알았으나 전장 외주측 문의 전장 외주측에서 Load transfer gripper가 반대라 하여 Load transfer gripper motor cable 스왑 -1호기 및 4호기 비교 하였을때 Load transfer gripper가 정상 Unload transfer gripper가 반대로 명일 재 작업 진행(6,7호기도 동일 문제)",
-2026-02-20,SLH1,김승수,"SLH1 5호기
-환경 검수 미비 사항 진행
-ㄴ전장 박스 FAN Bracket 고무 장착
-ㄴTransper Grip Motor Cover장착
-ㄴ전장 박스 접지 Cable 연결 
-ㄴHand  z축 COVER  장착
-SLH1 6,7호기
-Stacker  L/D 1,2, UL/D 1,2  Belt Cover 장착
-
-SLH 1 작업 리스트 작성 진행중 차주 월요일까지 작성 예정.",,
 2026-02-20,SLH1,조건희,"SLH1 
 
 1호기
@@ -631,21 +636,16 @@ ULD Flow up시 상부 밀착되지않아 T-tray 고정안되는 현상
 ㄴ 본사에서 4호기 mask 검증하며 개선진행 후 개선건과 다시 맞교환예정
 
 환경안전 불합리 건 part 입고되어 장착 진행 중",,
-2026-02-20,SLH1,윤창섭,"4호기
--> 천장 cover 및 mask 우익반도체로 반출
+2026-02-20,SLH1,김승수,"SLH1 5호기
+환경 검수 미비 사항 진행
+ㄴ전장 박스 FAN Bracket 고무 장착
+ㄴTransper Grip Motor Cover장착
+ㄴ전장 박스 접지 Cable 연결 
+ㄴHand  z축 COVER  장착
+SLH1 6,7호기
+Stacker  L/D 1,2, UL/D 1,2  Belt Cover 장착
 
-5호기
--> 작일 이어서 U/D transfer teaching 진행 
-ㄴ L/D, U/D transfer teaching 완료
-
--> L/D, U/D hand bcr block 장착 S/W 확인 완료
--> Init 동작 후 long run 진행
--> 상부 Cover 장착
--> Invertor 고정 block 장착 및 탭작업후 bolt 고정
--> L/D, U/D transfer cable 가림 brk 장착
--> U/D transfer gripper가 반대로 되어있어 전장팀 문의
-ㄴ 전장팀 갖고있는 도면상 L/D transfer gripper가 반대라고 하여 조치진행
-ㄴ S/W팀 이성배 수석님께서 확인후 transfer gripper재문의 이후 우익반도체에 있는 1,4호기 확인시 본사에있는 5 6 7호기와 반대로되어있어 명일 gripper motor cable 스왑 작업 및 motor servo pack 다회전 클리어 후 teaching 확인후 재가동 예정입니다","명일 transfer gripper left, right 변경예정",
+SLH 1 작업 리스트 작성 진행중 차주 월요일까지 작성 예정.",,
 2026-02-19,SLH1,최염광,"SLH1 #5호기
  - Door Align 조정
  - Transfer JIG 관련 최병수 책임 Infrom 완료
@@ -737,15 +737,6 @@ C-Tray Overlap Pitch 변경.
 
 LPCAMM2 CLAMP JIG PRECIZER 장착 HOLE 제거되었으나, 삼성 이우철 프로-최병수 책임 통화 후 HOLE 원복으로
 JIG 반출 예정.",,\\192.168.0.100\500 생산\550 국내CS\공유사진\\
-2026-02-18,SLH1,김범규,"SLH1 4호기
-ULD MASK OPEN/CLOSE 시 소음 발생
-ㄴ AIR BALANCE 조절 및 ALIGN 점검 진행.
-
-DOOR <-> SAFETY KEY 재장착.
-
-MAIN AIR HAND V/V COVER 자석 장착.
-
-DRY RUNNING CONDITION 진행.",,
 2026-02-18,SLH1,최염광,"SLH1 #5호기
 1.  전/후면부 상단 Cover 장착
  - 도번 2800-11~15 수정 가공 나간 상태
@@ -755,6 +746,15 @@ DRY RUNNING CONDITION 진행.",,
 3. INIT 진행간 Alarm 발생
  - DC Fan Connector 연결 및 불량 Fan 교체(6.7호기분)
  - Ionizer Setting 이상으로 Alarm 발생, ULD Setting 후 정상",환경안전 검수 대비 데이터 취득완료 후 Init 완료 상태,
+2026-02-18,SLH1,김범규,"SLH1 4호기
+ULD MASK OPEN/CLOSE 시 소음 발생
+ㄴ AIR BALANCE 조절 및 ALIGN 점검 진행.
+
+DOOR <-> SAFETY KEY 재장착.
+
+MAIN AIR HAND V/V COVER 자석 장착.
+
+DRY RUNNING CONDITION 진행.",,
 2026-02-17,SLH1,김범규,"02.17
 
 SLH1 4호기
@@ -821,6 +821,16 @@ HAND CLAMP TENSION BLOCK STROKE 균일화 작업 이후 ULD HAND PICKING ERR. �
     - Econ 및 Cable 재확인, 재결합 , 동일
     - Safty PLC Error 출력 확인되어 해당 Si2,3 Line Cable 통전 확인, 정상
     - 명절 이후 내방 점검 예정",,
+2026-02-13,SLH1,김범규,"02.13 
+
+SLH1 4호기 
+
+-S/W 이성배 책임님 내방하여 OS BOOTING 해결.
+-LD,ULD MIDDLER FEEDER DOCKING 및 RAIL ALIGN 완료.
+-CCTV CABLE 포설 완료. 
+
+1호기
+-INPUT REAR BOTTOM FEEDER MOTOR HOME PARAMETER 재설정 완료.",,
 2026-02-13,SLH1,최염광,"우익 반도체 Set-UP
 1. SLH1 #4호기 
   ① 이성배수석 내방하여 OS 관련 처리 완료.
@@ -833,16 +843,19 @@ HAND CLAMP TENSION BLOCK STROKE 균일화 작업 이후 ULD HAND PICKING ERR. �
 2. SLH1 #1호기
   ① Input Bottom Rear X Motor Init&Motor Reset 시 Error 발생
     -> Parameter 재설정 후 증상 재현시 정상.",,
-2026-02-13,SLH1,김범규,"02.13 
-
-SLH1 4호기 
-
--S/W 이성배 책임님 내방하여 OS BOOTING 해결.
--LD,ULD MIDDLER FEEDER DOCKING 및 RAIL ALIGN 완료.
--CCTV CABLE 포설 완료. 
-
-1호기
--INPUT REAR BOTTOM FEEDER MOTOR HOME PARAMETER 재설정 완료.",,
+2026-02-12,SLH1,최염광,"우익 반도체 Set-UP
+1. SLH1 #4호기 
+  ① Utility 연결 완료
+    - Turn-On 후 OS Booting 시 꺼짐 현상 발생
+    -> 이성배 수석 연락 후 동글이, Cable, Amp Error Code 등 확인 시 특이사항 없음, 명일 내방 예정
+  ② LoadCell 결선 이상 수정 완료.
+  ③ 작일 파손된 후면부 Main Regulater 입고되어 교체 완료.
+2. SLH1 #1호기
+  ① ULD Hand Clamp Setting
+    - LD Hand 동일하게 적용 후 Re-Teahing 완료
+    - Dummy Run 진행시 Picking Error는 미발생하나 Side 물결 Scratch 발생
+     -> Teaching 재조정 후 미발생.
+     -> Retest 2Hour 진행긴 특이사항 없음.",,
 2026-02-12,SLH1,김범규,"02.12 
 
 SLH1 
@@ -858,19 +871,6 @@ ULD HAND CLAMP TENSION BLOCK STROKE 균일화 작업 진행.
 ㄴ T-TRAY, MOV BUFFER, FIX BUFFER, SETPLATE TEACHING 진행.
 ㄴ TEACHING 후 SIDE 이물 재발생하여 X-AXIS TEACHING 원복하여 이물 미발생 확인.
 ㄴ 우익 정비사 및 생산 측에 양산 진행 시 SIDE 이물 확인 요청.",,
-2026-02-12,SLH1,최염광,"우익 반도체 Set-UP
-1. SLH1 #4호기 
-  ① Utility 연결 완료
-    - Turn-On 후 OS Booting 시 꺼짐 현상 발생
-    -> 이성배 수석 연락 후 동글이, Cable, Amp Error Code 등 확인 시 특이사항 없음, 명일 내방 예정
-  ② LoadCell 결선 이상 수정 완료.
-  ③ 작일 파손된 후면부 Main Regulater 입고되어 교체 완료.
-2. SLH1 #1호기
-  ① ULD Hand Clamp Setting
-    - LD Hand 동일하게 적용 후 Re-Teahing 완료
-    - Dummy Run 진행시 Picking Error는 미발생하나 Side 물결 Scratch 발생
-     -> Teaching 재조정 후 미발생.
-     -> Retest 2Hour 진행긴 특이사항 없음.",,
 2026-02-11,SLH1,최염광,"우익 반도체 Set-UP
 1. SLH1 #4호기 
   ① Utility 연결 중, 작업 Delay 중
@@ -929,11 +929,6 @@ SLH1 2호기
 
 명일 TESTER DOCKING 진행 예정.
 우익 측 MAIN POWER 포설 곡률반경 관련 인폼 진행",,
-2026-02-06,SLH1,최염광,"우익 반도체 Set-UP 
- ① 장비 반입 및 Lay-Out 위치 안착
-  ② 장비 랩핑 제거 및 상태 확인, 정상
-  ③ 전면부 Leveling 및 후면부 임시 Docking Align 조정
-    -> 전면부 전장 Cable 장착 완료.",,
 2026-02-06,SLH1,김범규,"02.06
 
 SLH1 2호기 (SOCAMM)
@@ -943,6 +938,11 @@ SLH1 2호기 (SOCAMM)
 - 전면부 LEVELING 완료.
 - 후면부 임시 LEVEL 및 임시 DOCKING 완료.
 - 전면부 후면부 전장 CABLE 연결 완료.",,
+2026-02-06,SLH1,최염광,"우익 반도체 Set-UP 
+ ① 장비 반입 및 Lay-Out 위치 안착
+  ② 장비 랩핑 제거 및 상태 확인, 정상
+  ③ 전면부 Leveling 및 후면부 임시 Docking Align 조정
+    -> 전면부 전장 Cable 장착 완료.",,
 2026-02-05,SLH1,김범규,"02.05
 
 SLH1
@@ -1059,3 +1059,6 @@ LD HANDPICKER T-TRAY SHOOTING 간 Err. 다량 발생.
 
 LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 ㄴ 수요일 검증 진행 예정.",,
+2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
+ - SLH1 #4 Dummy Running
+ - SLH1 #5 Side Door 장착",,
