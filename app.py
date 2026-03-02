@@ -31,8 +31,8 @@ BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 try:
     g = Github(st.secrets["GITHUB_TOKEN"])
     repo = g.get_repo(st.secrets["REPO_NAME"])
-    LOG_FILE_PATH = st.secrets["FILE_PATH"] # 업무일지 파일 경로
-    FLOW_FILE_PATH = "cs_flow_data.csv"     # 신규 CS Flow 파일 경로
+    LOG_FILE_PATH = st.secrets["FILE_PATH"] 
+    FLOW_FILE_PATH = "cs_flow_data.csv"     
 except Exception as e:
     st.error(f"⚠️ 연결 설정 오류: {e}")
     st.stop()
@@ -44,10 +44,8 @@ def get_log_data():
         df = pd.read_csv(io.StringIO(file_content.decoded_content.decode('utf-8-sig')))
         df = df.loc[:, ~df.columns.duplicated()]
         for col in ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"]:
-            if col not in df.columns: 
-                df[col] = ""
-            else:
-                df[col] = df[col].fillna("").astype(str)
+            if col not in df.columns: df[col] = ""
+            else: df[col] = df[col].fillna("").astype(str)
         df['날짜'] = pd.to_datetime(df['날짜']).dt.date.astype(str)
         return df.sort_values(by='날짜', ascending=False).reset_index(drop=True), file_content.sha
     except:
@@ -63,13 +61,10 @@ def get_flow_data():
     try:
         file_content = repo.get_contents(FLOW_FILE_PATH)
         df = pd.read_csv(io.StringIO(file_content.decoded_content.decode('utf-8-sig')))
-        
-        # 빈 칸 에러 방지를 위한 텍스트 변환
         text_columns = ["프로젝트명", "대항목", "작업내용", "상태", "비고", "첨부", "업데이트일"]
         for col in text_columns:
             if col in df.columns:
                 df[col] = df[col].fillna("").astype(str)
-                
         return df, file_content.sha
     except:
         cols = ["프로젝트명", "대항목", "순서", "작업내용", "상태", "비고", "첨부", "업데이트일"]
@@ -83,7 +78,6 @@ def save_flow_data(df, sha, message):
 
 EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
 
-# ★ 엑셀 원본 1~35번 대항목 및 순서 100% 복원, 영문 첫 글자 대문자 적용
 CS_TEMPLATE = [
     {"대항목": "공통", "순서": 1, "작업내용": "I/O Check\n- Out Put으로 동작 후 In Put LED 확인\n- Cylinder 정상 동작 확인\n- Manual에서 Cylinder 동작 후 LED 점등 확인\n- 미비된 부분 I/O List, PC에 저장 후 전장 수정 요청 진행\n- 전장 수정 후 수정되었는지 동작, LED 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
     {"대항목": "공통", "순서": 2, "작업내용": "공압 Leak Check", "상태": "⬜ 대기", "비고": "", "첨부": ""},
@@ -239,8 +233,6 @@ else:
                                 st.rerun()
 
             if project_list:
-                selected_proj = st.selectbox("📌 진행 상황을 확인할 프로젝트 선택", project_list)
-                
                 with col_b:
                     with st.expander("📁 현재 프로젝트에 새 대항목 추가"):
                         with st.form("new_cat_form", clear_on_submit=True):
@@ -256,26 +248,43 @@ else:
                                     save_flow_data(df_flow, sha_flow, f"Add Cat: {new_cat_name}")
                                     st.rerun()
 
+                # ★ 상단 우측으로 이동된 프로젝트 선택 / 저장 / 삭제 아이콘 UI
+                sel_col, empty_col, save_col, del_col = st.columns([6, 2, 1, 1])
+                with sel_col:
+                    selected_proj = st.selectbox("📌 진행 상황을 확인할 프로젝트 선택", project_list)
+                with save_col:
+                    st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+                    btn_save = st.button("💾 저장", use_container_width=True)
+                with del_col:
+                    st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+                    btn_del = st.button("🗑️ 삭제", use_container_width=True)
+
                 mask = df_flow["프로젝트명"] == selected_proj
                 proj_df = df_flow[mask].copy()
 
-                st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[작업내용]</b>을 더블클릭해 직접 수정할 수 있습니다.<br>2. 표 하단의 회색 빈칸을 클릭해 <b>[세부항목 추가]</b>가 가능하며, 행 선택 후 Delete 키로 <b>[삭제]</b>도 가능합니다.<br>3. 작업 후 하단의 <b>'저장'</b>을 누르면 순서 번호와 수정자 이름이 자동 세팅됩니다.</div>", unsafe_allow_html=True)
-
-                categories = proj_df["대항목"].unique()
-                edited_dfs = []
+                st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[작업내용]</b>을 더블클릭해 직접 수정할 수 있습니다.<br>2. 표 하단의 회색 빈칸을 클릭해 <b>[세부항목 추가]</b>가 가능하며, 행 선택 후 Delete 키로 <b>[삭제]</b>도 가능합니다.<br>3. 작업 후 우측 상단의 <b>'💾 저장'</b> 아이콘을 누르면 순서 번호와 수정자 이름이 갱신됩니다.</div>", unsafe_allow_html=True)
 
                 status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
+                
+                proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
+                groups = proj_df.groupby('group_id')
+                edited_dfs = []
 
-                for cat in categories:
-                    with st.expander(f"📍 대항목: {cat} 작업 리스트", expanded=False):
-                        cat_df = proj_df[proj_df["대항목"] == cat]
+                for group_id, group_df in groups:
+                    cat = group_df['대항목'].iloc[0]
+                    min_seq = group_df['순서'].min()
+                    max_seq = group_df['순서'].max()
+                    seq_title = f"No.{min_seq}" if min_seq == max_seq else f"No.{min_seq}~{max_seq}"
+
+                    with st.expander(f"📍 [{seq_title}] 대항목: {cat} 작업 리스트", expanded=False):
+                        display_df = group_df.drop(columns=['group_id'])
                         
                         edited_cat_df = st.data_editor(
-                            cat_df,
+                            display_df,
                             use_container_width=True,
                             hide_index=True,
                             num_rows="dynamic", 
-                            key=f"editor_{selected_proj}_{cat}",
+                            key=f"editor_{selected_proj}_{group_id}", 
                             column_config={
                                 "프로젝트명": None, 
                                 "대항목": None,    
@@ -292,11 +301,12 @@ else:
                         edited_cat_df["프로젝트명"] = selected_proj
                         edited_dfs.append(edited_cat_df)
 
-                if st.button("💾 변경된 모든 디테일 저장하기", type="primary", use_container_width=True):
+                # ★ 저장 및 삭제 버튼 동작 로직
+                if btn_save:
                     updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
                     
                     if not updated_proj_df.empty:
-                        updated_proj_df["순서"] = updated_proj_df.groupby("대항목").cumcount() + 1
+                        updated_proj_df["순서"] = range(1, len(updated_proj_df) + 1)
                         today_str = datetime.today().strftime('%y-%m-%d')
                         updated_proj_df["업데이트일"] = f"{st.session_state['user_name']} ({today_str})"
                     
@@ -306,26 +316,13 @@ else:
                     save_flow_data(df_flow, sha_flow, f"Update Flow: {selected_proj}")
                     st.success(f"✅ 수정자[{st.session_state['user_name']}] 님의 기록이 안전하게 저장되었습니다.")
                     st.rerun()
-                
-                st.divider()
-                
-                st.markdown("##### 📁 첨부 파일 FTP 경로 확인")
-                if edited_dfs:
-                    full_edited_df = pd.concat(edited_dfs, ignore_index=True)
-                    file_df = full_edited_df[full_edited_df["첨부"].str.strip() != ""].copy()
-                    
-                    if not file_df.empty:
-                        file_df["복사할경로"] = BASE_PATH_RAW + file_df["첨부"]
-                        st.dataframe(
-                            file_df[["작업내용", "복사할경로"]], 
-                            use_container_width=True, hide_index=True,
-                            column_config={
-                                "작업내용": st.column_config.TextColumn("대상 작업", width="medium"),
-                                "복사할경로": st.column_config.TextColumn("📎 클릭하여 경로 복사 (Ctrl+C)", width="large")
-                            }
-                        )
-                    else:
-                        st.caption("입력된 첨부 파일이 없습니다.")
+
+                if btn_del:
+                    df_flow = df_flow[~mask] # 현재 프로젝트에 해당하는 데이터 모두 지우기
+                    save_flow_data(df_flow, sha_flow, f"Delete Proj: {selected_proj}")
+                    st.warning(f"🗑️ [{selected_proj}] 프로젝트가 완전히 삭제되었습니다.")
+                    st.rerun()
+
             else:
                 st.info("진행 중인 프로젝트가 없습니다. [새 프로젝트 시작하기]를 통해 생성해 주세요.")
 
