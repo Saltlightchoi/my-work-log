@@ -31,8 +31,8 @@ BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 try:
     g = Github(st.secrets["GITHUB_TOKEN"])
     repo = g.get_repo(st.secrets["REPO_NAME"])
-    LOG_FILE_PATH = st.secrets["FILE_PATH"] # 업무일지 파일 경로
-    FLOW_FILE_PATH = "cs_flow_data.csv"     # 신규 CS Flow 파일 경로
+    LOG_FILE_PATH = st.secrets["FILE_PATH"] 
+    FLOW_FILE_PATH = "cs_flow_data.csv"     
 except Exception as e:
     st.error(f"⚠️ 연결 설정 오류: {e}")
     st.stop()
@@ -47,7 +47,6 @@ def get_log_data():
             if col not in df.columns: 
                 df[col] = ""
             else:
-                # 글자 데이터로 강제 변환 (에러 방지)
                 df[col] = df[col].fillna("").astype(str)
         df['날짜'] = pd.to_datetime(df['날짜']).dt.date.astype(str)
         return df.sort_values(by='날짜', ascending=False).reset_index(drop=True), file_content.sha
@@ -64,13 +63,10 @@ def get_flow_data():
     try:
         file_content = repo.get_contents(FLOW_FILE_PATH)
         df = pd.read_csv(io.StringIO(file_content.decoded_content.decode('utf-8-sig')))
-        
-        # [핵심 에러 해결 코드] 빈 칸이 Float으로 인식되는 것을 막기 위해 모든 텍스트 컬럼을 문자열로 강제 변환
         text_columns = ["프로젝트명", "대항목", "작업내용", "상태", "비고", "첨부", "업데이트일"]
         for col in text_columns:
             if col in df.columns:
                 df[col] = df[col].fillna("").astype(str)
-                
         return df, file_content.sha
     except:
         cols = ["프로젝트명", "대항목", "순서", "작업내용", "상태", "비고", "첨부", "업데이트일"]
@@ -84,26 +80,43 @@ def save_flow_data(df, sha, message):
 
 EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
 
+# 1~35번까지 모든 항목 포함 및 영문 첫 글자 대문자(Title Case) 적용 완료
 CS_TEMPLATE = [
-    {"대항목": "공통", "순서": 1, "작업내용": "i/o Check\n- OUP PUT으로 동작 후 IN PUT LED 확인\n- Cylinder 정상 동작 및 MANUAL 확인\n- 미비된 부분 I/O LIST, PC 저장 후 수정 요청", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "공통", "순서": 2, "작업내용": "공압 Leak check", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "공통", "순서": 3, "작업내용": "Cylinder Speed 조정 및 PART 위치 조정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "공통", "순서": 4, "작업내용": "전면부 후면부 1차 Levelling (Auto Leveler 사용)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Stacker", "순서": 5, "작업내용": "L/D 1,2, UL/D 1,2, emt, Reject Inverter 값 설정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "공통", "순서": 6, "작업내용": "Motor parameter setting 및 다회전 클리어 (S/W팀 요청)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Hand", "순서": 7, "작업내용": "Loader unloader X,Y축 직진도 (±0.5mm) SETTING 및 측정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Hand", "순서": 8, "작업내용": "L/D, UL/D Pitch, 높이(±0.15mm) SETTING 및 측정 (Double nut 조정)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Stacker", "순서": 9, "작업내용": "L/D, UL/D, Empty, Reject Base 평탄도(±0.2mm) SETTING", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Transfer", "순서": 10, "작업내용": "L/D, UL/D X,Y,Z축 직진도 평탄도(±0.3mm) SETTING 및 측정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "TEST", "순서": 11, "작업내용": "Front, Rear Press 평탄도(±0.25mm) SETTING 및 측정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "TEST", "순서": 12, "작업내용": "Front, Rear Press load cell(0.2, 0.29bar) SETTING 및 측정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "TEST", "순서": 13, "작업내용": "Front, Rear T-Tray Rail 평탄도(±0.2mm) SETTING", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Set plate", "순서": 14, "작업내용": "L/D, UL/D X축 직진도 및 평탄도(±0.2mm) SETTING", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Set plate", "순서": 15, "작업내용": "DOWN Hard Stopper 높이 SETTING (24mm) 및 측정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Middle", "순서": 16, "작업내용": "L/D, UL/D Gripper UP Cylinder Rod (37mm) SETTING", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Middle", "순서": 17, "작업내용": "L/D, UL/D Rail UP/DWON 높이,평탄,직진도 SETTING (T-TRAY 사용)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Input", "순서": 18, "작업내용": "Bottom Feeder UP Cylinder Rod(16.5mm) SETTING", "상태": "⬜ 대기", "비고": "", "첨부": ""},
-    {"대항목": "Output", "순서": 19, "작업내용": "Bottom Feeder UP Cylinder Rod(16.5mm) SETTING", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 1, "작업내용": "I/O Check\n- Out Put으로 동작 후 In Put Led 확인\n- Cylinder 정상 동작 확인\n- Manual에서 Cylinder 동작 후 Led 점등 확인\n- 미비된 부분 I/O List, Pc에 저장 후 전장 수정 요청 진행\n- 전장 수정 후 수정되었는지 동작, Led 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 2, "작업내용": "공압 Leak Check", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 3, "작업내용": "Cylinder Speed 조정 및 Part 위치 조정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 4, "작업내용": "전면부 후면부 1차 Levelling\n- Auto Leveler 사용\n- Stacker Base 상단 -> 바닥면 400mm", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Stacker", "순서": 5, "작업내용": "L/D 1, 2, Ul/D 1, 2, Emt, Reject Inverter 값 설정\n- 운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)\n- P3: 60, P4: 60(고속), P5: 30(중속), P6: 10(저속), P7: 5(가속), P8: 0(감속)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 6, "작업내용": "Motor Parameter Setting 및 다회전 클리어\n- S/W 팀 요청\n- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 7, "작업내용": "Precizer Up Rod 길이 변경 (57mm)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Hand", "순서": 8, "작업내용": "Loader Unloader X, Y축 직진도 (±0.5mm) Setting 및 측정\n- Dial Gauge Indicator 0.01mm(바늘)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Hand", "순서": 9, "작업내용": "L/D, Ul/D Pitch, 높이 (±0.15mm) Setting 및 측정\n- Dial Gauge Indicator 0.01mm(바늘)\n- Double Nut로 길이 조정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Stacker", "순서": 10, "작업내용": "L/D 1, 2, Ul/D 1, 2, Empty, Reject Base 평탄도 (±0.2mm) Setting 및 측정\n- 디지털 전자 수평계 사용 X, Y축 ±0.2mm 이내", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Transfer", "순서": 11, "작업내용": "L/D, Ul/D X, Y, Z축 직진도 평탄도 (±0.3mm) Setting 및 측정\n- Dial Gauge Indicator 0.01mm(바늘)\n- 모든 무두 볼트 풀어놓은 후 측정 후 무드 볼트 조정\n- Z축 ±Limit Sensor 이동, Hard Stopper 위치변경", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Test", "순서": 12, "작업내용": "Front, Rear Press 평탄도 (±0.25mm) Setting 및 측정\n- 디지털 거리 측정기, 측정 지그 사용\n- 무두 볼트 풀어놓은 후 측정 -> + 수치가 제일 큰 부분에 리셋 -> 무두 볼트 사용하여 평탄도 Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Test", "순서": 13, "작업내용": "Front, Rear Press Load Cell (0.2bar, 0.29bar) Setting 및 측정\n- Load Cell, 측정 지그\n- 언 컨텍 값(기구 이동 가능), 컨택값(해당 수치 도달 지점)\n- Load Cell 로드를 매치플레이트 X, Y 중간에서 컨택 해야함", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Test", "순서": 14, "작업내용": "Front, Rear T-Tray Rail 평탄도 (±0.2mm) Setting 및 측정\n- 디지털 전자 수평계 사용\n- 측정 위치: T-Tray 왼쪽 중간 오른쪽", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Set Plate", "순서": 15, "작업내용": "L/D 1, 2, Ul/D 1, 2 X축 직진도 (±0.2mm) (Gauge Block 사용) 평탄도 (±0.2mm) Setting 및 측정\n- Dial Gauge Indicator 0.01mm(바늘)\n- Gauge Block 사용", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Stacker", "순서": 16, "작업내용": "Reject Front Rear Base 높이 조정\n- Rear Base Cylinder Rod 최대로 내린뒤, Front를 무두 볼트 사용하여 Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Set Plate", "순서": 17, "작업내용": "L/D 1, 2, Ul/D 1, 2 Support Lock/Unlock Cylinder Rod Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Set Plate", "순서": 18, "작업내용": "L/D 1, 2, Ul/D 1, 2 Down Hard Stopper 높이 Setting (24mm) 및 측정\n- Ex) L/D 1, 2: 21mm, Ul/D 1, 2: 24mm Pass", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Middle", "순서": 19, "작업내용": "L/D, Ul/D Gripper Up Cylinder Rod (37mm) Setting\n- Cylinder 상단에서 Joint Nut 상단 까지 37mm Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Input", "순서": 20, "작업내용": "Bottom Feeder Up Cylinder Rod (16.5mm) Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Output", "순서": 21, "작업내용": "Bottom Feeder Up Cylinder Rod (16.5mm) Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 22, "작업내용": "전면부 후면부 Docking 및 Levelling\n- Auto Leveler 사용\n- Stacker Base 상단 -> 바닥면 400mm -> 전면부 풋 높이랑 동일하게 후면부 Setting\n- 전면부 Levelling -> Docking Pin 제거, 전면부 Cable Disconnect -> 후면부랑 전면부 Docking -> 후면부 Levelling -> Docking Pin 장착(안맞으면 빠루로 좌, 우 이동) -> Cable Connect", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Middle", "순서": 23, "작업내용": "L/D, Ul/D Rail Up/Down 높이, 평탄, 직진도 Setting (T-Tray 사용)\n- T-Tray 사용, Up/Down 상태에서 T-Tray가 흘려 내려가지 않게 Setting\n- Stopper 사용하여 Up/Down 높이 레벨 조정 (Up: 48.5mm, Down: 42.5mm)\n- Up 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽 Rail 위치 조정 필요", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 24, "작업내용": "배출 Fan 장착 및 전원 Connect 연결\n- I/O 번호 확인, Os에서 Fan Check 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Hand", "순서": 25, "작업내용": "L/D, Ul/D X, Y축 반복도 (±0.05mm) 측정 (10회)\n- Dial Gauge Indicator 0.01mm(바늘)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Transfer", "순서": 26, "작업내용": "L/D, Ul/D X, Z축 반복도 (±0.05mm) 측정 (10회)\n- Digital Indicator (0.001mm) 사용", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Input", "순서": 27, "작업내용": "Bottom Feeder X축 반복도 (±0.05mm) 측정 (10회)\n- Dial Gauge Indicator 0.01mm(바늘)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 28, "작업내용": "Transfer, Hand, Middle Feeder, Input, Output Motor Teaching", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 29, "작업내용": "후면부 덕트 -> 측면 (Door) -> 후면 (Door) -> 상부 Cover 장착 -> 부속 Cover 장착 Door Key, Door Sensor 장착 및 Os 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 30, "작업내용": "Ionizer Loader A-01, Unloader A-02 설정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 31, "작업내용": "접지 연결 및 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 32, "작업내용": "환경 검수 List 확인 및 품질팀 Support", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 33, "작업내용": "Initial 및 Long Run 진행 (T-Tray 미 사용)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 34, "작업내용": "Dry Run 진행 (T-Tray 사용)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 35, "작업내용": "Dummy Run 진행 및 Clear Alarm (3000회)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
 ]
 
 # --- 4. 메인 프로그램 ---
@@ -203,32 +216,52 @@ else:
 
             project_list = df_flow["프로젝트명"].unique().tolist() if not df_flow.empty else []
             
-            # 새 호기 생성
-            with st.expander("➕ 새 프로젝트(호기) 시작하기"):
-                with st.form("new_project_form", clear_on_submit=True):
-                    new_proj_name = st.text_input("새 프로젝트명 입력 (예: SLH1 #6호기)")
-                    if st.form_submit_button("엑셀 템플릿으로 공정표 생성"):
-                        if new_proj_name and new_proj_name not in project_list:
-                            new_rows = []
-                            for item in CS_TEMPLATE:
-                                item_copy = item.copy()
-                                item_copy["프로젝트명"] = new_proj_name
-                                item_copy["업데이트일"] = str(datetime.today().date())
-                                new_rows.append(item_copy)
-                            df_flow = pd.concat([df_flow, pd.DataFrame(new_rows)], ignore_index=True)
-                            save_flow_data(df_flow, sha_flow, f"Create Proj: {new_proj_name}")
-                            st.success(f"[{new_proj_name}] CS 작업 시트가 생성되었습니다!")
-                            st.rerun()
+            col_a, col_b = st.columns(2)
+            
+            with col_a:
+                with st.expander("➕ 새 프로젝트(호기) 시작하기"):
+                    with st.form("new_project_form", clear_on_submit=True):
+                        new_proj_name = st.text_input("새 프로젝트명 입력 (예: SLH1 #6호기)")
+                        if st.form_submit_button("엑셀 템플릿으로 생성"):
+                            if new_proj_name and new_proj_name not in project_list:
+                                new_rows = []
+                                for item in CS_TEMPLATE:
+                                    item_copy = item.copy()
+                                    item_copy["프로젝트명"] = new_proj_name
+                                    item_copy["업데이트일"] = ""
+                                    new_rows.append(item_copy)
+                                df_flow = pd.concat([df_flow, pd.DataFrame(new_rows)], ignore_index=True)
+                                save_flow_data(df_flow, sha_flow, f"Create Proj: {new_proj_name}")
+                                st.success(f"[{new_proj_name}] 생성 완료!")
+                                st.rerun()
 
             if project_list:
                 selected_proj = st.selectbox("📌 진행 상황을 확인할 프로젝트 선택", project_list)
+                
+                with col_b:
+                    with st.expander("📁 현재 프로젝트에 새 대항목 추가"):
+                        with st.form("new_cat_form", clear_on_submit=True):
+                            new_cat_name = st.text_input("추가할 그룹명 (예: Packing, 출하검수)")
+                            if st.form_submit_button("그룹 생성"):
+                                if new_cat_name:
+                                    new_cat_row = pd.DataFrame([{
+                                        "프로젝트명": selected_proj, "대항목": new_cat_name, "순서": 1,
+                                        "작업내용": "신규 작업 내용을 입력하세요", "상태": "⬜ 대기",
+                                        "비고": "", "첨부": "", "업데이트일": ""
+                                    }])
+                                    df_flow = pd.concat([df_flow, new_cat_row], ignore_index=True)
+                                    save_flow_data(df_flow, sha_flow, f"Add Cat: {new_cat_name}")
+                                    st.rerun()
+
                 mask = df_flow["프로젝트명"] == selected_proj
                 proj_df = df_flow[mask].copy()
 
-                st.markdown("<div class='info-box'>💡 <b>사용 가이드:</b> <b>상태(대기, 작업중, 완료, 진행불가)</b>를 선택하면 이모지로 쉽게 구분이 가능합니다. 사진은 <b>[첨부]</b>란에 이름만 기재하고, 다 적은 뒤엔 꼭 하단의 <b>'저장'</b> 버튼을 누르세요.</div>", unsafe_allow_html=True)
+                st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[작업내용]</b>을 더블클릭해 직접 수정할 수 있습니다.<br>2. 표 하단의 회색 빈칸을 클릭해 <b>[세부항목 추가]</b>가 가능하며, 행 선택 후 Delete 키로 <b>[삭제]</b>도 가능합니다.<br>3. 작업 후 하단의 <b>'저장'</b>을 누르면 순서 번호와 수정자 이름이 자동 세팅됩니다.</div>", unsafe_allow_html=True)
 
                 categories = proj_df["대항목"].unique()
                 edited_dfs = []
+
+                status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
 
                 for cat in categories:
                     with st.expander(f"📍 대항목: {cat} 작업 리스트", expanded=False):
@@ -238,49 +271,58 @@ else:
                             cat_df,
                             use_container_width=True,
                             hide_index=True,
+                            num_rows="dynamic", 
                             key=f"editor_{selected_proj}_{cat}",
                             column_config={
                                 "프로젝트명": None, 
                                 "대항목": None,    
                                 "순서": st.column_config.NumberColumn("No.", disabled=True, width="small"),
-                                "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", disabled=True, width="large"),
-                                "상태": st.column_config.SelectboxColumn("상태", options=["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 진행불가"], width="small", required=True),
+                                "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width="large"), 
+                                "상태": st.column_config.SelectboxColumn("상태", options=status_options, width="small", required=True), 
                                 "비고": st.column_config.TextColumn("⚠️ 비고 / 보류사유", width="large"),
                                 "첨부": st.column_config.TextColumn("📎 첨부(파일명)", width="small"),
-                                "업데이트일": st.column_config.TextColumn("수정일", disabled=True)
+                                "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="medium") 
                             }
                         )
+                        
+                        edited_cat_df["대항목"] = cat
+                        edited_cat_df["프로젝트명"] = selected_proj
                         edited_dfs.append(edited_cat_df)
 
                 if st.button("💾 변경된 모든 디테일 저장하기", type="primary", use_container_width=True):
                     updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
-                    updated_proj_df["업데이트일"] = str(datetime.today().date())
+                    
+                    if not updated_proj_df.empty:
+                        updated_proj_df["순서"] = updated_proj_df.groupby("대항목").cumcount() + 1
+                        today_str = datetime.today().strftime('%y-%m-%d')
+                        updated_proj_df["업데이트일"] = f"{st.session_state['user_name']} ({today_str})"
                     
                     df_flow = df_flow[~mask] 
                     df_flow = pd.concat([df_flow, updated_proj_df], ignore_index=True)
                     
                     save_flow_data(df_flow, sha_flow, f"Update Flow: {selected_proj}")
-                    st.success("✅ 공정 상황이 안전하게 저장되었습니다.")
+                    st.success(f"✅ 수정자[{st.session_state['user_name']}] 님의 기록이 안전하게 저장되었습니다.")
                     st.rerun()
                 
                 st.divider()
                 
                 st.markdown("##### 📁 첨부 파일 FTP 경로 확인")
-                full_edited_df = pd.concat(edited_dfs, ignore_index=True)
-                file_df = full_edited_df[full_edited_df["첨부"].str.strip() != ""].copy()
-                
-                if not file_df.empty:
-                    file_df["복사할경로"] = BASE_PATH_RAW + file_df["첨부"]
-                    st.dataframe(
-                        file_df[["작업내용", "복사할경로"]], 
-                        use_container_width=True, hide_index=True,
-                        column_config={
-                            "작업내용": st.column_config.TextColumn("대상 작업", width="medium"),
-                            "복사할경로": st.column_config.TextColumn("📎 클릭하여 경로 복사 (Ctrl+C)", width="large")
-                        }
-                    )
-                else:
-                    st.caption("입력된 첨부 파일이 없습니다.")
+                if edited_dfs:
+                    full_edited_df = pd.concat(edited_dfs, ignore_index=True)
+                    file_df = full_edited_df[full_edited_df["첨부"].str.strip() != ""].copy()
+                    
+                    if not file_df.empty:
+                        file_df["복사할경로"] = BASE_PATH_RAW + file_df["첨부"]
+                        st.dataframe(
+                            file_df[["작업내용", "복사할경로"]], 
+                            use_container_width=True, hide_index=True,
+                            column_config={
+                                "작업내용": st.column_config.TextColumn("대상 작업", width="medium"),
+                                "복사할경로": st.column_config.TextColumn("📎 클릭하여 경로 복사 (Ctrl+C)", width="large")
+                            }
+                        )
+                    else:
+                        st.caption("입력된 첨부 파일이 없습니다.")
             else:
                 st.info("진행 중인 프로젝트가 없습니다. [새 프로젝트 시작하기]를 통해 생성해 주세요.")
 
