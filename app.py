@@ -226,7 +226,18 @@ def render_cs_flow_page(db_flow):
                     group_df.drop(columns=['group_id']).reset_index(drop=True),
                     use_container_width=True, hide_index=True, num_rows="dynamic",
                     key=f"editor_{selected_proj}_{group_id}",
-                    column_config=custom_column_config # ★ 픽셀 단위 설정 적용!
+                    # ★ 픽셀 숫자 에러 완벽 해결! Streamlit 전용 옵션으로 비율 최적화 ★
+        status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
+        custom_column_config = {
+            "프로젝트명": None, 
+            "대항목": None,    
+            "순서": st.column_config.NumberColumn("No", disabled=True, width="small"), # 가장 좁게
+            "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width="large"), # 가장 넓게
+            "상태": st.column_config.SelectboxColumn("상태", options=status_options, width="small", required=True), # 좁게
+            "비고": st.column_config.TextColumn("⚠️ 비고 / 보류사유", width="large"), # 넓게
+            "첨부": st.column_config.TextColumn("📎 첨부(파일명)", width="small"), # 좁게
+            "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="medium") # 중간
+        }
                 )
                 edited_cat_df["대항목"] = cat
                 edited_cat_df["프로젝트명"] = selected_proj
@@ -292,4 +303,5 @@ if __name__ == "__main__":
     main()
 if __name__ == "__main__":
     main()
+
 
