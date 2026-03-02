@@ -44,7 +44,11 @@ def get_log_data():
         df = pd.read_csv(io.StringIO(file_content.decoded_content.decode('utf-8-sig')))
         df = df.loc[:, ~df.columns.duplicated()]
         for col in ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"]:
-            if col not in df.columns: df[col] = ""
+            if col not in df.columns: 
+                df[col] = ""
+            else:
+                # 글자 데이터로 강제 변환 (에러 방지)
+                df[col] = df[col].fillna("").astype(str)
         df['날짜'] = pd.to_datetime(df['날짜']).dt.date.astype(str)
         return df.sort_values(by='날짜', ascending=False).reset_index(drop=True), file_content.sha
     except:
@@ -60,6 +64,13 @@ def get_flow_data():
     try:
         file_content = repo.get_contents(FLOW_FILE_PATH)
         df = pd.read_csv(io.StringIO(file_content.decoded_content.decode('utf-8-sig')))
+        
+        # [핵심 에러 해결 코드] 빈 칸이 Float으로 인식되는 것을 막기 위해 모든 텍스트 컬럼을 문자열로 강제 변환
+        text_columns = ["프로젝트명", "대항목", "작업내용", "상태", "비고", "첨부", "업데이트일"]
+        for col in text_columns:
+            if col in df.columns:
+                df[col] = df[col].fillna("").astype(str)
+                
         return df, file_content.sha
     except:
         cols = ["프로젝트명", "대항목", "순서", "작업내용", "상태", "비고", "첨부", "업데이트일"]
@@ -73,7 +84,6 @@ def save_flow_data(df, sha, message):
 
 EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
 
-# 배경색 에러를 유발하지 않도록 이모지 기반으로 템플릿 변경
 CS_TEMPLATE = [
     {"대항목": "공통", "순서": 1, "작업내용": "i/o Check\n- OUP PUT으로 동작 후 IN PUT LED 확인\n- Cylinder 정상 동작 및 MANUAL 확인\n- 미비된 부분 I/O LIST, PC 저장 후 수정 요청", "상태": "⬜ 대기", "비고": "", "첨부": ""},
     {"대항목": "공통", "순서": 2, "작업내용": "공압 Leak check", "상태": "⬜ 대기", "비고": "", "첨부": ""},
@@ -111,7 +121,7 @@ if not st.session_state['logged_in']:
                 st.session_state['user_name'] = name
                 st.rerun()
 else:
-    side_col1, side_col2 = st.sidebar.columns([5, 3]) # 구버전 에러 방지를 위해 vertical_alignment 옵션 제거
+    side_col1, side_col2 = st.sidebar.columns([5, 3])
     with side_col1:
         st.markdown(f"<p style='font-size: 12px; color: #aaaaaa; margin-top: 8px;'>👤 {st.session_state['user_name']} 님</p>", unsafe_allow_html=True)
     with side_col2:
@@ -220,7 +230,6 @@ else:
                 categories = proj_df["대항목"].unique()
                 edited_dfs = []
 
-                # 대항목별로 표 생성 (Styler 제거로 에러 완벽 해결)
                 for cat in categories:
                     with st.expander(f"📍 대항목: {cat} 작업 리스트", expanded=False):
                         cat_df = proj_df[proj_df["대항목"] == cat]
@@ -231,8 +240,8 @@ else:
                             hide_index=True,
                             key=f"editor_{selected_proj}_{cat}",
                             column_config={
-                                "프로젝트명": None, # 화면 숨김
-                                "대항목": None,    # 화면 숨김
+                                "프로젝트명": None, 
+                                "대항목": None,    
                                 "순서": st.column_config.NumberColumn("No.", disabled=True, width="small"),
                                 "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", disabled=True, width="large"),
                                 "상태": st.column_config.SelectboxColumn("상태", options=["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 진행불가"], width="small", required=True),
