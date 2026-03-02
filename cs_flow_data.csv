@@ -1,26 +1,4 @@
 프로젝트명,대항목,순서,작업내용,상태,비고,첨부,업데이트일
-SLH1 #6호기,공통,1,"i/o Check
-- OUP PUT으로 동작 후 IN PUT LED 확인
-- Cylinder 정상 동작 및 MANUAL 확인
-- 미비된 부분 I/O LIST, PC 저장 후 수정 요청",대기,,,2026-03-02
-SLH1 #6호기,공통,2,공압 Leak check,대기,,,2026-03-02
-SLH1 #6호기,공통,3,Cylinder Speed 조정 및 PART 위치 조정,대기,,,2026-03-02
-SLH1 #6호기,공통,4,전면부 후면부 1차 Levelling (Auto Leveler 사용),대기,,,2026-03-02
-SLH1 #6호기,Stacker,5,"L/D 1,2, UL/D 1,2, emt, Reject Inverter 값 설정",대기,,,2026-03-02
-SLH1 #6호기,공통,6,Motor parameter setting 및 다회전 클리어 (S/W팀 요청),대기,,,2026-03-02
-SLH1 #6호기,Hand,7,"Loader unloader X,Y축 직진도 (±0.5mm) SETTING 및 측정",대기,,,2026-03-02
-SLH1 #6호기,Hand,8,"L/D, UL/D Pitch, 높이(±0.15mm) SETTING 및 측정 (Double nut 조정)",대기,,,2026-03-02
-SLH1 #6호기,Stacker,9,"L/D, UL/D, Empty, Reject Base 평탄도(±0.2mm) SETTING",대기,,,2026-03-02
-SLH1 #6호기,Transfer,10,"L/D, UL/D X,Y,Z축 직진도 평탄도(±0.3mm) SETTING 및 측정",대기,,,2026-03-02
-SLH1 #6호기,TEST,11,"Front, Rear Press 평탄도(±0.25mm) SETTING 및 측정",대기,,,2026-03-02
-SLH1 #6호기,TEST,12,"Front, Rear Press load cell(0.2, 0.29bar) SETTING 및 측정",대기,,,2026-03-02
-SLH1 #6호기,TEST,13,"Front, Rear T-Tray Rail 평탄도(±0.2mm) SETTING",대기,,,2026-03-02
-SLH1 #6호기,Set plate,14,"L/D, UL/D X축 직진도 및 평탄도(±0.2mm) SETTING",대기,,,2026-03-02
-SLH1 #6호기,Set plate,15,DOWN Hard Stopper 높이 SETTING (24mm) 및 측정,대기,,,2026-03-02
-SLH1 #6호기,Middle,16,"L/D, UL/D Gripper UP Cylinder Rod (37mm) SETTING",대기,,,2026-03-02
-SLH1 #6호기,Middle,17,"L/D, UL/D Rail UP/DWON 높이,평탄,직진도 SETTING (T-TRAY 사용)",대기,,,2026-03-02
-SLH1 #6호기,Input,18,Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,대기,,,2026-03-02
-SLH1 #6호기,Output,19,Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,대기,,,2026-03-02
 SLH1 #5호기,공통,1,"I/O Check
 - Out Put으로 동작 후 In Put LED 확인
 - Cylinder 정상 동작 확인
