@@ -115,7 +115,12 @@ def render_work_log_page(db_log):
 
     elif mode == "✏️ 수정":
         if not df_log.empty:
-            edit_idx = st.sidebar.selectbox("대상 선택", options=df_log.index, format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']}")
+            # ★ 수정 시: 날짜, 장비명 뒤에 업무 내용 앞부분이 보이도록 개선
+            edit_idx = st.sidebar.selectbox(
+                "대상 선택", 
+                options=df_log.index, 
+                format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']} | {str(df_log.iloc[x]['업무내용'])[:15]}..."
+            )
             with st.sidebar.form("edit_form"):
                 e_date = st.date_input("날짜 수정", pd.to_datetime(df_log.loc[edit_idx, "날짜"]))
                 e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(df_log.loc[edit_idx, "장비"]) if df_log.loc[edit_idx, "장비"] in EQUIPMENT_OPTIONS else 0)
@@ -129,7 +134,12 @@ def render_work_log_page(db_log):
 
     elif mode == "❌ 삭제":
         if not df_log.empty:
-            del_idx = st.sidebar.selectbox("삭제 선택", options=df_log.index, format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']}")
+            # ★ 삭제 시: 날짜, 장비명 뒤에 업무 내용 앞부분이 보이도록 개선
+            del_idx = st.sidebar.selectbox(
+                "삭제 선택", 
+                options=df_log.index, 
+                format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']} | {str(df_log.iloc[x]['업무내용'])[:15]}..."
+            )
             if st.sidebar.button("🗑️ 최종 삭제", use_container_width=True):
                 db_log.save(df_log.drop(del_idx), sha_log, "Delete Log")
                 st.rerun()
@@ -174,20 +184,14 @@ def render_cs_flow_page(db_flow):
         with st.expander("➕ 새 프로젝트(호기) 시작하기"):
             with st.form("new_proj_form", clear_on_submit=True):
                 new_proj = st.text_input("새 프로젝트명 (예: SLH1 #7호기)")
-                
-                # ★ 핵심 추가: 복사할 템플릿/기존 프로젝트 선택 옵션 ★
                 source_options = ["기본 템플릿(초기화 상태)"] + project_list
                 source_proj = st.selectbox("어떤 형식과 내용을 복사해서 생성할까요?", source_options)
 
                 if st.form_submit_button("프로젝트 생성하기") and new_proj and new_proj not in project_list:
-                    
                     if source_proj == "기본 템플릿(초기화 상태)":
-                        # 기본 템플릿으로 생성할 경우
                         new_df = pd.DataFrame(CS_TEMPLATE)
                     else:
-                        # 기존 프로젝트(예: 6호기)를 통째로 복사해서 생성할 경우
                         new_df = df_flow[df_flow["프로젝트명"] == source_proj].copy()
-                        # 작업 상태만 백지(초기화)로 만들어 줍니다. 수정한 카테고리/내용은 그대로 유지!
                         new_df["상태"] = "⬜ 대기"
                         new_df["비고"] = ""
                         new_df["첨부"] = ""
@@ -195,13 +199,11 @@ def render_cs_flow_page(db_flow):
 
                     new_df["프로젝트명"] = new_proj
                     
-                    # 그룹/순서 넘버링 재정비
                     new_df['group_id'] = (new_df['대항목'] != new_df['대항목'].shift()).cumsum()
                     unique_names = {}
                     counts = {}
                     for gid in new_df['group_id'].unique():
                         cat = new_df.loc[new_df['group_id'] == gid, '대항목'].iloc[0]
-                        # 이미 (2) 같은 꼬리표가 있으면 떼고 원본 이름만 추출해서 다시 계산
                         base_cat = cat.split(" (")[0] if " (" in cat else cat 
                         
                         if base_cat not in counts:
