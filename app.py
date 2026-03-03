@@ -198,10 +198,10 @@ def render_cs_flow_page(db_flow):
         mask = df_flow["프로젝트명"] == selected_proj
         proj_df = df_flow[mask].copy()
 
-        # ★ 사용자 요청: 대항목 자체의 이름을 수정하고 추가하는 전용 관리 메뉴
+        # ★ 대항목(그룹) 관리 메뉴 (추가 / 변경 / 삭제 3가지 기능)
         with col_b:
-            with st.expander("📁 대항목(그룹) 관리 메뉴 - 이름 변경/추가"):
-                tab_add, tab_ren = st.tabs(["➕ 새 그룹 추가", "✏️ 기존 그룹 이름 변경"])
+            with st.expander("📁 대항목(그룹) 관리 메뉴 (추가/변경/삭제)"):
+                tab_add, tab_ren, tab_del = st.tabs(["➕ 새 그룹 추가", "✏️ 기존 그룹 이름 변경", "🗑️ 그룹 통째로 삭제"])
                 
                 with tab_add:
                     with st.form("new_cat_form", clear_on_submit=True):
@@ -221,20 +221,34 @@ def render_cs_flow_page(db_flow):
                         old_cat_name = st.selectbox("이름을 바꿀 대항목 선택", existing_cats)
                         renamed_cat_name = st.text_input("변경할 새로운 이름 입력")
                         if st.form_submit_button("이름 변경 적용") and renamed_cat_name:
-                            # 엑셀 데이터 안의 해당 대항목 이름을 일괄적으로 싹 바꿔줍니다.
                             df_flow.loc[(df_flow['프로젝트명'] == selected_proj) & (df_flow['대항목'] == old_cat_name), '대항목'] = renamed_cat_name
                             db_flow.save(df_flow, sha_flow, f"Rename Cat: {old_cat_name} -> {renamed_cat_name}")
                             st.success(f"[{old_cat_name}]이(가) [{renamed_cat_name}](으)로 변경되었습니다!")
                             st.rerun()
+                
+                with tab_del:
+                    with st.form("delete_cat_form", clear_on_submit=True):
+                        existing_cats = proj_df['대항목'].unique()
+                        del_cat_name = st.selectbox("삭제할 대항목(그룹) 선택", existing_cats)
+                        st.error("⚠️ 주의: 해당 그룹을 삭제하면 안에 있는 모든 세부 작업 내용도 함께 영구 삭제됩니다!")
+                        confirm_del = st.checkbox("네, 모두 삭제하는 것에 동의합니다.")
+                        if st.form_submit_button("그룹 완전히 삭제하기"):
+                            if confirm_del and del_cat_name:
+                                # 선택된 프로젝트 안의 해당 대항목 데이터만 일괄 삭제
+                                df_flow = df_flow[~((df_flow['프로젝트명'] == selected_proj) & (df_flow['대항목'] == del_cat_name))]
+                                db_flow.save(df_flow, sha_flow, f"Delete Cat: {del_cat_name}")
+                                st.success(f"[{del_cat_name}] 그룹이 성공적으로 삭제되었습니다!")
+                                st.rerun()
+                            elif not confirm_del:
+                                st.warning("삭제를 진행하시려면 체크박스에 동의해주세요.")
         
-        st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[대항목 이름 수정]</b>은 바로 위쪽의 <b>'대항목 관리 메뉴'</b>를 이용하세요.<br>2. <b>[순서 변경]</b>: 표 안의 'No' 칸 숫자를 지우고 원하는 숫자로 입력 후 우측 상단의 저장 버튼을 누르면 위아래로 이동합니다.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[대항목 관리]</b>은 바로 위쪽의 <b>'대항목 관리 메뉴'</b>를 이용하세요.<br>2. <b>[순서 변경]</b>: 표 안의 'No' 칸 숫자를 지우고 원하는 숫자로 입력 후 우측 상단의 저장 버튼을 누르면 위아래로 이동합니다.</div>", unsafe_allow_html=True)
 
         status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
 
-        # ★ 표 설정 복구: 대항목 칸은 화면에서 숨기고 엑셀 원본처럼 깔끔하게 만듦
         custom_column_config = {
             "프로젝트명": None, 
-            "대항목": None, # 화면에서 숨김 처리
+            "대항목": None,
             "순서": st.column_config.NumberColumn("No(순서수정)", disabled=False, width="small"), 
             "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width="large"), 
             "상태": st.column_config.SelectboxColumn("상태", options=status_options, width="small", required=True), 
@@ -262,7 +276,6 @@ def render_cs_flow_page(db_flow):
                     column_order=["순서", "작업내용", "상태", "비고", "첨부", "업데이트일"]
                 )
                 
-                # 수정한 사람 이름 기록 로직
                 for idx, new_row in edited_cat_df.iterrows():
                     if new_row['상태'] == "⬜ 대기":
                         edited_cat_df.at[idx, '업데이트일'] = ""
@@ -283,11 +296,9 @@ def render_cs_flow_page(db_flow):
                 edited_cat_df["프로젝트명"] = selected_proj
                 edited_dfs.append(edited_cat_df)
 
-        # 내용 저장 및 순서 정렬
         if btn_save:
             updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
             if not updated_proj_df.empty:
-                # 사용자가 No 칸의 숫자를 바꿨을 때 해당 대항목 탭 안에서 위아래로 섞어줌
                 updated_proj_df = updated_proj_df.sort_values(by=['대항목', '순서'], kind='stable')
                 
                 updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
@@ -337,7 +348,6 @@ def main():
             st.session_state['logged_in'] = False
             st.rerun()
         
-        # 사이드바 메뉴는 완전히 숨기고 상단 버튼으로만 이동
         if st.session_state['current_page'] == "업무일지": 
             render_work_log_page(db_log)
         else: 
