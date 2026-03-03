@@ -134,7 +134,7 @@ def render_work_log_page(db_log):
                 db_log.save(df_log.drop(del_idx), sha_log, "Delete Log")
                 st.rerun()
 
-    # ★ 네비게이션 헤더 디자인 (좌측 제목, 우측 버튼)
+    # ★ 네비게이션 헤더 (업무일지 페이지)
     col_title, col_excel, col_btn = st.columns([5, 1.5, 2.5])
     with col_title:
         st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
@@ -157,7 +157,7 @@ def render_work_log_page(db_log):
 def render_cs_flow_page(db_flow):
     df_flow, sha_flow = db_flow.load()
     
-    # ★ 네비게이션 헤더 디자인 (좌측 제목, 우측 버튼)
+    # ★ 네비게이션 헤더 (CS Flow 페이지)
     col_title, col_empty, col_btn = st.columns([6.5, 0.5, 2.5])
     with col_title:
         st.markdown("<div class='main-title'>⚙️ CS 작업 체크 시트 (대항목 관리)</div>", unsafe_allow_html=True)
@@ -211,7 +211,7 @@ def render_cs_flow_page(db_flow):
         mask = df_flow["프로젝트명"] == selected_proj
         proj_df = df_flow[mask].copy()
         
-        st.markdown("<div class='info-box'>💡 <b>편리한 이동 및 수정 방법!</b> <br>1. <b>[대항목 이름 변경/이동]</b>: '📁 소속 대항목' 칸의 <b>글씨를 직접 타이핑해서 수정</b>하고 저장하세요! 모서리를 잡아 내리면 엑셀처럼 한 번에 쭉 복사됩니다.<br>2. <b>[순서 변경]</b>: 'No' 칸의 숫자를 원하는 순서로 수정 후 저장하면 알아서 위아래로 정렬됩니다!</div>", unsafe_allow_html=True)
+        st.markdown("<div class='info-box'>💡 <b>편리한 이동 및 대항목 수정 방법!</b> <br>1. <b>[대항목 이름 변경/이동]</b>: '📁 소속 대항목' 칸의 <b>글씨를 직접 타이핑해서 수정</b>하고 저장하세요! 모서리를 잡아 내리면 엑셀처럼 한 번에 쭉 복사됩니다.<br>2. <b>[순서 변경]</b>: 'No' 칸의 숫자를 원하는 순서로 수정 후 저장하면 알아서 위아래로 정렬됩니다!</div>", unsafe_allow_html=True)
 
         status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
 
@@ -269,18 +269,15 @@ def render_cs_flow_page(db_flow):
         if btn_save:
             updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
             if not updated_proj_df.empty:
-                # 1. 탭(대항목)의 원래 순서를 기억하여, 이름이 바뀌어도 기존 흐름에서 너무 벗어나지 않도록 유지
                 new_cat_order = []
                 for c in updated_proj_df['대항목']:
                     if c not in new_cat_order:
                         new_cat_order.append(c)
                 
-                # 2. 대항목을 기준으로 1차 정렬 -> 사용자가 입력한 '순서(No)' 기준으로 2차 정렬
                 updated_proj_df['대항목'] = pd.Categorical(updated_proj_df['대항목'], categories=new_cat_order, ordered=True)
                 updated_proj_df = updated_proj_df.sort_values(by=['대항목', '순서'])
                 updated_proj_df['대항목'] = updated_proj_df['대항목'].astype(str)
                 
-                # 3. 정렬된 상태에서 탭을 다시 묶어주고 1,2,3... 순서번호 예쁘게 초기화
                 updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
                 updated_proj_df["순서"] = updated_proj_df.groupby('group_id').cumcount() + 1
                 updated_proj_df = updated_proj_df.drop(columns=['group_id']).reset_index(drop=True)
@@ -310,7 +307,7 @@ def main():
         st.error(f"⚠️ 연결 설정 오류: {e}")
         return
 
-    # ★ 페이지 상태 관리 초기화
+    # ★ 페이지 상태 관리 초기화 (앱 최초 실행 시)
     if 'current_page' not in st.session_state: 
         st.session_state['current_page'] = "업무일지"
 
@@ -329,8 +326,7 @@ def main():
             st.session_state['logged_in'] = False
             st.rerun()
         
-        # ★ 상단 이동 버튼을 위해 사이드바 메뉴는 완전히 숨겼습니다!
-        
+        # 사이드바의 페이지 선택 라디오 버튼은 숨기고, 세션 스테이트(current_page) 값으로 렌더링
         if st.session_state['current_page'] == "업무일지": 
             render_work_log_page(db_log)
         else: 
@@ -338,6 +334,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-if __name__ == "__main__":
-    main()
-
