@@ -134,7 +134,6 @@ def render_work_log_page(db_log):
                 db_log.save(df_log.drop(del_idx), sha_log, "Delete Log")
                 st.rerun()
 
-    # 상단 네비게이션 헤더
     col_title, col_excel, col_btn = st.columns([5, 1.5, 2.5])
     with col_title:
         st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
@@ -157,7 +156,6 @@ def render_work_log_page(db_log):
 def render_cs_flow_page(db_flow):
     df_flow, sha_flow = db_flow.load()
     
-    # 상단 네비게이션 헤더
     col_title, col_empty, col_btn = st.columns([6.5, 0.5, 2.5])
     with col_title:
         st.markdown("<div class='main-title'>⚙️ CS 작업 체크 시트 (대항목 관리)</div>", unsafe_allow_html=True)
@@ -180,8 +178,23 @@ def render_cs_flow_page(db_flow):
                     new_df = pd.DataFrame(CS_TEMPLATE)
                     new_df["프로젝트명"] = new_proj
                     new_df["업데이트일"] = ""
+                    
+                    # ★ 동일한 이름의 대항목을 구분하기 위해 (2), (3)을 자동으로 붙이는 로직 ★
                     new_df['group_id'] = (new_df['대항목'] != new_df['대항목'].shift()).cumsum()
+                    unique_names = {}
+                    counts = {}
+                    for gid in new_df['group_id'].unique():
+                        cat = new_df.loc[new_df['group_id'] == gid, '대항목'].iloc[0]
+                        if cat not in counts:
+                            counts[cat] = 1
+                            unique_names[gid] = cat
+                        else:
+                            counts[cat] += 1
+                            unique_names[gid] = f"{cat} ({counts[cat]})"
+                            
+                    new_df['대항목'] = new_df['group_id'].map(unique_names)
                     new_df["순서"] = new_df.groupby('group_id').cumcount() + 1
+                    
                     db_flow.save(pd.concat([df_flow, new_df.drop(columns=['group_id'])], ignore_index=True), sha_flow, f"Create: {new_proj}")
                     st.rerun()
 
@@ -198,43 +211,55 @@ def render_cs_flow_page(db_flow):
         mask = df_flow["프로젝트명"] == selected_proj
         proj_df = df_flow[mask].copy()
 
-        # ★ 대항목(그룹) 관리 메뉴 (추가 / 변경 / 삭제 3가지 기능)
         with col_b:
             with st.expander("📁 대항목(그룹) 관리 메뉴 (추가/변경/삭제)"):
                 tab_add, tab_ren, tab_del = st.tabs(["➕ 새 그룹 추가", "✏️ 기존 그룹 이름 변경", "🗑️ 그룹 통째로 삭제"])
+                
+                existing_cats = proj_df['대항목'].unique().tolist()
                 
                 with tab_add:
                     with st.form("new_cat_form", clear_on_submit=True):
                         new_cat_name = st.text_input("추가할 그룹명 (예: Packing)")
                         if st.form_submit_button("새 그룹 생성") and new_cat_name:
+                            # ★ 사용자가 입력한 이름이 이미 있다면, 충돌하지 않게 (2)를 붙여주는 안전장치 ★
+                            final_cat_name = new_cat_name
+                            counter = 2
+                            while final_cat_name in existing_cats:
+                                final_cat_name = f"{new_cat_name} ({counter})"
+                                counter += 1
+                                
                             new_cat_row = pd.DataFrame([{
-                                "프로젝트명": selected_proj, "대항목": new_cat_name, "순서": 1,
+                                "프로젝트명": selected_proj, "대항목": final_cat_name, "순서": 1,
                                 "작업내용": "신규 작업 내용을 입력하세요", "상태": "⬜ 대기",
                                 "비고": "", "첨부": "", "업데이트일": ""
                             }])
-                            db_flow.save(pd.concat([df_flow, new_cat_row], ignore_index=True), sha_flow, f"Add Cat: {new_cat_name}")
+                            db_flow.save(pd.concat([df_flow, new_cat_row], ignore_index=True), sha_flow, f"Add Cat: {final_cat_name}")
                             st.rerun()
 
                 with tab_ren:
                     with st.form("rename_cat_form", clear_on_submit=True):
-                        existing_cats = proj_df['대항목'].unique()
                         old_cat_name = st.selectbox("이름을 바꿀 대항목 선택", existing_cats)
                         renamed_cat_name = st.text_input("변경할 새로운 이름 입력")
                         if st.form_submit_button("이름 변경 적용") and renamed_cat_name:
-                            df_flow.loc[(df_flow['프로젝트명'] == selected_proj) & (df_flow['대항목'] == old_cat_name), '대항목'] = renamed_cat_name
-                            db_flow.save(df_flow, sha_flow, f"Rename Cat: {old_cat_name} -> {renamed_cat_name}")
-                            st.success(f"[{old_cat_name}]이(가) [{renamed_cat_name}](으)로 변경되었습니다!")
+                            # ★ 변경할 이름이 이미 존재한다면 (2)를 붙여 병합(에러)을 방지 ★
+                            final_renamed = renamed_cat_name
+                            counter = 2
+                            while final_renamed in existing_cats and final_renamed != old_cat_name:
+                                final_renamed = f"{renamed_cat_name} ({counter})"
+                                counter += 1
+                                
+                            df_flow.loc[(df_flow['프로젝트명'] == selected_proj) & (df_flow['대항목'] == old_cat_name), '대항목'] = final_renamed
+                            db_flow.save(df_flow, sha_flow, f"Rename Cat: {old_cat_name} -> {final_renamed}")
+                            st.success(f"[{old_cat_name}]이(가) [{final_renamed}](으)로 변경되었습니다!")
                             st.rerun()
                 
                 with tab_del:
                     with st.form("delete_cat_form", clear_on_submit=True):
-                        existing_cats = proj_df['대항목'].unique()
                         del_cat_name = st.selectbox("삭제할 대항목(그룹) 선택", existing_cats)
                         st.error("⚠️ 주의: 해당 그룹을 삭제하면 안에 있는 모든 세부 작업 내용도 함께 영구 삭제됩니다!")
                         confirm_del = st.checkbox("네, 모두 삭제하는 것에 동의합니다.")
                         if st.form_submit_button("그룹 완전히 삭제하기"):
                             if confirm_del and del_cat_name:
-                                # 선택된 프로젝트 안의 해당 대항목 데이터만 일괄 삭제
                                 df_flow = df_flow[~((df_flow['프로젝트명'] == selected_proj) & (df_flow['대항목'] == del_cat_name))]
                                 db_flow.save(df_flow, sha_flow, f"Delete Cat: {del_cat_name}")
                                 st.success(f"[{del_cat_name}] 그룹이 성공적으로 삭제되었습니다!")
@@ -245,7 +270,6 @@ def render_cs_flow_page(db_flow):
         st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[대항목 관리]</b>은 바로 위쪽의 <b>'대항목 관리 메뉴'</b>를 이용하세요.<br>2. <b>[순서 변경]</b>: 표 안의 'No' 칸 숫자를 지우고 원하는 숫자로 입력 후 우측 상단의 저장 버튼을 누르면 위아래로 이동합니다.</div>", unsafe_allow_html=True)
 
         status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
-
         custom_column_config = {
             "프로젝트명": None, 
             "대항목": None,
