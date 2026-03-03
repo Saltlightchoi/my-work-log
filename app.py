@@ -5,7 +5,7 @@ import io
 from datetime import datetime
 
 # ==========================================
-# 1. 환경 설정 및 기본 상수 (Constants)
+# 1. 환경 설정 및 기본 상수
 # ==========================================
 st.set_page_config(layout="wide", page_title="장비 관리 통합 시스템")
 st.markdown("""
@@ -23,7 +23,6 @@ st.markdown("""
 BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
 
-# 35개 CS 항목 템플릿
 CS_TEMPLATE = [
     {"대항목": "공통", "순서": 1, "작업내용": "I/O Check\n- Out Put으로 동작 후 In Put LED 확인\n- Cylinder 정상 동작 확인\n- Manual에서 Cylinder 동작 후 LED 점등 확인\n- 미비된 부분 I/O List, PC에 저장 후 전장 수정 요청 진행\n- 전장 수정 후 수정되었는지 동작, LED 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
     {"대항목": "공통", "순서": 2, "작업내용": "공압 Leak Check", "상태": "⬜ 대기", "비고": "", "첨부": ""},
@@ -63,10 +62,9 @@ CS_TEMPLATE = [
 ]
 
 # ==========================================
-# 2. 데이터 관리 공장 (Class Definition)
+# 2. 데이터 관리 공장
 # ==========================================
 class DataManager:
-    """GitHub CSV 파일을 불러오고 저장하는 전용 클래스"""
     def __init__(self, repo, file_path, text_columns):
         self.repo = repo
         self.file_path = file_path
@@ -90,12 +88,10 @@ class DataManager:
         if sha: self.repo.update_file(self.file_path, message, csv_buffer.getvalue(), sha)
         else: self.repo.create_file(self.file_path, "Init Creation", csv_buffer.getvalue())
 
-
 # ==========================================
-# 3. 화면 UI 보따리 (Functions)
+# 3. 화면 UI 보따리
 # ==========================================
 def render_work_log_page(db_log):
-    """팀 업무일지 화면을 그려주는 함수"""
     df_log, sha_log = db_log.load()
     if not df_log.empty and '날짜' in df_log.columns:
         df_log['날짜'] = pd.to_datetime(df_log['날짜']).dt.date.astype(str)
@@ -138,7 +134,6 @@ def render_work_log_page(db_log):
                 db_log.save(df_log.drop(del_idx), sha_log, "Delete Log")
                 st.rerun()
 
-    # 대시보드 출력부
     head_c1, head_c2 = st.columns([5, 1])
     with head_c1: st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
     with head_c2:
@@ -153,7 +148,6 @@ def render_work_log_page(db_log):
 
 
 def render_cs_flow_page(db_flow):
-    """장비제작 Flow 화면을 그려주는 함수"""
     df_flow, sha_flow = db_flow.load()
     st.markdown("<div class='main-title'>⚙️ CS 작업 체크 시트 (대항목 관리)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
@@ -200,25 +194,27 @@ def render_cs_flow_page(db_flow):
         mask = df_flow["프로젝트명"] == selected_proj
         proj_df = df_flow[mask].copy()
         
-        st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[작업내용]</b>을 더블클릭해 직접 수정할 수 있습니다.<br>2. 작업 후 우측 상단의 <b>'💾 저장'</b> 아이콘을 누르면, <b>실제로 상태나 내용을 수정한 항목</b>에만 이름이 기록됩니다. (대기상태는 자동 빈칸 처리)</div>", unsafe_allow_html=True)
+        st.markdown("<div class='info-box'>💡 <b>드래그 대신 이렇게 이동하세요!</b> <br>1. <b>[순서 변경]</b>: 'No' 칸의 숫자를 지우고 원하는 숫자로 바꾼 뒤 저장하면 위아래로 이동합니다.<br>2. <b>[대항목 이동]</b>: '소속 대항목' 드롭다운을 다른 탭 이름으로 변경하고 저장하면 그 탭으로 이사 갑니다!</div>", unsafe_allow_html=True)
 
         status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
+        category_options = proj_df['대항목'].unique().tolist()
+
+        # ★ 이동/정렬을 위한 컬럼 설정 (No 수정 가능, 대항목 드롭다운 추가) ★
         custom_column_config = {
             "프로젝트명": None, 
-            "대항목": None,    
-            "순서": st.column_config.NumberColumn("No", disabled=True, width="small"),
+            "순서": st.column_config.NumberColumn("No(수정가능)", disabled=False, width="small"), # No 편집 가능하도록 해제
+            "대항목": st.column_config.SelectboxColumn("📁 소속 대항목(이동)", options=category_options, width="medium"), # 탭 간 이동 기능
             "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width="large"), 
             "상태": st.column_config.SelectboxColumn("상태", options=status_options, width="small", required=True), 
             "비고": st.column_config.TextColumn("⚠️ 비고 / 보류사유", width="large"),
-            "첨부": st.column_config.TextColumn("📎 첨부(파일명)", width="small"),
+            "첨부": st.column_config.TextColumn("📎 첨부", width="small"),
             "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="medium") 
         }
 
+        # 저장 버튼을 누르기 전 표를 그릴 준비
         proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
         groups = proj_df.groupby('group_id')
         edited_dfs = []
-
-        # 현재 로그인한 유저의 날짜와 이름 도장
         current_user_stamp = f"{st.session_state['user_name']} ({datetime.today().strftime('%y-%m-%d')})"
 
         for group_id, group_df in groups:
@@ -226,60 +222,65 @@ def render_cs_flow_page(db_flow):
             display_df = group_df.drop(columns=['group_id']).reset_index(drop=True)
             
             with st.expander(f"📍 대항목: {cat} 작업 리스트", expanded=False):
+                # 주의: 이제 대항목도 표 안에 보여서 수정 가능합니다!
                 edited_cat_df = st.data_editor(
                     display_df,
                     use_container_width=False, 
                     hide_index=True, num_rows="dynamic",
                     key=f"editor_{selected_proj}_{group_id}",
-                    column_config=custom_column_config
+                    column_config=custom_column_config,
+                    # 컬럼 순서 재배치 (소속 대항목을 앞쪽으로)
+                    column_order=["순서", "대항목", "작업내용", "상태", "비고", "첨부", "업데이트일"]
                 )
                 
-                # ★ 스마트 추적 업데이트 로직 ★
+                # 스마트 추적 로직 (변경사항 감지)
                 for idx, new_row in edited_cat_df.iterrows():
-                    # 1. '대기' 상태면 무조건 이름 지우기 (공백 처리)
                     if new_row['상태'] == "⬜ 대기":
                         edited_cat_df.at[idx, '업데이트일'] = ""
                     else:
-                        # 2. 예전 데이터(display_df)와 100% 똑같은 항목이 있는지 검사 (건드렸는지 안건드렸는지 파악)
                         match = display_df[
                             (display_df['작업내용'] == new_row['작업내용']) &
                             (display_df['상태'] == new_row['상태']) &
                             (display_df['비고'] == new_row['비고']) &
-                            (display_df['첨부'] == new_row['첨부'])
+                            (display_df['첨부'] == new_row['첨부']) &
+                            (display_df['대항목'] == new_row['대항목']) &
+                            (display_df['순서'] == new_row['순서'])
                         ]
-                        
                         if match.empty:
-                            # 똑같은 게 없다 = 방금 내가 내용을 수정했다! -> 현재 접속자 이름 쾅!
                             edited_cat_df.at[idx, '업데이트일'] = current_user_stamp
                         else:
-                            # 예전이랑 똑같다 = 난 안 건드렸다! -> 예전에 찍혀있던 남의 이름 그대로 복원
                             edited_cat_df.at[idx, '업데이트일'] = match.iloc[0]['업데이트일']
                 
-                edited_cat_df["대항목"] = cat
                 edited_cat_df["프로젝트명"] = selected_proj
                 edited_dfs.append(edited_cat_df)
 
-        # 저장 로직
+        # ★ 저장 버튼 클릭 시 1.순서 변경, 2.대항목 이동 적용 로직 ★
         if btn_save:
             updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
             if not updated_proj_df.empty:
+                # 1. '대항목'의 순서가 꼬이지 않도록 원본 등장 순서(카테고리 순서)를 기억
+                cat_order = {category: i for i, category in enumerate(category_options)}
+                updated_proj_df['cat_sort_key'] = updated_proj_df['대항목'].map(cat_order)
+                
+                # 2. 대항목을 기준으로 1차 정렬 -> 사용자가 입력한 '순서(No)' 기준으로 2차 정렬
+                updated_proj_df = updated_proj_df.sort_values(by=['cat_sort_key', '순서']).drop(columns=['cat_sort_key'])
+                
+                # 3. 정렬된 상태에서 탭(group_id)과 1,2,3... 순서번호를 다시 예쁘게 초기화
                 updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
                 updated_proj_df["순서"] = updated_proj_df.groupby('group_id').cumcount() + 1
-                updated_proj_df = updated_proj_df.drop(columns=['group_id'])
+                updated_proj_df = updated_proj_df.drop(columns=['group_id']).reset_index(drop=True)
             
             df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
             db_flow.save(df_flow, sha_flow, f"Update: {selected_proj}")
-            st.success("✅ 변경사항이 안전하게 저장되었습니다.")
+            st.success("✅ 순서 및 변경사항이 완벽하게 저장/정렬되었습니다.")
             st.rerun()
 
-        # 삭제 로직
         if btn_del:
             db_flow.save(df_flow[~mask], sha_flow, f"Delete: {selected_proj}")
             st.warning("🗑️ 프로젝트가 삭제되었습니다.")
             st.rerun()
     else:
         st.info("진행 중인 프로젝트가 없습니다.")
-
 
 # ==========================================
 # 4. 메인 실행 (Main App)
