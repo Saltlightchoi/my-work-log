@@ -115,12 +115,7 @@ def render_work_log_page(db_log):
 
     elif mode == "✏️ 수정":
         if not df_log.empty:
-            # ★ 수정 시: 날짜, 장비명 뒤에 업무 내용 앞부분이 보이도록 개선
-            edit_idx = st.sidebar.selectbox(
-                "대상 선택", 
-                options=df_log.index, 
-                format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']} | {str(df_log.iloc[x]['업무내용'])[:15]}..."
-            )
+            edit_idx = st.sidebar.selectbox("대상 선택", options=df_log.index, format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']} | {str(df_log.iloc[x]['업무내용'])[:15]}...")
             with st.sidebar.form("edit_form"):
                 e_date = st.date_input("날짜 수정", pd.to_datetime(df_log.loc[edit_idx, "날짜"]))
                 e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(df_log.loc[edit_idx, "장비"]) if df_log.loc[edit_idx, "장비"] in EQUIPMENT_OPTIONS else 0)
@@ -134,13 +129,20 @@ def render_work_log_page(db_log):
 
     elif mode == "❌ 삭제":
         if not df_log.empty:
-            # ★ 삭제 시: 날짜, 장비명 뒤에 업무 내용 앞부분이 보이도록 개선
-            del_idx = st.sidebar.selectbox(
-                "삭제 선택", 
-                options=df_log.index, 
-                format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']} | {str(df_log.iloc[x]['업무내용'])[:15]}..."
+            del_idx = st.sidebar.selectbox("삭제 선택", options=df_log.index, format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']} | {str(df_log.iloc[x]['업무내용'])[:15]}...")
+            
+            # ★ 삭제 시 상세 내용 전체 확인 블록 추가! ★
+            selected_row = df_log.iloc[del_idx]
+            st.sidebar.markdown("### ⚠️ 삭제 대상 상세 정보")
+            st.sidebar.info(
+                f"**📅 날짜:** {selected_row['날짜']}\n\n"
+                f"**⚙️ 장비:** {selected_row['장비']}\n\n"
+                f"**👤 작성자:** {selected_row['작성자']}\n\n"
+                f"**📝 업무내용:**\n{selected_row['업무내용']}\n\n"
+                f"**📌 비고:** {selected_row['비고']}"
             )
-            if st.sidebar.button("🗑️ 최종 삭제", use_container_width=True):
+            
+            if st.sidebar.button("🗑️ 최종 삭제 (복구 불가)", use_container_width=True):
                 db_log.save(df_log.drop(del_idx), sha_log, "Delete Log")
                 st.rerun()
 
