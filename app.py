@@ -97,7 +97,7 @@ def render_work_log_page(db_log):
         df_log['날짜'] = pd.to_datetime(df_log['날짜']).dt.date.astype(str)
         df_log = df_log.sort_values(by='날짜', ascending=False).reset_index(drop=True)
 
-    mode = st.sidebar.selectbox("작업 선택", ["➕ 작성", "✏️ 수정", "❌ 삭제"])
+    mode = st.sidebar.selectbox("작업 선택", ["➕ 작성", "✏️ 수정", "❌ 삭제"], key="log_mode_select")
     
     if mode == "➕ 작성":
         with st.sidebar.form("add_form", clear_on_submit=True):
@@ -134,7 +134,7 @@ def render_work_log_page(db_log):
                 db_log.save(df_log.drop(del_idx), sha_log, "Delete Log")
                 st.rerun()
 
-    # ★ 네비게이션 헤더 (업무일지 페이지)
+    # 상단 네비게이션 헤더
     col_title, col_excel, col_btn = st.columns([5, 1.5, 2.5])
     with col_title:
         st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
@@ -157,7 +157,7 @@ def render_work_log_page(db_log):
 def render_cs_flow_page(db_flow):
     df_flow, sha_flow = db_flow.load()
     
-    # ★ 네비게이션 헤더 (CS Flow 페이지)
+    # 상단 네비게이션 헤더
     col_title, col_empty, col_btn = st.columns([6.5, 0.5, 2.5])
     with col_title:
         st.markdown("<div class='main-title'>⚙️ CS 작업 체크 시트 (대항목 관리)</div>", unsafe_allow_html=True)
@@ -186,19 +186,6 @@ def render_cs_flow_page(db_flow):
                     st.rerun()
 
     if project_list:
-        with col_b:
-            with st.expander("📁 현재 프로젝트에 새 대항목 추가"):
-                with st.form("new_cat_form", clear_on_submit=True):
-                    new_cat_name = st.text_input("추가할 그룹명 (예: Packing, 출하검수)")
-                    if st.form_submit_button("그룹 생성") and new_cat_name:
-                        new_cat_row = pd.DataFrame([{
-                            "프로젝트명": selected_proj, "대항목": new_cat_name, "순서": 1,
-                            "작업내용": "신규 작업 내용을 입력하세요", "상태": "⬜ 대기",
-                            "비고": "", "첨부": "", "업데이트일": ""
-                        }])
-                        db_flow.save(pd.concat([df_flow, new_cat_row], ignore_index=True), sha_flow, f"Add Cat: {new_cat_name}")
-                        st.rerun()
-
         sel_col, empty_col, save_col, del_col = st.columns([6, 2, 1, 1])
         with sel_col: selected_proj = st.selectbox("📌 진행 상황 확인할 프로젝트", project_list)
         with save_col: 
@@ -210,16 +197,45 @@ def render_cs_flow_page(db_flow):
 
         mask = df_flow["프로젝트명"] == selected_proj
         proj_df = df_flow[mask].copy()
+
+        # ★ 사용자 요청: 대항목 자체의 이름을 수정하고 추가하는 전용 관리 메뉴
+        with col_b:
+            with st.expander("📁 대항목(그룹) 관리 메뉴 - 이름 변경/추가"):
+                tab_add, tab_ren = st.tabs(["➕ 새 그룹 추가", "✏️ 기존 그룹 이름 변경"])
+                
+                with tab_add:
+                    with st.form("new_cat_form", clear_on_submit=True):
+                        new_cat_name = st.text_input("추가할 그룹명 (예: Packing)")
+                        if st.form_submit_button("새 그룹 생성") and new_cat_name:
+                            new_cat_row = pd.DataFrame([{
+                                "프로젝트명": selected_proj, "대항목": new_cat_name, "순서": 1,
+                                "작업내용": "신규 작업 내용을 입력하세요", "상태": "⬜ 대기",
+                                "비고": "", "첨부": "", "업데이트일": ""
+                            }])
+                            db_flow.save(pd.concat([df_flow, new_cat_row], ignore_index=True), sha_flow, f"Add Cat: {new_cat_name}")
+                            st.rerun()
+
+                with tab_ren:
+                    with st.form("rename_cat_form", clear_on_submit=True):
+                        existing_cats = proj_df['대항목'].unique()
+                        old_cat_name = st.selectbox("이름을 바꿀 대항목 선택", existing_cats)
+                        renamed_cat_name = st.text_input("변경할 새로운 이름 입력")
+                        if st.form_submit_button("이름 변경 적용") and renamed_cat_name:
+                            # 엑셀 데이터 안의 해당 대항목 이름을 일괄적으로 싹 바꿔줍니다.
+                            df_flow.loc[(df_flow['프로젝트명'] == selected_proj) & (df_flow['대항목'] == old_cat_name), '대항목'] = renamed_cat_name
+                            db_flow.save(df_flow, sha_flow, f"Rename Cat: {old_cat_name} -> {renamed_cat_name}")
+                            st.success(f"[{old_cat_name}]이(가) [{renamed_cat_name}](으)로 변경되었습니다!")
+                            st.rerun()
         
-        st.markdown("<div class='info-box'>💡 <b>편리한 이동 및 대항목 수정 방법!</b> <br>1. <b>[대항목 이름 변경/이동]</b>: '📁 소속 대항목' 칸의 <b>글씨를 직접 타이핑해서 수정</b>하고 저장하세요! 모서리를 잡아 내리면 엑셀처럼 한 번에 쭉 복사됩니다.<br>2. <b>[순서 변경]</b>: 'No' 칸의 숫자를 원하는 순서로 수정 후 저장하면 알아서 위아래로 정렬됩니다!</div>", unsafe_allow_html=True)
+        st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[대항목 이름 수정]</b>은 바로 위쪽의 <b>'대항목 관리 메뉴'</b>를 이용하세요.<br>2. <b>[순서 변경]</b>: 표 안의 'No' 칸 숫자를 지우고 원하는 숫자로 입력 후 우측 상단의 저장 버튼을 누르면 위아래로 이동합니다.</div>", unsafe_allow_html=True)
 
         status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
 
-        # ★ 대항목을 자유롭게 수정/타이핑할 수 있도록 TextColumn으로 변경 ★
+        # ★ 표 설정 복구: 대항목 칸은 화면에서 숨기고 엑셀 원본처럼 깔끔하게 만듦
         custom_column_config = {
             "프로젝트명": None, 
-            "순서": st.column_config.NumberColumn("No(수정가능)", disabled=False, width="small"), 
-            "대항목": st.column_config.TextColumn("📁 소속 대항목(이름수정/이동)", width="medium"), # 자유로운 이름 수정
+            "대항목": None, # 화면에서 숨김 처리
+            "순서": st.column_config.NumberColumn("No(순서수정)", disabled=False, width="small"), 
             "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width="large"), 
             "상태": st.column_config.SelectboxColumn("상태", options=status_options, width="small", required=True), 
             "비고": st.column_config.TextColumn("⚠️ 비고 / 보류사유", width="large"),
@@ -243,9 +259,10 @@ def render_cs_flow_page(db_flow):
                     hide_index=True, num_rows="dynamic",
                     key=f"editor_{selected_proj}_{group_id}",
                     column_config=custom_column_config,
-                    column_order=["순서", "대항목", "작업내용", "상태", "비고", "첨부", "업데이트일"]
+                    column_order=["순서", "작업내용", "상태", "비고", "첨부", "업데이트일"]
                 )
                 
+                # 수정한 사람 이름 기록 로직
                 for idx, new_row in edited_cat_df.iterrows():
                     if new_row['상태'] == "⬜ 대기":
                         edited_cat_df.at[idx, '업데이트일'] = ""
@@ -255,7 +272,6 @@ def render_cs_flow_page(db_flow):
                             (display_df['상태'] == new_row['상태']) &
                             (display_df['비고'] == new_row['비고']) &
                             (display_df['첨부'] == new_row['첨부']) &
-                            (display_df['대항목'] == new_row['대항목']) &
                             (display_df['순서'] == new_row['순서'])
                         ]
                         if match.empty:
@@ -263,20 +279,16 @@ def render_cs_flow_page(db_flow):
                         else:
                             edited_cat_df.at[idx, '업데이트일'] = match.iloc[0]['업데이트일']
                 
+                edited_cat_df["대항목"] = cat
                 edited_cat_df["프로젝트명"] = selected_proj
                 edited_dfs.append(edited_cat_df)
 
+        # 내용 저장 및 순서 정렬
         if btn_save:
             updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
             if not updated_proj_df.empty:
-                new_cat_order = []
-                for c in updated_proj_df['대항목']:
-                    if c not in new_cat_order:
-                        new_cat_order.append(c)
-                
-                updated_proj_df['대항목'] = pd.Categorical(updated_proj_df['대항목'], categories=new_cat_order, ordered=True)
-                updated_proj_df = updated_proj_df.sort_values(by=['대항목', '순서'])
-                updated_proj_df['대항목'] = updated_proj_df['대항목'].astype(str)
+                # 사용자가 No 칸의 숫자를 바꿨을 때 해당 대항목 탭 안에서 위아래로 섞어줌
+                updated_proj_df = updated_proj_df.sort_values(by=['대항목', '순서'], kind='stable')
                 
                 updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
                 updated_proj_df["순서"] = updated_proj_df.groupby('group_id').cumcount() + 1
@@ -284,7 +296,7 @@ def render_cs_flow_page(db_flow):
             
             df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
             db_flow.save(df_flow, sha_flow, f"Update: {selected_proj}")
-            st.success("✅ 대항목 이름 및 순서 변경이 완벽하게 반영되었습니다.")
+            st.success("✅ 변경사항이 성공적으로 저장되었습니다.")
             st.rerun()
 
         if btn_del:
@@ -307,7 +319,6 @@ def main():
         st.error(f"⚠️ 연결 설정 오류: {e}")
         return
 
-    # ★ 페이지 상태 관리 초기화 (앱 최초 실행 시)
     if 'current_page' not in st.session_state: 
         st.session_state['current_page'] = "업무일지"
 
@@ -326,7 +337,7 @@ def main():
             st.session_state['logged_in'] = False
             st.rerun()
         
-        # 사이드바의 페이지 선택 라디오 버튼은 숨기고, 세션 스테이트(current_page) 값으로 렌더링
+        # 사이드바 메뉴는 완전히 숨기고 상단 버튼으로만 이동
         if st.session_state['current_page'] == "업무일지": 
             render_work_log_page(db_log)
         else: 
