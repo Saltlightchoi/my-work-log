@@ -173,29 +173,48 @@ def render_cs_flow_page(db_flow):
     with col_a:
         with st.expander("➕ 새 프로젝트(호기) 시작하기"):
             with st.form("new_proj_form", clear_on_submit=True):
-                new_proj = st.text_input("새 프로젝트명 (예: SLH1 #6호기)")
-                if st.form_submit_button("템플릿으로 생성") and new_proj and new_proj not in project_list:
-                    new_df = pd.DataFrame(CS_TEMPLATE)
-                    new_df["프로젝트명"] = new_proj
-                    new_df["업데이트일"] = ""
+                new_proj = st.text_input("새 프로젝트명 (예: SLH1 #7호기)")
+                
+                # ★ 핵심 추가: 복사할 템플릿/기존 프로젝트 선택 옵션 ★
+                source_options = ["기본 템플릿(초기화 상태)"] + project_list
+                source_proj = st.selectbox("어떤 형식과 내용을 복사해서 생성할까요?", source_options)
+
+                if st.form_submit_button("프로젝트 생성하기") and new_proj and new_proj not in project_list:
                     
-                    # ★ 동일한 이름의 대항목을 구분하기 위해 (2), (3)을 자동으로 붙이는 로직 ★
+                    if source_proj == "기본 템플릿(초기화 상태)":
+                        # 기본 템플릿으로 생성할 경우
+                        new_df = pd.DataFrame(CS_TEMPLATE)
+                    else:
+                        # 기존 프로젝트(예: 6호기)를 통째로 복사해서 생성할 경우
+                        new_df = df_flow[df_flow["프로젝트명"] == source_proj].copy()
+                        # 작업 상태만 백지(초기화)로 만들어 줍니다. 수정한 카테고리/내용은 그대로 유지!
+                        new_df["상태"] = "⬜ 대기"
+                        new_df["비고"] = ""
+                        new_df["첨부"] = ""
+                        new_df["업데이트일"] = ""
+
+                    new_df["프로젝트명"] = new_proj
+                    
+                    # 그룹/순서 넘버링 재정비
                     new_df['group_id'] = (new_df['대항목'] != new_df['대항목'].shift()).cumsum()
                     unique_names = {}
                     counts = {}
                     for gid in new_df['group_id'].unique():
                         cat = new_df.loc[new_df['group_id'] == gid, '대항목'].iloc[0]
-                        if cat not in counts:
-                            counts[cat] = 1
-                            unique_names[gid] = cat
+                        # 이미 (2) 같은 꼬리표가 있으면 떼고 원본 이름만 추출해서 다시 계산
+                        base_cat = cat.split(" (")[0] if " (" in cat else cat 
+                        
+                        if base_cat not in counts:
+                            counts[base_cat] = 1
+                            unique_names[gid] = base_cat
                         else:
-                            counts[cat] += 1
-                            unique_names[gid] = f"{cat} ({counts[cat]})"
+                            counts[base_cat] += 1
+                            unique_names[gid] = f"{base_cat} ({counts[base_cat]})"
                             
                     new_df['대항목'] = new_df['group_id'].map(unique_names)
                     new_df["순서"] = new_df.groupby('group_id').cumcount() + 1
                     
-                    db_flow.save(pd.concat([df_flow, new_df.drop(columns=['group_id'])], ignore_index=True), sha_flow, f"Create: {new_proj}")
+                    db_flow.save(pd.concat([df_flow, new_df.drop(columns=['group_id'])], ignore_index=True), sha_flow, f"Create: {new_proj} from {source_proj}")
                     st.rerun()
 
     if project_list:
@@ -221,7 +240,6 @@ def render_cs_flow_page(db_flow):
                     with st.form("new_cat_form", clear_on_submit=True):
                         new_cat_name = st.text_input("추가할 그룹명 (예: Packing)")
                         if st.form_submit_button("새 그룹 생성") and new_cat_name:
-                            # ★ 사용자가 입력한 이름이 이미 있다면, 충돌하지 않게 (2)를 붙여주는 안전장치 ★
                             final_cat_name = new_cat_name
                             counter = 2
                             while final_cat_name in existing_cats:
@@ -241,7 +259,6 @@ def render_cs_flow_page(db_flow):
                         old_cat_name = st.selectbox("이름을 바꿀 대항목 선택", existing_cats)
                         renamed_cat_name = st.text_input("변경할 새로운 이름 입력")
                         if st.form_submit_button("이름 변경 적용") and renamed_cat_name:
-                            # ★ 변경할 이름이 이미 존재한다면 (2)를 붙여 병합(에러)을 방지 ★
                             final_renamed = renamed_cat_name
                             counter = 2
                             while final_renamed in existing_cats and final_renamed != old_cat_name:
