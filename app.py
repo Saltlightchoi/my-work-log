@@ -202,17 +202,17 @@ def render_cs_flow_page(db_flow):
         
         st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[작업내용]</b>을 더블클릭해 직접 수정할 수 있습니다.<br>2. 표 하단의 회색 빈칸을 클릭해 <b>[세부항목 추가]</b>가 가능하며, 행 선택 후 Delete 키로 <b>[삭제]</b>도 가능합니다.<br>3. 작업 후 우측 상단의 <b>'💾 저장'</b> 아이콘을 누르면 순서 번호와 수정자 이름이 갱신됩니다.</div>", unsafe_allow_html=True)
 
-        # ★ 픽셀 단위로 정확하게 짜맞춘 완벽한 폭 조절 (크기 비율 최적화)
+        # ★ SyntaxError 해결 및 비율 최적화: Streamlit 기본 옵션인 small, medium, large 사용 ★
         status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
         custom_column_config = {
             "프로젝트명": None, 
             "대항목": None,    
-            "순서": st.column_config.NumberColumn("No", disabled=True, width=40), # 최소한의 폭으로 축소 (40px)
-            "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width=700), # 가장 넓게 대폭 확대 (700px)
-            "상태": st.column_config.SelectboxColumn("상태", options=status_options, width=110, required=True), # 글자 크기에 딱 맞게 축소 (110px)
-            "비고": st.column_config.TextColumn("⚠️ 비고 / 보류사유", width=400), # 넉넉하게 확대 (400px)
-            "첨부": st.column_config.TextColumn("📎 첨부", width=100), # 짧은 파일명용으로 축소 (100px)
-            "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width=120) # 날짜 폭에 맞게 축소 (120px)
+            "순서": st.column_config.NumberColumn("No", disabled=True, width="small"), # 가장 좁게
+            "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width="large"), # 가장 넓게
+            "상태": st.column_config.SelectboxColumn("상태", options=status_options, width="small", required=True), # 좁게
+            "비고": st.column_config.TextColumn("⚠️ 비고 / 보류사유", width="large"), # 넓게
+            "첨부": st.column_config.TextColumn("📎 첨부(파일명)", width="small"), # 좁게
+            "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="medium") # 중간 폭
         }
 
         proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
@@ -224,20 +224,10 @@ def render_cs_flow_page(db_flow):
             with st.expander(f"📍 대항목: {cat} 작업 리스트", expanded=False):
                 edited_cat_df = st.data_editor(
                     group_df.drop(columns=['group_id']).reset_index(drop=True),
-                    use_container_width=True, hide_index=True, num_rows="dynamic",
+                    use_container_width=False, # ★ 화면 억지 늘림 방지 (글자 길이에 맞게 타이트하게 잡아줌)
+                    hide_index=True, num_rows="dynamic",
                     key=f"editor_{selected_proj}_{group_id}",
-                    # ★ 픽셀 숫자 에러 완벽 해결! Streamlit 전용 옵션으로 비율 최적화 ★
-        status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
-        custom_column_config = {
-            "프로젝트명": None, 
-            "대항목": None,    
-            "순서": st.column_config.NumberColumn("No", disabled=True, width="small"), # 가장 좁게
-            "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width="large"), # 가장 넓게
-            "상태": st.column_config.SelectboxColumn("상태", options=status_options, width="small", required=True), # 좁게
-            "비고": st.column_config.TextColumn("⚠️ 비고 / 보류사유", width="large"), # 넓게
-            "첨부": st.column_config.TextColumn("📎 첨부(파일명)", width="small"), # 좁게
-            "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="medium") # 중간
-        }
+                    column_config=custom_column_config
                 )
                 edited_cat_df["대항목"] = cat
                 edited_cat_df["프로젝트명"] = selected_proj
@@ -301,7 +291,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-if __name__ == "__main__":
-    main()
-
-
