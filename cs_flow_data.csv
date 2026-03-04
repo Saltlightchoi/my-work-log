@@ -1,32 +1,32 @@
 프로젝트명,대항목,순서,작업내용,상태,비고,첨부,업데이트일
-SLH1 #6호기,Software,1,"I/O Check
+SLH1 #6호기,공통,1,"I/O Check
  -> OUP PUT으로 동작 후 IN PUT LED 확인.
  -> Cylinder 정상 동작 확인
  -> MANUAL에서 Cylinder 동작 후 LED 점등 확인 
  -> 미비된 부분 I/O LIST,PC에 저장 후 전장 수정 요청 진행
  -> 전장 수정 후 수정되었는지 동작,LED 확인",⬜ 대기,,,
-SLH1 #6호기,Software,2,"공압 Leak
+SLH1 #6호기,공통,2,"공압 Leak
   check",⬜ 대기,,,
-SLH1 #6호기,Software,3,Cylinder Take Time,⬜ 대기,,,
-SLH1 #6호기,Software,4,"전면부/후면부1차 Levelling
+SLH1 #6호기,공통,3,Cylinder Take Time,⬜ 대기,,,
+SLH1 #6호기,공통,4,"전면부/후면부1차 Levelling
  -> Auto Leveler 사용
  -> Stacker Base 상단 -> 바닥면 400mm",⬜ 대기,,,
-SLH1 #6호기,Software,5,"Stacker Conveyor Belt Inverter 값 설정
+SLH1 #6호기,공통,5,"Stacker Conveyor Belt Inverter 값 설정
 ->운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)
 -> P3 60  P4 : 60(고속), P5 : 30(중속), P6 : 10(저속)
 -> P7 : 5 (가속),  P8 : 0 (감속)",⬜ 대기,,,
-SLH1 #6호기,Software,6,"Reject Stacker Front/Rear Base 높이 조정
+SLH1 #6호기,공통,6,"Reject Stacker Front/Rear Base 높이 조정
  -> Rear Base Cylinder Rod 최대로 내린뒤, front를 무두 볼트 사용하여 Setting",⬜ 대기,,,
-SLH1 #6호기,Software,7,Set-Plate Support Lock/Unlock Cylinder Rod SETTING,⬜ 대기,,,
-SLH1 #6호기,Software,8,LD/ULD Middle Gripper UP Cylinder Rod (37mm) SETTING,⬜ 대기,,,
-SLH1 #6호기,Software,9,"LD/ULD Flow Presicer Up Rod (57mm) Setting 
+SLH1 #6호기,공통,7,Set-Plate Support Lock/Unlock Cylinder Rod SETTING,⬜ 대기,,,
+SLH1 #6호기,공통,8,LD/ULD Middle Gripper UP Cylinder Rod (37mm) SETTING,⬜ 대기,,,
+SLH1 #6호기,공통,9,"LD/ULD Flow Presicer Up Rod (57mm) Setting 
  -> T-Tray <-> Frame 간 공차 없게 조정",⬜ 대기,,,
-SLH1 #6호기,Software,10,InPut/OutPut Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,⬜ 대기,,,
-SLH1 #6호기,Software,11,"L/D, UL/D Rail UP/DWON 높이,평탄,직진도 SETTING (T-TRAY 사용)
+SLH1 #6호기,공통,10,InPut/OutPut Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,⬜ 대기,,,
+SLH1 #6호기,공통,11,"L/D, UL/D Rail UP/DWON 높이,평탄,직진도 SETTING (T-TRAY 사용)
  -> T-Tray 사용,UP/DOWN 상태에서 T-Tray가 흘려 내려가지 않게 SETTING
  -> Stopper 사용하여 UP/DOWN 높이 레벨 조정 (Up :48.5mm, Down :  42.5mm)
  -> UP 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽Rail 위치 조정 필요",⬜ 대기,,,
-SLH1 #6호기,Software,12,"배출 Fan 장착 및 전원 Connect 연결
+SLH1 #6호기,공통,12,"배출 Fan 장착 및 전원 Connect 연결
  -> I/O 번호 확인, OS에서 FAN Check 확인",⬜ 대기,,,
 SLH1 #6호기,직진도 측정,1,"Loader Unloader X,Y축 직진도 (±0.5mm) Setting 및 측정
 - Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
