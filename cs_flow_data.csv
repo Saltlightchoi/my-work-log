@@ -10,9 +10,6 @@ SLH1 #6호기,공통,3,Cylinder Speed 조정 및 Part 위치 조정,⬜ 대기,,
 SLH1 #6호기,공통,4,"전면부 후면부 1차 Levelling
 - Auto Leveler 사용
 - Stacker Base 상단 -> 바닥면 400mm",⬜ 대기,,,
-SLH1 #6호기,Stacker,1,"L/D 1,2, UL/D 1,2, Emt, Reject Inverter 값 설정
-- 운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)
-- P3: 60, P4: 60(고속), P5: 30(중속), P6: 10(저속), P7: 5(가속), P8: 0(감속)",⬜ 대기,,,
 SLH1 #6호기,공통 (2),1,"Motor Parameter Setting 및 다회전 클리어
 - S/W 팀 요청
 - 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
