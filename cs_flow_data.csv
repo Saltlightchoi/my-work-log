@@ -35,10 +35,6 @@ SLH1 #6호기,Test Site 평탄도,2,"Front, Rear Press Load Cell (0.2bar, 0.29ba
 SLH1 #6호기,Test Site 평탄도,3,"Front, Rear T-Tray Rail 평탄도(±0.2mm) Setting 및 측정
 - 디지털 전자 수평계 사용
 - 측정 위치 : T-Tray 왼쪽 중간 오른쪽",⬜ 대기,,,
-SLH1 #6호기,Middle (2),1,"L/D, UL/D Rail Up/Down 높이, 평탄, 직진도 Setting (T-Tray 사용)
-- T-Tray 사용, Up/Down 상태에서 T-Tray가 흘려 내려가지 않게 Setting
-- Stopper 사용하여 Up/Down 높이 레벨 조정 (Up: 48.5mm, Down: 42.5mm)
-- Up 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽 Rail 위치 조정 필요",⬜ 대기,,,
 SLH1 #6호기,공통 (4),1,"배출 Fan 장착 및 전원 Connect 연결
 - I/O 번호 확인, OS에서 Fan Check 확인",⬜ 대기,,,
 SLH1 #6호기,Hand (2),1,"L/D, UL/D X,Y축 반복도(±0.05mm) 측정 (10회)
