@@ -130,18 +130,9 @@ def render_work_log_page(db_log):
     elif mode == "❌ 삭제":
         if not df_log.empty:
             del_idx = st.sidebar.selectbox("삭제 선택", options=df_log.index, format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']} | {str(df_log.iloc[x]['업무내용'])[:15]}...")
-            
-            # ★ 삭제 시 상세 내용 전체 확인 블록 추가! ★
             selected_row = df_log.iloc[del_idx]
             st.sidebar.markdown("### ⚠️ 삭제 대상 상세 정보")
-            st.sidebar.info(
-                f"**📅 날짜:** {selected_row['날짜']}\n\n"
-                f"**⚙️ 장비:** {selected_row['장비']}\n\n"
-                f"**👤 작성자:** {selected_row['작성자']}\n\n"
-                f"**📝 업무내용:**\n{selected_row['업무내용']}\n\n"
-                f"**📌 비고:** {selected_row['비고']}"
-            )
-            
+            st.sidebar.info(f"**📅 날짜:** {selected_row['날짜']}\n\n**⚙️ 장비:** {selected_row['장비']}\n\n**👤 작성자:** {selected_row['작성자']}\n\n**📝 업무내용:**\n{selected_row['업무내용']}\n\n**📌 비고:** {selected_row['비고']}")
             if st.sidebar.button("🗑️ 최종 삭제 (복구 불가)", use_container_width=True):
                 db_log.save(df_log.drop(del_idx), sha_log, "Delete Log")
                 st.rerun()
@@ -238,7 +229,10 @@ def render_cs_flow_page(db_flow):
             with st.expander("📁 대항목(그룹) 관리 메뉴 (추가/변경/삭제)"):
                 tab_add, tab_ren, tab_del = st.tabs(["➕ 새 그룹 추가", "✏️ 기존 그룹 이름 변경", "🗑️ 그룹 통째로 삭제"])
                 
-                existing_cats = proj_df['대항목'].unique().tolist()
+                # 그룹 순서를 유지한 채로 고유 이름 리스트만 뽑아냄 (알파벳 정렬 방지)
+                existing_cats = []
+                for c in proj_df['대항목']:
+                    if c not in existing_cats: existing_cats.append(c)
                 
                 with tab_add:
                     with st.form("new_cat_form", clear_on_submit=True):
@@ -302,8 +296,10 @@ def render_cs_flow_page(db_flow):
             "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="medium") 
         }
 
+        # ★ 대항목의 원본 순서를 기억하기 위해 sort=False 옵션을 강제 적용하고 블록(group) 아이디를 생성합니다.
         proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
-        groups = proj_df.groupby('group_id')
+        groups = proj_df.groupby('group_id', sort=False) 
+        
         edited_dfs = []
         current_user_stamp = f"{st.session_state['user_name']} ({datetime.today().strftime('%y-%m-%d')})"
 
@@ -339,20 +335,23 @@ def render_cs_flow_page(db_flow):
                 
                 edited_cat_df["대항목"] = cat
                 edited_cat_df["프로젝트명"] = selected_proj
+                # ★ 알파벳 정렬을 피하기 위해 원본 그룹 고유 번호를 잠시 저장해둡니다.
+                edited_cat_df["org_group_id"] = group_id 
                 edited_dfs.append(edited_cat_df)
 
         if btn_save:
             updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
             if not updated_proj_df.empty:
-                updated_proj_df = updated_proj_df.sort_values(by=['대항목', '순서'], kind='stable')
+                # ★ 문제의 알파벳 정렬을 지우고, 화면에 표시되던 원래 덩어리(org_group_id) 단위로 정렬합니다!
+                updated_proj_df = updated_proj_df.sort_values(by=['org_group_id', '순서'], kind='stable')
                 
                 updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
                 updated_proj_df["순서"] = updated_proj_df.groupby('group_id').cumcount() + 1
-                updated_proj_df = updated_proj_df.drop(columns=['group_id']).reset_index(drop=True)
+                updated_proj_df = updated_proj_df.drop(columns=['group_id', 'org_group_id']).reset_index(drop=True)
             
             df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
             db_flow.save(df_flow, sha_flow, f"Update: {selected_proj}")
-            st.success("✅ 변경사항이 성공적으로 저장되었습니다.")
+            st.success("✅ 변경사항이 완벽한 순서대로 저장되었습니다.")
             st.rerun()
 
         if btn_del:
