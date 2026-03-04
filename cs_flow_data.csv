@@ -1,15 +1,4 @@
 프로젝트명,대항목,순서,작업내용,상태,비고,첨부,업데이트일
-SLH1 #6호기,공통,1,"I/O Check
-- Out Put으로 동작 후 In Put LED 확인
-- Cylinder 정상 동작 확인
-- Manual에서 Cylinder 동작 후 LED 점등 확인
-- 미비된 부분 I/O List, PC에 저장 후 전장 수정 요청 진행
-- 전장 수정 후 수정되었는지 동작, LED 확인",⬜ 대기,,,
-SLH1 #6호기,공통,2,공압 Leak Check,⬜ 대기,,,
-SLH1 #6호기,공통,3,Cylinder Speed 조정 및 Part 위치 조정,⬜ 대기,,,
-SLH1 #6호기,공통,4,"전면부 후면부 1차 Levelling
-- Auto Leveler 사용
-- Stacker Base 상단 -> 바닥면 400mm",⬜ 대기,,,
 SLH1 #6호기,Software,1,"Motor Parameter Setting 및 다회전 클리어
 - S/W 팀 요청
 - 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
