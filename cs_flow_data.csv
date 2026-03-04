@@ -40,6 +40,8 @@ SLH1 #6호기,직진도 측정,4,"ULD Transfer X,Z축 직진도 평탄도(±0.3m
  ->dial gauge Indicator  0.01mm(바늘) 
  -> 모든 무두 볼트 풀어놓은 후 측정 후 무드 볼트 조정
  -> Z 축 ±Limit Sensor 이동, Hard Stopper 위치변경",⬜ 대기,,,
+SLH1 #6호기,직진도 측정,5,"Set-Plate 직진도 측정
+ ->dial gauge Indicator  0.01mm(바늘) ",⬜ 대기,,,
 SLH1 #6호기,평탄도 측정,1,"LD Stacker 1,2 Base 평탄도(±0.2mm) Setting 및 측정
 - 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
 SLH1 #6호기,평탄도 측정,2,"ULD Stacker 1,2 Base 평탄도(±0.2mm) Setting 및 측정
@@ -54,6 +56,7 @@ SLH1 #6호기,조립정밀도,2,"LD/ULD Hand Z-axis 측정
 - Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
 SLH1 #6호기,조립정밀도,3,"Set-Plate Down Hard Stopper 높이 SETTING (24mm) 및 측정
 ex) L/D 1,2 : 21mm UL/D 1,2 24mm pass",⬜ 대기,,,
+SLH1 #6호기,조립정밀도,4,Transfer JIG -> Set-Plate -> Stacker JIG Setting,⬜ 대기,,,
 SLH1 #6호기,Test Site 평탄도,1,"Front, Rear Press 평탄도(±0.25mm) Setting 및 측정
 - 디지털 거리 측정기, 측정 지그 사용
 - 무두 볼트 풀어놓은 후 측정 -> + 수치가 제일 큰 부분에 리셋 -> 무두 볼트 사용하여 평탄도 Setting",⬜ 대기,,,
