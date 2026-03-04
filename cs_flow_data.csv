@@ -38,8 +38,6 @@ SLH1 #6호기,Test Site 평탄도,3,"Front, Rear T-Tray Rail 평탄도(±0.2mm) 
 SLH1 #6호기,Set Plate,1,"L/D 1,2, UL/D 1,2 X축 직진도(±0.2mm) (Gauge Block 사용) 평탄도(±0.2mm) Setting 및 측정
 - Dial Gauge Indicator 0.01mm(바늘)
 - Gauge Block 사용",⬜ 대기,,,
-SLH1 #6호기,Stacker (3),1,"Reject Front Rear Base 높이 조정
-- Rear Base Cylinder Rod 최대로 내린뒤, Front를 무두 볼트 사용하여 Setting",⬜ 대기,,,
 SLH1 #6호기,Set Plate (2),1,"L/D 1,2, UL/D 1,2 Support Lock/Unlock Cylinder Rod Setting",⬜ 대기,,,
 SLH1 #6호기,Set Plate (2),2,"L/D 1,2, UL/D 1,2 Down Hard Stopper 높이 Setting (24mm) 및 측정
 - Ex) L/D 1,2: 21mm, UL/D 1,2: 24mm Pass",⬜ 대기,,,
