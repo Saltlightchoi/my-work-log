@@ -81,3 +81,4 @@ SLH1 #6호기,공통 (2),8,Dummy Run 진행 및 Clear Alarm (3000회),⬜ 대기
 SLH1 #6호기,Software,1,"Motor Parameter Setting 및 다회전 클리어
 - S/W 팀 요청
 - 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
+SLH1 #6호기,Software,2,"BCR, Vision Setting",⬜ 대기,,,
