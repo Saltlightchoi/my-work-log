@@ -35,7 +35,6 @@ SLH1 #6호기,Test Site 평탄도,2,"Front, Rear Press Load Cell (0.2bar, 0.29ba
 SLH1 #6호기,Test Site 평탄도,3,"Front, Rear T-Tray Rail 평탄도(±0.2mm) Setting 및 측정
 - 디지털 전자 수평계 사용
 - 측정 위치 : T-Tray 왼쪽 중간 오른쪽",⬜ 대기,,,
-SLH1 #6호기,Input,1,Bottom Feeder Up Cylinder Rod (16.5mm) Setting,⬜ 대기,,,
 SLH1 #6호기,Output,1,Bottom Feeder Up Cylinder Rod (16.5mm) Setting,⬜ 대기,,,
 SLH1 #6호기,공통 (3),1,"전면부 후면부 Docking 및 Levelling
 - Auto Leveler 사용
