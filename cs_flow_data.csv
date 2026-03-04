@@ -68,8 +68,6 @@ SLH1 #6호기,반복정밀도,2,"L/D, UL/D X,Z축 반복도(±0.05mm) 측정 (10
  -> Digital Indicator (0.001mm) 사용",⬜ 대기,,,
 SLH1 #6호기,반복정밀도,3,"Bottom Feeder X축 반복도(±0.05mm) 측정 (10회)
 - Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
-SLH1 #6호기,Input (2),1,"Bottom Feeder X축 반복도(±0.05mm) 측정 (10회)
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
 SLH1 #6호기,공통 (5),1,"Transfer, Hand, Middle Feeder, Input, Output Motor Teaching",⬜ 대기,,,
 SLH1 #6호기,공통 (5),2,"후면부 덕트 -> 측면(Door) -> 후면(Door) -> 상부 Cover 장착 -> 부속 Cover 장착, Door Key, Door Sensor 장착 및 OS 확인",⬜ 대기,,,
 SLH1 #6호기,공통 (5),3,"Ionizer Loader A-01, Unloader A-02 설정",⬜ 대기,,,
