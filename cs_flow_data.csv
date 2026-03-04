@@ -14,9 +14,9 @@ SLH1 #6호기,공통 (2),1,"Motor Parameter Setting 및 다회전 클리어
 - S/W 팀 요청
 - 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
 SLH1 #6호기,공통 (2),2,Precizer Up Rod 길이 변경 (57mm),⬜ 대기,,,
-SLH1 #6호기,Hand,1,"Loader Unloader X,Y축 직진도 (±0.5mm) Setting 및 측정
+SLH1 #6호기,직진도 측정,1,"Loader Unloader X,Y축 직진도 (±0.5mm) Setting 및 측정
 - Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
-SLH1 #6호기,Hand,2,"L/D, UL/D Pitch, 높이(±0.15mm) Setting 및 측정
+SLH1 #6호기,직진도 측정,2,"L/D, UL/D Pitch, 높이(±0.15mm) Setting 및 측정
 - Dial Gauge Indicator 0.01mm(바늘)
 - Double Nut로 길이 조정",⬜ 대기,,,
 SLH1 #6호기,Stacker (2),1,"L/D 1,2, UL/D 1,2, Empty, Reject Base 평탄도(±0.2mm) Setting 및 측정
