@@ -346,14 +346,14 @@ SLH1 #6호기,반복정밀도,2,"LD/ULD Hand Transfer X,Z축 반복도(±0.05mm)
  -> Digital Indicator (0.001mm) 사용",⬜ 대기,,,
 SLH1 #6호기,반복정밀도,3,"Bottom Feeder X축 반복도(±0.05mm) 측정 (10회)
 - Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
-SLH1 #6호기,공통 (2),1,"Transfer, Hand, Middle Feeder, Input, Output Motor Teaching",⬜ 대기,,,
-SLH1 #6호기,공통 (2),2,"후면부 덕트 -> 측면(Door) -> 후면(Door) -> 상부 Cover 장착 -> 부속 Cover 장착, Door Key, Door Sensor 장착 및 OS 확인",⬜ 대기,,,
-SLH1 #6호기,공통 (2),3,"Ionizer Loader A-01, Unloader A-02 설정",⬜ 대기,,,
-SLH1 #6호기,공통 (2),4,접지 연결 및 확인,⬜ 대기,,,
-SLH1 #6호기,공통 (2),5,환경 검수 List 확인 및 품질팀 Support,⬜ 대기,,,
-SLH1 #6호기,공통 (2),6,Initial 및 Long Run 진행 (T-Tray 미사용),⬜ 대기,,,
-SLH1 #6호기,공통 (2),7,Dry Run 진행 (T-Tray 사용),⬜ 대기,,,
-SLH1 #6호기,공통 (2),8,Dummy Run 진행 및 Clear Alarm (3000회),⬜ 대기,,,
+SLH1 #6호기,환경안전,1,"Transfer, Hand, Middle Feeder, Input, Output Motor Teaching",⬜ 대기,,,
+SLH1 #6호기,환경안전,2,"후면부 덕트 -> 측면(Door) -> 후면(Door) -> 상부 Cover 장착 -> 부속 Cover 장착, Door Key, Door Sensor 장착 및 OS 확인",⬜ 대기,,,
+SLH1 #6호기,환경안전,3,"Ionizer Loader A-01, Unloader A-02 설정",⬜ 대기,,,
+SLH1 #6호기,환경안전,4,접지 연결 및 확인,⬜ 대기,,,
+SLH1 #6호기,환경안전,5,환경 검수 List 확인 및 품질팀 Support,⬜ 대기,,,
+SLH1 #6호기,환경안전,6,Initial 및 Long Run 진행 (T-Tray 미사용),⬜ 대기,,,
+SLH1 #6호기,환경안전,7,Dry Run 진행 (T-Tray 사용),⬜ 대기,,,
+SLH1 #6호기,환경안전,8,Dummy Run 진행 및 Clear Alarm (3000회),⬜ 대기,,,
 SLH1 #6호기,Software,1,"Motor Parameter Setting 및 다회전 클리어
 - S/W 팀 요청
 - 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
