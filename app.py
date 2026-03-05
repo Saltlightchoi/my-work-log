@@ -89,17 +89,16 @@ class DataManager:
         else: self.repo.create_file(self.file_path, "Init Creation", csv_buffer.getvalue())
 
 # ==========================================
-# ★ 추가: 표 상태별 색상 적용 함수 ★
+# ★ 표 상태별 색상 적용 함수
 # ==========================================
 def get_row_color(row):
-    """상태값에 따라 해당 줄 전체에 투명한 배경색을 입혀주는 함수입니다."""
     val = row.get('상태', '')
     if val == '✅ 완료':
-        return ['background-color: rgba(76, 175, 80, 0.2)'] * len(row) # 초록
+        return ['background-color: rgba(76, 175, 80, 0.2)'] * len(row)
     elif val == '⏳ 작업중':
-        return ['background-color: rgba(255, 193, 7, 0.2)'] * len(row) # 노랑
+        return ['background-color: rgba(255, 193, 7, 0.2)'] * len(row)
     elif val == '🚨 보류':
-        return ['background-color: rgba(244, 67, 54, 0.2)'] * len(row) # 빨강
+        return ['background-color: rgba(244, 67, 54, 0.2)'] * len(row)
     return [''] * len(row)
 
 # ==========================================
@@ -283,7 +282,6 @@ def render_cs_flow_page(db_flow):
                 
                 with tab_ord:
                     st.markdown("<p style='font-size:13px; color:#aaa;'>💡 표의 숫자를 원하는 순서로 수정한 뒤 아래 [순서 적용] 버튼을 누르세요.</p>", unsafe_allow_html=True)
-                    
                     cat_order_df = pd.DataFrame({"대항목": existing_cats, "순서": range(1, len(existing_cats) + 1)})
                     edited_cat_order = st.data_editor(
                         cat_order_df, 
@@ -292,19 +290,15 @@ def render_cs_flow_page(db_flow):
                         disabled=["대항목"],
                         column_config={"순서": st.column_config.NumberColumn("위치(순서) 변경", step=1)}
                     )
-                    
                     if st.button("순서 변경 적용", use_container_width=True):
                         new_order_list = edited_cat_order.sort_values(by="순서")["대항목"].tolist()
-                        
                         temp_proj_df = df_flow[mask].copy()
                         temp_proj_df['대항목'] = pd.Categorical(temp_proj_df['대항목'], categories=new_order_list, ordered=True)
                         temp_proj_df = temp_proj_df.sort_values(by=['대항목', '순서'])
                         temp_proj_df['대항목'] = temp_proj_df['대항목'].astype(str)
-                        
                         temp_proj_df['group_id'] = (temp_proj_df['대항목'] != temp_proj_df['대항목'].shift()).cumsum()
                         temp_proj_df["순서"] = temp_proj_df.groupby('group_id').cumcount() + 1
                         temp_proj_df = temp_proj_df.drop(columns=['group_id']).reset_index(drop=True)
-                        
                         df_flow = pd.concat([df_flow[~mask], temp_proj_df], ignore_index=True)
                         db_flow.save(df_flow, sha_flow, f"Reorder Cats: {selected_proj}")
                         st.success("✅ 대항목 순서가 성공적으로 변경되었습니다!")
@@ -334,8 +328,8 @@ def render_cs_flow_page(db_flow):
             "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width="large"), 
             "상태": st.column_config.SelectboxColumn("상태", options=status_options, width="small", required=True), 
             "비고": st.column_config.TextColumn("⚠️ 비고 / 보류사유", width="large"),
-            "첨부": st.column_config.TextColumn("📎 첨부", width="small"),
-            "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="medium") 
+            "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="small"), 
+            "첨부": st.column_config.TextColumn("📎 첨부", width="small")
         }
 
         proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
@@ -348,28 +342,32 @@ def render_cs_flow_page(db_flow):
             cat = group_df['대항목'].iloc[0]
             display_df = group_df.drop(columns=['group_id']).reset_index(drop=True)
             
-            # ★ 대항목 탭(Expander)의 상태를 자동으로 검사하여 표시하는 로직 ★
+            # ★ 완벽하게 개선된 탭 제목(상태) 판별 로직 ★
             current_statuses = display_df['상태'].tolist()
-            if '⏳ 작업중' in current_statuses:
-                tab_title = f"🟡 [진행중] 대항목: {cat}"
-            elif '🚨 보류' in current_statuses:
+            
+            if '🚨 보류' in current_statuses:
+                # 1순위: 보류가 하나라도 있으면 빨간색 (진행 불가)
                 tab_title = f"🔴 [보류발생] 대항목: {cat}"
             elif current_statuses and all(s == '✅ 완료' for s in current_statuses):
+                # 2순위: 모든 항목이 완료되어야만 초록색
                 tab_title = f"🟢 [완료] 대항목: {cat}"
+            elif '⏳ 작업중' in current_statuses or '✅ 완료' in current_statuses:
+                # 3순위: 진행 중이거나, 전체 중 일부만 완료된 항목이 있다면 무조건 노란색 (진행중)
+                tab_title = f"🟡 [진행중] 대항목: {cat}"
             else:
+                # 4순위: 모두 다 대기 상태일 때
                 tab_title = f"📍 [대기] 대항목: {cat}"
             
             with st.expander(tab_title, expanded=False):
-                # ★ 표의 줄(Row) 전체에 색상을 칠해주는 데이터프레임 스타일링 적용 ★
                 styled_df = display_df.style.apply(get_row_color, axis=1)
                 
                 edited_cat_df = st.data_editor(
-                    styled_df, # 색상이 입혀진 데이터를 화면에 띄웁니다.
-                    use_container_width=False, 
+                    styled_df,
+                    use_container_width=True, 
                     hide_index=True, num_rows="dynamic",
                     key=f"editor_{selected_proj}_{group_id}",
                     column_config=custom_column_config,
-                    column_order=["순서", "작업내용", "상태", "비고", "첨부", "업데이트일"]
+                    column_order=["순서", "작업내용", "상태", "비고", "업데이트일", "첨부"] 
                 )
                 
                 for idx, new_row in edited_cat_df.iterrows():
