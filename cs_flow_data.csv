@@ -269,18 +269,18 @@ SLH1 #5호기,Software,1,"Motor Parameter Setting 및 다회전 클리어
 - 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",✅ 완료,,,최염광 (26-03-05)
 SLH1 #5호기,Software,2,"BCR, Vision Setting",✅ 완료,,,최염광 (26-03-05)
 SLH1 #5호기,대항목: Set up,1,신규 작업 내용을 입력하세요,⬜ 대기,,,
-SLH1 #6호기,공통,1,"I/O Check
+SLH1 #6호기,공통,1,"전면부/후면부1차 Levelling
+ -> Auto Leveler 사용
+ -> Stacker Base 상단 -> 바닥면 400mm",⏳ 작업중,"후면부 Leveling 완료, 하단 Put -> 바닥 약 180mm Setting 후 Auto Level 기 사용.",,최염광 (26-03-05)
+SLH1 #6호기,공통,2,"I/O Check
  -> OUP PUT으로 동작 후 IN PUT LED 확인.
  -> Cylinder 정상 동작 확인
  -> MANUAL에서 Cylinder 동작 후 LED 점등 확인 
  -> 미비된 부분 I/O LIST,PC에 저장 후 전장 수정 요청 진행
  -> 전장 수정 후 수정되었는지 동작,LED 확인",⬜ 대기,,,
-SLH1 #6호기,공통,2,"공압 Leak
+SLH1 #6호기,공통,3,"공압 Leak
   check",⬜ 대기,,,
-SLH1 #6호기,공통,3,Cylinder Take Time,⬜ 대기,,,
-SLH1 #6호기,공통,4,"전면부/후면부1차 Levelling
- -> Auto Leveler 사용
- -> Stacker Base 상단 -> 바닥면 400mm",⏳ 작업중,"후면부 Leveling 완료, 하단 Put -> 바닥 약 180mm Setting 후 Auto Level 기 사용.",,최염광 (26-03-05)
+SLH1 #6호기,공통,4,Cylinder Take Time,⬜ 대기,,,
 SLH1 #6호기,공통,5,"Stacker Conveyor Belt Inverter 값 설정
 ->운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)
 -> P3 60  P4 : 60(고속), P5 : 30(중속), P6 : 10(저속)
