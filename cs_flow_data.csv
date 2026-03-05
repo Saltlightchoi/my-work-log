@@ -323,6 +323,10 @@ SLH1 #6호기,평탄도 측정,3,"Empty , Reject Stacker Base 평탄도(±0.2mm)
 - 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
 SLH1 #6호기,평탄도 측정,4,"InPut-> Testsite -> Out T-Tray 평탄도 Setting 및 측정
 - 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
+SLH1 #6호기,Software,1,"Motor Parameter Setting 및 다회전 클리어
+- S/W 팀 요청
+- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
+SLH1 #6호기,Software,2,"BCR, Vision Setting",⬜ 대기,,,
 SLH1 #6호기,조립정밀도,1,LD/ULD Hand Pitch 측정(Pitch JIG 삽입),⬜ 대기,,,
 SLH1 #6호기,조립정밀도,2,"LD/ULD Hand Z-axis 측정
  - Cylinder Down 상태(±0.15mm)
@@ -350,10 +354,6 @@ SLH1 #6호기,환경안전,1,"후면부 덕트 -> 측면(Door) -> 후면(Door) -
 SLH1 #6호기,환경안전,2,"Ionizer Loader A-01, Unloader A-02 설정",⬜ 대기,,,
 SLH1 #6호기,환경안전,3,접지 연결 및 확인,⬜ 대기,,,
 SLH1 #6호기,환경안전,4,환경 검수 List 확인 및 품질팀 Support,⬜ 대기,,,
-SLH1 #6호기,Software,1,"Motor Parameter Setting 및 다회전 클리어
-- S/W 팀 요청
-- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
-SLH1 #6호기,Software,2,"BCR, Vision Setting",⬜ 대기,,,
 SLH1 #6호기,Runnning,1,"Transfer, Hand, Middle Feeder, Input, Output Motor Teaching",⬜ 대기,,,
 SLH1 #6호기,Runnning,2,Initial 및 Long Run 진행 (T-Tray 미사용),⬜ 대기,,,
 SLH1 #6호기,Runnning,3,Dry Run 진행 (T-Tray 사용),⬜ 대기,,,
