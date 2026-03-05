@@ -226,10 +226,10 @@ def render_cs_flow_page(db_flow):
         proj_df = df_flow[mask].copy()
 
         with col_b:
-            with st.expander("📁 대항목(그룹) 관리 메뉴 (추가/변경/삭제)"):
-                tab_add, tab_ren, tab_del = st.tabs(["➕ 새 그룹 추가", "✏️ 기존 그룹 이름 변경", "🗑️ 그룹 통째로 삭제"])
+            with st.expander("📁 대항목(그룹) 관리 메뉴"):
+                # ★ 메뉴 탭 구조 변경: '순서 변경' 탭 추가 ★
+                tab_add, tab_ren, tab_ord, tab_del = st.tabs(["➕ 추가", "✏️ 이름 변경", "↕️ 순서 변경", "🗑️ 삭제"])
                 
-                # 그룹 순서를 유지한 채로 고유 이름 리스트만 뽑아냄 (알파벳 정렬 방지)
                 existing_cats = []
                 for c in proj_df['대항목']:
                     if c not in existing_cats: existing_cats.append(c)
@@ -268,6 +268,39 @@ def render_cs_flow_page(db_flow):
                             st.success(f"[{old_cat_name}]이(가) [{final_renamed}](으)로 변경되었습니다!")
                             st.rerun()
                 
+                # ★ 신규 추가된 '대항목 순서 변경' 로직 ★
+                with tab_ord:
+                    st.markdown("<p style='font-size:13px; color:#aaa;'>💡 표의 숫자를 원하는 순서로 수정한 뒤 아래 [순서 적용] 버튼을 누르세요.</p>", unsafe_allow_html=True)
+                    
+                    cat_order_df = pd.DataFrame({"대항목": existing_cats, "순서": range(1, len(existing_cats) + 1)})
+                    edited_cat_order = st.data_editor(
+                        cat_order_df, 
+                        hide_index=True, 
+                        use_container_width=True,
+                        disabled=["대항목"],
+                        column_config={"순서": st.column_config.NumberColumn("위치(순서) 변경", step=1)}
+                    )
+                    
+                    if st.button("순서 변경 적용", use_container_width=True):
+                        # 사용자가 수정한 숫자대로 대항목 리스트를 정렬
+                        new_order_list = edited_cat_order.sort_values(by="순서")["대항목"].tolist()
+                        
+                        temp_proj_df = df_flow[mask].copy()
+                        # 대항목을 강제로 새로운 순서에 맞게 카테고리화 하여 정렬
+                        temp_proj_df['대항목'] = pd.Categorical(temp_proj_df['대항목'], categories=new_order_list, ordered=True)
+                        temp_proj_df = temp_proj_df.sort_values(by=['대항목', '순서'])
+                        temp_proj_df['대항목'] = temp_proj_df['대항목'].astype(str)
+                        
+                        # 안전하게 group_id와 세부 항목 번호 다시 부여
+                        temp_proj_df['group_id'] = (temp_proj_df['대항목'] != temp_proj_df['대항목'].shift()).cumsum()
+                        temp_proj_df["순서"] = temp_proj_df.groupby('group_id').cumcount() + 1
+                        temp_proj_df = temp_proj_df.drop(columns=['group_id']).reset_index(drop=True)
+                        
+                        df_flow = pd.concat([df_flow[~mask], temp_proj_df], ignore_index=True)
+                        db_flow.save(df_flow, sha_flow, f"Reorder Cats: {selected_proj}")
+                        st.success("✅ 대항목 순서가 성공적으로 변경되었습니다!")
+                        st.rerun()
+
                 with tab_del:
                     with st.form("delete_cat_form", clear_on_submit=True):
                         del_cat_name = st.selectbox("삭제할 대항목(그룹) 선택", existing_cats)
@@ -282,7 +315,7 @@ def render_cs_flow_page(db_flow):
                             elif not confirm_del:
                                 st.warning("삭제를 진행하시려면 체크박스에 동의해주세요.")
         
-        st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[대항목 관리]</b>은 바로 위쪽의 <b>'대항목 관리 메뉴'</b>를 이용하세요.<br>2. <b>[순서 변경]</b>: 표 안의 'No' 칸 숫자를 지우고 원하는 숫자로 입력 후 우측 상단의 저장 버튼을 누르면 위아래로 이동합니다.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> <br>1. <b>[대항목 관리]</b>은 바로 위쪽의 <b>'대항목 관리 메뉴'</b>를 이용하세요.<br>2. <b>[소항목 순서 변경]</b>: 표 안의 'No' 칸 숫자를 지우고 원하는 숫자로 입력 후 우측 상단의 저장 버튼을 누르면 위아래로 이동합니다.</div>", unsafe_allow_html=True)
 
         status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
         custom_column_config = {
@@ -296,7 +329,6 @@ def render_cs_flow_page(db_flow):
             "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="medium") 
         }
 
-        # ★ 대항목의 원본 순서를 기억하기 위해 sort=False 옵션을 강제 적용하고 블록(group) 아이디를 생성합니다.
         proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
         groups = proj_df.groupby('group_id', sort=False) 
         
@@ -335,14 +367,12 @@ def render_cs_flow_page(db_flow):
                 
                 edited_cat_df["대항목"] = cat
                 edited_cat_df["프로젝트명"] = selected_proj
-                # ★ 알파벳 정렬을 피하기 위해 원본 그룹 고유 번호를 잠시 저장해둡니다.
                 edited_cat_df["org_group_id"] = group_id 
                 edited_dfs.append(edited_cat_df)
 
         if btn_save:
             updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
             if not updated_proj_df.empty:
-                # ★ 문제의 알파벳 정렬을 지우고, 화면에 표시되던 원래 덩어리(org_group_id) 단위로 정렬합니다!
                 updated_proj_df = updated_proj_df.sort_values(by=['org_group_id', '순서'], kind='stable')
                 
                 updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
