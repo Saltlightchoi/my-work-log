@@ -89,8 +89,13 @@ class DataManager:
         else: self.repo.create_file(self.file_path, "Init Creation", csv_buffer.getvalue())
 
 # ==========================================
-# ★ 표 상태별 색상 적용 함수
+# ★ 추가: 데이터 저장 시 원래의 프로젝트 순서가 뒤죽박죽 섞이지 않게 고정해주는 함수 ★
 # ==========================================
+def maintain_project_order(df, original_order):
+    df['__proj_cat__'] = pd.Categorical(df['프로젝트명'], categories=original_order, ordered=True)
+    return df.sort_values(by=['__proj_cat__'], kind='stable').drop(columns=['__proj_cat__']).reset_index(drop=True)
+
+# 표 상태별 색상 적용 함수
 def get_row_color(row):
     val = row.get('상태', '')
     if val == '✅ 완료':
@@ -185,6 +190,12 @@ def render_cs_flow_page(db_flow):
 
     project_list = df_flow["프로젝트명"].unique().tolist() if not df_flow.empty else []
     
+    # ★ 사용자 화면 이탈 방지용 세션 스테이트 설정 ★
+    if 'current_proj' not in st.session_state:
+        st.session_state['current_proj'] = project_list[0] if project_list else ""
+    if st.session_state['current_proj'] not in project_list:
+        st.session_state['current_proj'] = project_list[0] if project_list else ""
+    
     col_a, col_b = st.columns(2)
     with col_a:
         with st.expander("➕ 새 프로젝트(호기) 시작하기"):
@@ -222,12 +233,23 @@ def render_cs_flow_page(db_flow):
                     new_df['대항목'] = new_df['group_id'].map(unique_names)
                     new_df["순서"] = new_df.groupby('group_id').cumcount() + 1
                     
-                    db_flow.save(pd.concat([df_flow, new_df.drop(columns=['group_id'])], ignore_index=True), sha_flow, f"Create: {new_proj} from {source_proj}")
+                    db_flow.save(pd.concat([df_flow, new_df.drop(columns=['group_id'])], ignore_index=True), sha_flow, f"Create: {new_proj}")
+                    
+                    # ★ 생성 후 바로 방금 만든 프로젝트로 화면 강제 이동! ★
+                    st.session_state['current_proj'] = new_proj
                     st.rerun()
 
     if project_list:
         sel_col, empty_col, save_col, del_col = st.columns([6, 2, 1, 1])
-        with sel_col: selected_proj = st.selectbox("📌 진행 상황 확인할 프로젝트", project_list)
+        
+        # 선택박스의 인덱스를 세션 스테이트(기억된 위치)로 강제 고정
+        default_idx = project_list.index(st.session_state['current_proj']) if project_list else 0
+        
+        with sel_col: 
+            selected_proj = st.selectbox("📌 진행 상황 확인할 프로젝트", project_list, index=default_idx)
+            # 사용자가 수동으로 바꾸면 즉시 업데이트
+            st.session_state['current_proj'] = selected_proj 
+            
         with save_col: 
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
             btn_save = st.button("💾 저장", use_container_width=True)
@@ -261,7 +283,11 @@ def render_cs_flow_page(db_flow):
                                 "작업내용": "신규 작업 내용을 입력하세요", "상태": "⬜ 대기",
                                 "비고": "", "첨부": "", "업데이트일": ""
                             }])
-                            db_flow.save(pd.concat([df_flow, new_cat_row], ignore_index=True), sha_flow, f"Add Cat: {final_cat_name}")
+                            
+                            original_projects = df_flow['프로젝트명'].unique().tolist()
+                            new_df_flow = pd.concat([df_flow, new_cat_row], ignore_index=True)
+                            new_df_flow = maintain_project_order(new_df_flow, original_projects) # 순서 섞임 방지
+                            db_flow.save(new_df_flow, sha_flow, f"Add Cat: {final_cat_name}")
                             st.rerun()
 
                 with tab_ren:
@@ -299,8 +325,12 @@ def render_cs_flow_page(db_flow):
                         temp_proj_df['group_id'] = (temp_proj_df['대항목'] != temp_proj_df['대항목'].shift()).cumsum()
                         temp_proj_df["순서"] = temp_proj_df.groupby('group_id').cumcount() + 1
                         temp_proj_df = temp_proj_df.drop(columns=['group_id']).reset_index(drop=True)
-                        df_flow = pd.concat([df_flow[~mask], temp_proj_df], ignore_index=True)
-                        db_flow.save(df_flow, sha_flow, f"Reorder Cats: {selected_proj}")
+                        
+                        original_projects = df_flow['프로젝트명'].unique().tolist()
+                        new_df_flow = pd.concat([df_flow[~mask], temp_proj_df], ignore_index=True)
+                        new_df_flow = maintain_project_order(new_df_flow, original_projects) # 순서 섞임 방지
+                        
+                        db_flow.save(new_df_flow, sha_flow, f"Reorder Cats: {selected_proj}")
                         st.success("✅ 대항목 순서가 성공적으로 변경되었습니다!")
                         st.rerun()
 
@@ -395,19 +425,25 @@ def render_cs_flow_page(db_flow):
             updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
             if not updated_proj_df.empty:
                 updated_proj_df = updated_proj_df.sort_values(by=['org_group_id', '순서'], kind='stable')
-                
                 updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
                 updated_proj_df["순서"] = updated_proj_df.groupby('group_id').cumcount() + 1
                 updated_proj_df = updated_proj_df.drop(columns=['group_id', 'org_group_id']).reset_index(drop=True)
             
-            df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
-            db_flow.save(df_flow, sha_flow, f"Update: {selected_proj}")
+            # ★ 프로젝트 순서 유지 및 화면 고정 ★
+            original_projects = df_flow['프로젝트명'].unique().tolist()
+            new_df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
+            new_df_flow = maintain_project_order(new_df_flow, original_projects) # 엑셀 바닥으로 안 떨어지게 순서 고정!
+            
+            db_flow.save(new_df_flow, sha_flow, f"Update: {selected_proj}")
+            st.session_state['current_proj'] = selected_proj # 지금 수정하던 그 놈을 꽉 붙잡음!
             st.success("✅ 변경사항 및 상태가 성공적으로 저장되었습니다.")
             st.rerun()
 
         if btn_del:
             db_flow.save(df_flow[~mask], sha_flow, f"Delete: {selected_proj}")
             st.warning("🗑️ 프로젝트가 삭제되었습니다.")
+            # 삭제하면 안전하게 맨 첫 번째 항목으로 돌려줌
+            st.session_state['current_proj'] = project_list[0] if len(project_list) > 1 else ""
             st.rerun()
     else:
         st.info("진행 중인 프로젝트가 없습니다.")
