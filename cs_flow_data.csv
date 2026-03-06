@@ -122,7 +122,7 @@ SLH1 #6호기,Ray-Out 이후,5,"I/O Check
  -> Cylinder 정상 동작 확인
  -> MANUAL에서 Cylinder 동작 후 LED 점등 확인 
  -> 미비된 부분 I/O LIST,PC에 저장 후 전장 수정 요청 진행
- -> 전장 수정 후 수정되었는지 동작,LED 확인",⏳ 작업중,,,최염광 (26-03-06)
+ -> 전장 수정 후 수정되었는지 동작,LED 확인",⏳ 작업중,"I/O ,Cylinder 동작 Check 완료. 전장 수정 대기중.",,최염광 (26-03-06)
 SLH1 #6호기,Ray-Out 이후,6,공압 Leak Check,⬜ 대기,,,
 SLH1 #6호기,Ray-Out 이후,7,Cylinder Take Time,⬜ 대기,,,
 SLH1 #6호기,기구물 Setting,1,"Stacker Conveyor Belt Inverter 값 설정
@@ -166,10 +166,10 @@ SLH1 #6호기,평탄도 측정,1,"LD Stacker 1,2 Base 평탄도(±0.2mm) Setting
 - 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",최염광 (26-03-06)
 SLH1 #6호기,평탄도 측정,2,"ULD Stacker 1,2 Base 평탄도(±0.2mm) Setting 및 측정
 - Base Up 상태 측정.
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",🚨 보류,Sol 전자부 Connect 연결 안됨. 전장 확인 후 명일 진행 예정,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",최염광 (26-03-06)
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",최염광 (26-03-06)
 SLH1 #6호기,평탄도 측정,3,"Empty , Reject Stacker Base 평탄도(±0.2mm) Setting 및 측정
 - Base Up 상태 측정.
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",🚨 보류,Reject Stacker Conveyor Align 조정 후에 재측정 필요. 사진은 촬영 송부 완료.,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",최염광 (26-03-06)
 SLH1 #6호기,평탄도 측정,4,"InPut-> Testsite -> Out T-Tray 평탄도 Setting 및 측정
 - 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",
 SLH1 #6호기,Software,1,OS 설치,✅ 완료,,,최염광 (26-03-05)
