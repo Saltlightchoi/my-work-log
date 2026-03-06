@@ -104,11 +104,19 @@ SLH1 #6호기,Ray-Out 이후,2,전/후면부 Docking 및 Leveling Detail 조정,
 SLH1 #6호기,Ray-Out 이후,3,Main 공압 포설,✅ 완료,,,최염광 (26-03-05)
 SLH1 #6호기,Ray-Out 이후,4,"Regulator Setting
  - 전면부 Main 0.65Mpa, 후면부 Main 0.5Mpa
+ - Main Digital Pressure Switch 설정법
+     ->  s버튼 5초이상 꾹 누른다.
+     ->  F0번에서 s버튼을 눌러 RAnG값 1,  Unit Mpa로 변경
+     ->  s버튼을 꾹 눌러 main화면으로 돌아온다.
+     -> main화면에서 P_1 P_2값을 0.3으로 하고 H_1 H_2값을 0으로 한다.
+ - Set-Plate Up Absorber : 0.3Mpa
+ - Reject Stacker : 0.4Mpa
+ - LD/ULD Hand : 0.6Mpa
  - TestSite 정공 Regulator OS상 입력
-  -> T/S Front :    T/S Rear :   Press : 
+  -> T/S Front : 0.2    T/S Rear : 0.2  Press : 0.2 
   ->  Rail, Lock Pin : 0.4Mpa
  - Main Digital Pressure Switch Setting 
-  ->",⏳ 작업중,,,최염광 (26-03-06)
+  ->",✅ 완료,,,최염광 (26-03-06)
 SLH1 #6호기,Ray-Out 이후,5,"I/O Check
  -> OUP PUT으로 동작 후 IN PUT LED 확인.
  -> Cylinder 정상 동작 확인
