@@ -215,7 +215,7 @@ SLH1 #7호기,Ray-Out 이후,1,"전면부/후면부1차 Levelling
  -> Auto Leveler 사용
  -> Stacker Base 상단 -> 바닥면 400mm",⏳ 작업중,"후면부 Auto Leveling 완료, 전면부 전장 작업 완료 후 진행 대기중.",,최염광 (26-03-06)
 SLH1 #7호기,Ray-Out 이후,2,전/후면부 Docking 및 Leveling Detail 조정,⬜ 대기,,,
-SLH1 #7호기,Ray-Out 이후,3,Main 공압 포설,⬜ 대기,,,
+SLH1 #7호기,Ray-Out 이후,3,Main 공압 포설,✅ 완료,,,최염광 (26-03-06)
 SLH1 #7호기,Ray-Out 이후,4,"I/O Check
  -> OUP PUT으로 동작 후 IN PUT LED 확인.
  -> Cylinder 정상 동작 확인
