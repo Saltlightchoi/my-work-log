@@ -115,9 +115,9 @@ SLH1 #6호기,Runnning,4,Normal Run 진행(자재 투입),⬜ 대기,,,
 SLH1 #6호기,Runnning,5,Running Data 취득(3000M),⬜ 대기,,,
 SLH1 #5호기,Ray-Out 이후,1,"전면부/후면부1차 Levelling
  -> Auto Leveler 사용
- -> Stacker Base 상단 -> 바닥면 400mm",⬜ 대기,,,
-SLH1 #5호기,Ray-Out 이후,2,전/후면부 Docking 및 Leveling Detail 조정,⬜ 대기,,,
-SLH1 #5호기,Ray-Out 이후,3,Main 공압 포설,⬜ 대기,,,
+ -> Stacker Base 상단 -> 바닥면 400mm",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Ray-Out 이후,2,전/후면부 Docking 및 Leveling Detail 조정,✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Ray-Out 이후,3,Main 공압 포설,✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,Ray-Out 이후,4,"Regulator Setting
  - 전면부 Main 0.65Mpa, 후면부 Main 0.5Mpa
  - Main Digital Pressure Switch 설정법
@@ -132,15 +132,15 @@ SLH1 #5호기,Ray-Out 이후,4,"Regulator Setting
   -> T/S Front : 0.2    T/S Rear : 0.2  Press : 0.2 
   ->  Rail, Lock Pin : 0.4Mpa
  - Main Digital Pressure Switch Setting 
-  ->",⬜ 대기,,,
+  ->",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,Ray-Out 이후,5,"I/O Check
  -> OUP PUT으로 동작 후 IN PUT LED 확인.
  -> Cylinder 정상 동작 확인
  -> MANUAL에서 Cylinder 동작 후 LED 점등 확인 
  -> 미비된 부분 I/O LIST,PC에 저장 후 전장 수정 요청 진행
- -> 전장 수정 후 수정되었는지 동작,LED 확인",⬜ 대기,,,
-SLH1 #5호기,Ray-Out 이후,6,공압 Leak Check,⬜ 대기,,,
-SLH1 #5호기,Ray-Out 이후,7,Cylinder Take Time,⬜ 대기,,,
+ -> 전장 수정 후 수정되었는지 동작,LED 확인",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Ray-Out 이후,6,공압 Leak Check,✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Ray-Out 이후,7,Cylinder Take Time,✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,기구물 Setting,1,"Stacker Conveyor Belt Inverter 값 설정
 ->운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)
 -> P3 60  P4 : 60(고속), P5 : 30(중속), P6 : 10(저속)
