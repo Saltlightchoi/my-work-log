@@ -102,14 +102,15 @@ SLH1 #6호기,Ray-Out 이후,1,"전면부/후면부1차 Levelling
  -> Stacker Base 상단 -> 바닥면 400mm",✅ 완료,"후면부 Leveling 완료, 하단 Put -> 바닥 약 180mm Setting 후 Auto Level 기 사용.",,최염광 (26-03-05)
 SLH1 #6호기,Ray-Out 이후,2,전/후면부 Docking 및 Leveling Detail 조정,✅ 완료,Middle Rail Flow Align Setting 시 좌우 편차 발생여부 Check 필요,,최염광 (26-03-05)
 SLH1 #6호기,Ray-Out 이후,3,Main 공압 포설,✅ 완료,,,최염광 (26-03-05)
-SLH1 #6호기,Ray-Out 이후,4,"I/O Check
+SLH1 #6호기,Ray-Out 이후,4,Regulator Setting,⬜ 대기,,,
+SLH1 #6호기,Ray-Out 이후,5,"I/O Check
  -> OUP PUT으로 동작 후 IN PUT LED 확인.
  -> Cylinder 정상 동작 확인
  -> MANUAL에서 Cylinder 동작 후 LED 점등 확인 
  -> 미비된 부분 I/O LIST,PC에 저장 후 전장 수정 요청 진행
- -> 전장 수정 후 수정되었는지 동작,LED 확인",⏳ 작업중,,,최염광 (26-03-05)
-SLH1 #6호기,Ray-Out 이후,5,공압 Leak Check,⬜ 대기,,,
-SLH1 #6호기,Ray-Out 이후,6,Cylinder Take Time,⬜ 대기,,,
+ -> 전장 수정 후 수정되었는지 동작,LED 확인",⏳ 작업중,,,최염광 (26-03-06)
+SLH1 #6호기,Ray-Out 이후,6,공압 Leak Check,⬜ 대기,,,
+SLH1 #6호기,Ray-Out 이후,7,Cylinder Take Time,⬜ 대기,,,
 SLH1 #6호기,기구물 Setting,1,"Stacker Conveyor Belt Inverter 값 설정
 ->운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)
 -> P3 60  P4 : 60(고속), P5 : 30(중속), P6 : 10(저속)
@@ -120,7 +121,7 @@ SLH1 #6호기,기구물 Setting,3,Set-Plate Support Lock/Unlock Cylinder Rod SET
 SLH1 #6호기,기구물 Setting,4,LD/ULD Middle Gripper UP Cylinder Rod (37mm) SETTING,✅ 완료,,,최염광 (26-03-05)
 SLH1 #6호기,기구물 Setting,5,"LD/ULD Flow Presicer Up Rod (60mm) Setting 
  -> T-Tray <-> Frame 간 공차 없게 조정",✅ 완료,,,최염광 (26-03-05)
-SLH1 #6호기,기구물 Setting,6,InPut/OutPut Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,⬜ 대기,,,
+SLH1 #6호기,기구물 Setting,6,InPut/OutPut Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,✅ 완료,,,최염광 (26-03-06)
 SLH1 #6호기,기구물 Setting,7,"L/D, UL/D Middle Rail Up/Down 높이,평탄,직진도 SETTING (T-TRAY 사용)
  -> T-Tray 사용,UP/DOWN 상태에서 T-Tray가 흘려 내려가지 않게 SETTING
  -> Stopper 사용하여 UP/DOWN 높이 레벨 조정 (Up :48.5mm, Down :  42.5mm)
