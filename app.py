@@ -17,6 +17,8 @@ st.markdown("""
         div.stDownloadButton > button { padding: 4px 10px !important; font-size: 12px !important; width: 100% !important; }
         .info-box { background-color: #1e212b; padding: 12px; border-radius: 4px; border-left: 3px solid #4CAF50; margin-bottom: 15px; font-size: 13px; }
         .streamlit-expanderHeader { font-weight: bold !important; font-size: 1.1rem !important; color: #4CAF50 !important; }
+        /* 프로그레스 바 색상 커스텀 (초록색 톤) */
+        .stProgress > div > div > div > div { background-color: #4CAF50; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -88,9 +90,7 @@ class DataManager:
         if sha: self.repo.update_file(self.file_path, message, csv_buffer.getvalue(), sha)
         else: self.repo.create_file(self.file_path, "Init Creation", csv_buffer.getvalue())
 
-# ==========================================
-# ★ 추가: 데이터 저장 시 원래의 프로젝트 순서가 뒤죽박죽 섞이지 않게 고정해주는 함수 ★
-# ==========================================
+# 데이터 저장 시 순서 고정 함수
 def maintain_project_order(df, original_order):
     df['__proj_cat__'] = pd.Categorical(df['프로젝트명'], categories=original_order, ordered=True)
     return df.sort_values(by=['__proj_cat__'], kind='stable').drop(columns=['__proj_cat__']).reset_index(drop=True)
@@ -190,19 +190,38 @@ def render_cs_flow_page(db_flow):
 
     project_list = df_flow["프로젝트명"].unique().tolist() if not df_flow.empty else []
     
-    # ★ 사용자 화면 이탈 방지용 세션 스테이트 설정 ★
     if 'current_proj' not in st.session_state:
         st.session_state['current_proj'] = project_list[0] if project_list else ""
     if st.session_state['current_proj'] not in project_list:
         st.session_state['current_proj'] = project_list[0] if project_list else ""
     
+    # ★ 추가 1: 프로젝트별 전체 진행률(%)을 미리 계산해두는 딕셔너리 생성 ★
+    progress_dict = {}
+    if not df_flow.empty:
+        for proj in project_list:
+            p_df = df_flow[df_flow["프로젝트명"] == proj]
+            total_items = len(p_df)
+            completed_items = len(p_df[p_df["상태"] == "✅ 완료"])
+            pct = int((completed_items / total_items) * 100) if total_items > 0 else 0
+            
+            # 10칸짜리 배터리 UI 제작
+            blocks = pct // 10
+            bar = "🟩" * blocks + "⬜" * (10 - blocks)
+            batt_icon = "🔋" if pct >= 20 else "🪫"
+            
+            progress_dict[proj] = f"{proj}  |  {batt_icon} {pct}% [{bar}]"
+
     col_a, col_b = st.columns(2)
     with col_a:
         with st.expander("➕ 새 프로젝트(호기) 시작하기"):
             with st.form("new_proj_form", clear_on_submit=True):
                 new_proj = st.text_input("새 프로젝트명 (예: SLH1 #7호기)")
                 source_options = ["기본 템플릿(초기화 상태)"] + project_list
-                source_proj = st.selectbox("어떤 형식과 내용을 복사해서 생성할까요?", source_options)
+                
+                # 새 프로젝트 만들 때 보여주는 옵션명에도 % 적용 (기본 템플릿 제외)
+                def format_source_opt(x):
+                    return progress_dict.get(x, x)
+                source_proj = st.selectbox("어떤 형식과 내용을 복사해서 생성할까요?", source_options, format_func=format_source_opt)
 
                 if st.form_submit_button("프로젝트 생성하기") and new_proj and new_proj not in project_list:
                     if source_proj == "기본 템플릿(초기화 상태)":
@@ -234,20 +253,21 @@ def render_cs_flow_page(db_flow):
                     new_df["순서"] = new_df.groupby('group_id').cumcount() + 1
                     
                     db_flow.save(pd.concat([df_flow, new_df.drop(columns=['group_id'])], ignore_index=True), sha_flow, f"Create: {new_proj}")
-                    
-                    # ★ 생성 후 바로 방금 만든 프로젝트로 화면 강제 이동! ★
                     st.session_state['current_proj'] = new_proj
                     st.rerun()
 
     if project_list:
         sel_col, empty_col, save_col, del_col = st.columns([6, 2, 1, 1])
-        
-        # 선택박스의 인덱스를 세션 스테이트(기억된 위치)로 강제 고정
         default_idx = project_list.index(st.session_state['current_proj']) if project_list else 0
         
         with sel_col: 
-            selected_proj = st.selectbox("📌 진행 상황 확인할 프로젝트", project_list, index=default_idx)
-            # 사용자가 수동으로 바꾸면 즉시 업데이트
+            # ★ 추가 2: 드롭다운 선택 메뉴에 진행률(배터리) UI 적용 ★
+            selected_proj = st.selectbox(
+                "📌 진행 상황 확인할 프로젝트", 
+                project_list, 
+                index=default_idx,
+                format_func=lambda x: progress_dict.get(x, x)
+            )
             st.session_state['current_proj'] = selected_proj 
             
         with save_col: 
@@ -259,6 +279,16 @@ def render_cs_flow_page(db_flow):
 
         mask = df_flow["프로젝트명"] == selected_proj
         proj_df = df_flow[mask].copy()
+
+        # ★ 추가 3: 선택된 프로젝트 내부 상단에 시각적 프로그레스 바 표시 ★
+        total_tasks = len(proj_df)
+        comp_tasks = len(proj_df[proj_df["상태"] == "✅ 완료"])
+        pct_float = (comp_tasks / total_tasks) if total_tasks > 0 else 0.0
+        pct_int = int(pct_float * 100)
+        
+        st.markdown(f"<div style='font-size:14px; font-weight:bold; color:#4CAF50;'>⚡ 셋업 전체 진행도 ({comp_tasks} / {total_tasks} 완료)</div>", unsafe_allow_html=True)
+        st.progress(pct_float, text=f"전체 {pct_int}% 완료됨")
+        st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
 
         with col_b:
             with st.expander("📁 대항목(그룹) 관리 메뉴"):
@@ -286,7 +316,7 @@ def render_cs_flow_page(db_flow):
                             
                             original_projects = df_flow['프로젝트명'].unique().tolist()
                             new_df_flow = pd.concat([df_flow, new_cat_row], ignore_index=True)
-                            new_df_flow = maintain_project_order(new_df_flow, original_projects) # 순서 섞임 방지
+                            new_df_flow = maintain_project_order(new_df_flow, original_projects) 
                             db_flow.save(new_df_flow, sha_flow, f"Add Cat: {final_cat_name}")
                             st.rerun()
 
@@ -328,7 +358,7 @@ def render_cs_flow_page(db_flow):
                         
                         original_projects = df_flow['프로젝트명'].unique().tolist()
                         new_df_flow = pd.concat([df_flow[~mask], temp_proj_df], ignore_index=True)
-                        new_df_flow = maintain_project_order(new_df_flow, original_projects) # 순서 섞임 방지
+                        new_df_flow = maintain_project_order(new_df_flow, original_projects) 
                         
                         db_flow.save(new_df_flow, sha_flow, f"Reorder Cats: {selected_proj}")
                         st.success("✅ 대항목 순서가 성공적으로 변경되었습니다!")
@@ -348,8 +378,6 @@ def render_cs_flow_page(db_flow):
                             elif not confirm_del:
                                 st.warning("삭제를 진행하시려면 체크박스에 동의해주세요.")
         
-        st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> 상태를 변경하고 우측 상단의 <b>'💾 저장'</b> 버튼을 누르면 <b>색상이 적용</b>되며 탭의 상태 아이콘(🟢🟡🔴)도 자동 갱신됩니다!</div>", unsafe_allow_html=True)
-
         status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
         custom_column_config = {
             "프로젝트명": None, 
@@ -376,16 +404,12 @@ def render_cs_flow_page(db_flow):
             current_statuses = display_df['상태'].tolist()
             
             if '🚨 보류' in current_statuses:
-                # 1순위: 보류가 하나라도 있으면 빨간색 (진행 불가)
                 tab_title = f"🔴 [보류발생] 대항목: {cat}"
             elif current_statuses and all(s == '✅ 완료' for s in current_statuses):
-                # 2순위: 모든 항목이 완료되어야만 초록색
                 tab_title = f"🟢 [완료] 대항목: {cat}"
             elif '⏳ 작업중' in current_statuses or '✅ 완료' in current_statuses:
-                # 3순위: 진행 중이거나, 전체 중 일부만 완료된 항목이 있다면 무조건 노란색 (진행중)
                 tab_title = f"🟡 [진행중] 대항목: {cat}"
             else:
-                # 4순위: 모두 다 대기 상태일 때
                 tab_title = f"📍 [대기] 대항목: {cat}"
             
             with st.expander(tab_title, expanded=False):
@@ -429,20 +453,18 @@ def render_cs_flow_page(db_flow):
                 updated_proj_df["순서"] = updated_proj_df.groupby('group_id').cumcount() + 1
                 updated_proj_df = updated_proj_df.drop(columns=['group_id', 'org_group_id']).reset_index(drop=True)
             
-            # ★ 프로젝트 순서 유지 및 화면 고정 ★
             original_projects = df_flow['프로젝트명'].unique().tolist()
             new_df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
-            new_df_flow = maintain_project_order(new_df_flow, original_projects) # 엑셀 바닥으로 안 떨어지게 순서 고정!
+            new_df_flow = maintain_project_order(new_df_flow, original_projects) 
             
             db_flow.save(new_df_flow, sha_flow, f"Update: {selected_proj}")
-            st.session_state['current_proj'] = selected_proj # 지금 수정하던 그 놈을 꽉 붙잡음!
+            st.session_state['current_proj'] = selected_proj 
             st.success("✅ 변경사항 및 상태가 성공적으로 저장되었습니다.")
             st.rerun()
 
         if btn_del:
             db_flow.save(df_flow[~mask], sha_flow, f"Delete: {selected_proj}")
             st.warning("🗑️ 프로젝트가 삭제되었습니다.")
-            # 삭제하면 안전하게 맨 첫 번째 항목으로 돌려줌
             st.session_state['current_proj'] = project_list[0] if len(project_list) > 1 else ""
             st.rerun()
     else:
