@@ -205,66 +205,66 @@ SLH1 #5호기,기구물 Setting,9,Hand Vac/Blow Air Line CDA Main to Hand Regula
 SLH1 #5호기,기구물 Setting,10,LD/ULD Gripper Up/Down Air Line 스피드콘 장착,✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,기구물 Setting,11,LD/EMPTY Stacker Align Guide 1번 JIG 장착 상태 Setting,✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,직진도 측정,1,"LD Hand X,Y축 직진도 (±0.5mm) Setting 및 측정
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,직진도 측정,2,"ULD Hand X,Y축 직진도 (±0.5mm) Setting 및 측정
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,직진도 측정,3,"LD Transfer X,Z축 직진도 평탄도(±0.3mm) SETTING 및 측정
  ->dial gauge Indicator  0.01mm(바늘) 
  -> 모든 무두 볼트 풀어놓은 후 측정 후 무드 볼트 조정
- -> Z 축 ±Limit Sensor 이동, Hard Stopper 위치변경",⬜ 대기,,,
+ -> Z 축 ±Limit Sensor 이동, Hard Stopper 위치변경",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,직진도 측정,4,"ULD Transfer X,Z축 직진도(±0.3mm) SETTING 및 측정
  ->dial gauge Indicator  0.01mm(바늘) 
  -> 모든 무두 볼트 풀어놓은 후 측정 후 무드 볼트 조정
- -> Z 축 ±Limit Sensor 이동, Hard Stopper 위치변경",⬜ 대기,,,
+ -> Z 축 ±Limit Sensor 이동, Hard Stopper 위치변경",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,직진도 측정,5,"Set-Plate 직진도( ±0.2) Setting 및 측정
  ->dial gauge Indicator  0.01mm(바늘) 
  -> Hand Robot에 가네텍 마그네틱 베이스 
- -> Set-Plate Guage Block 안착 후 X축 이동",⬜ 대기,,,
+ -> Set-Plate Guage Block 안착 후 X축 이동",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,평탄도 측정,1,"LD Stacker 1,2 Base 평탄도(±0.2mm) Setting 및 측정
 - Base Up 상태 측정.
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,평탄도 측정,2,"ULD Stacker 1,2 Base 평탄도(±0.2mm) Setting 및 측정
 - Base Up 상태 측정.
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,평탄도 측정,3,"Empty , Reject Stacker Base 평탄도(±0.2mm) Setting 및 측정
 - Base Up 상태 측정.
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,평탄도 측정,4,"InPut-> Testsite -> Out T-Tray 평탄도 Setting 및 측정
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
-SLH1 #5호기,Software,1,OS 설치,⬜ 대기,,,
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Software,1,OS 설치,✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,Software,2,"Motor Parameter Setting 및 다회전 클리어
 - S/W 팀 요청
-- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
-SLH1 #5호기,Software,3,"BCR, Vision Setting",⬜ 대기,,,
-SLH1 #5호기,조립정밀도,1,LD/ULD Hand Pitch 측정(Pitch JIG 삽입),⬜ 대기,,,
+- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Software,3,"BCR, Vision Setting",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,조립정밀도,1,LD/ULD Hand Pitch 측정(Pitch JIG 삽입),✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,조립정밀도,2,"LD/ULD Hand Z-axis 측정
  - Cylinder Down 상태(±0.15mm)
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,조립정밀도,3,"Set-Plate Down Hard Stopper 높이 SETTING (24mm) 및 측정
-ex) L/D 1,2 : 21mm UL/D 1,2 24mm pass",⬜ 대기,,,
-SLH1 #5호기,조립정밀도,4,Transfer JIG -> Set-Plate -> Stacker JIG Setting,⬜ 대기,,,
+ex) L/D 1,2 : 21mm UL/D 1,2 24mm pass",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,조립정밀도,4,Transfer JIG -> Set-Plate -> Stacker JIG Setting,✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,Test Site 평탄도,1,"Front, Rear Press 평탄도(±0.25mm) Setting 및 측정
 - 디지털 거리 측정기, 측정 지그 사용
-- 무두 볼트 풀어놓은 후 측정 -> + 수치가 제일 큰 부분에 리셋 -> 무두 볼트 사용하여 평탄도 Setting",⬜ 대기,,,
+- 무두 볼트 풀어놓은 후 측정 -> + 수치가 제일 큰 부분에 리셋 -> 무두 볼트 사용하여 평탄도 Setting",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,Test Site 평탄도,2,"Front, Rear Press Load Cell (0.2bar, 0.29bar) Setting 및 측정
 - Load Cell, 측정 지그
 - 언 컨텍 값(기구 이동 가능), 컨택값(해당 수치 도달 지점)
-- Load Cell 로드를 Match Plate X,Y 중간에서 컨택 해야함",⬜ 대기,,,
+- Load Cell 로드를 Match Plate X,Y 중간에서 컨택 해야함",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,Test Site 평탄도,3,"Front, Rear T-Tray Rail 평탄도(±0.2mm) Setting 및 측정
 - 디지털 전자 수평계 사용
-- 측정 위치 : T-Tray 왼쪽 중간 오른쪽",⬜ 대기,,,
+- 측정 위치 : T-Tray 왼쪽 중간 오른쪽",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,반복정밀도,1,"LD/ULD Hand X,Y축 반복도(±0.05mm) 측정 (10회)
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,반복정밀도,2,"LD/ULD Hand Transfer X,Z축 반복도(±0.05mm) 측정 (10회)
- -> Digital Indicator (0.001mm) 사용",⬜ 대기,,,
+ -> Digital Indicator (0.001mm) 사용",✅ 완료,,,최염광 (26-03-06)
 SLH1 #5호기,반복정밀도,3,"Bottom Feeder X축 반복도(±0.05mm) 측정 (10회)
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
-SLH1 #5호기,환경안전,1,"후면부 덕트 -> 측면(Door) -> 후면(Door) -> 상부 Cover 장착 -> 부속 Cover 장착, Door Key, Door Sensor 장착 및 OS 확인",⬜ 대기,,,
-SLH1 #5호기,환경안전,2,"Ionizer Loader A-01, Unloader A-02 설정",⬜ 대기,,,
-SLH1 #5호기,환경안전,3,접지 연결 및 확인,⬜ 대기,,,
-SLH1 #5호기,환경안전,4,환경 검수 List 확인 및 품질팀 Support,⬜ 대기,,,
-SLH1 #5호기,Runnning,1,"Transfer, Hand, Middle Feeder, Input, Output Motor Teaching",⬜ 대기,,,
-SLH1 #5호기,Runnning,2,Initial 및 Long Run 진행 (T-Tray 미사용),⬜ 대기,,,
-SLH1 #5호기,Runnning,3,Dry Run 진행 (T-Tray 사용),⬜ 대기,,,
-SLH1 #5호기,Runnning,4,Normal Run 진행(자재 투입),⬜ 대기,,,
-SLH1 #5호기,Runnning,5,Running Data 취득(3000M),⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,환경안전,1,"후면부 덕트 -> 측면(Door) -> 후면(Door) -> 상부 Cover 장착 -> 부속 Cover 장착, Door Key, Door Sensor 장착 및 OS 확인",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,환경안전,2,"Ionizer Loader A-01, Unloader A-02 설정",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,환경안전,3,접지 연결 및 확인,✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,환경안전,4,환경 검수 List 확인 및 품질팀 Support,✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Runnning,1,"Transfer, Hand, Middle Feeder, Input, Output Motor Teaching",✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Runnning,2,Initial 및 Long Run 진행 (T-Tray 미사용),✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Runnning,3,Dry Run 진행 (T-Tray 사용),✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Runnning,4,Normal Run 진행(자재 투입),✅ 완료,,,최염광 (26-03-06)
+SLH1 #5호기,Runnning,5,Running Data 취득(3000M),⏳ 작업중,,,최염광 (26-03-06)
