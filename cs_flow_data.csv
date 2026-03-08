@@ -235,7 +235,7 @@ SLH1 #7호기,Ray-Out 이후,1,"전면부/후면부1차 Levelling
  -> Auto Leveler 사용
  -> Stacker Base 상단 -> 바닥면 400mm",⬜ 대기,,,
 SLH1 #7호기,Ray-Out 이후,2,전/후면부 Docking 및 Leveling Detail 조정,⬜ 대기,,,
-SLH1 #7호기,Ray-Out 이후,3,Main 공압 포설,⬜ 대기,,,
+SLH1 #7호기,Ray-Out 이후,3,Main 공압 포설,✅ 완료,,,최염광 (26-03-08)
 SLH1 #7호기,Ray-Out 이후,4,"Regulator Setting
  - 전면부 Main 0.65Mpa, 후면부 Main 0.5Mpa
  - Main Digital Pressure Switch 설정법
@@ -250,7 +250,7 @@ SLH1 #7호기,Ray-Out 이후,4,"Regulator Setting
   -> T/S Front : 0.2    T/S Rear : 0.2  Press : 0.2 
   ->  Rail, Lock Pin : 0.4Mpa
  - Main Digital Pressure Switch Setting 
-  ->",⬜ 대기,,,
+  ->",✅ 완료,"Main 공압 부족, CDA Line 추가 포설 예정",,최염광 (26-03-08)
 SLH1 #7호기,Ray-Out 이후,5,"I/O Check
  -> OUP PUT으로 동작 후 IN PUT LED 확인.
  -> Cylinder 정상 동작 확인
