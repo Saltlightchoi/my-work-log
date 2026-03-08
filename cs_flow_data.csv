@@ -310,7 +310,7 @@ SLH1 #7호기,평탄도 측정,3,"Empty , Reject Stacker Base 평탄도(±0.2mm)
 - 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
 SLH1 #7호기,평탄도 측정,4,"InPut-> Testsite -> Out T-Tray 평탄도 Setting 및 측정
 - 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
-SLH1 #7호기,Software,1,OS 설치,⬜ 대기,,,
+SLH1 #7호기,Software,1,OS 설치,✅ 완료,,,최염광 (26-03-08)
 SLH1 #7호기,Software,2,"Motor Parameter Setting 및 다회전 클리어
 - S/W 팀 요청
 - 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
