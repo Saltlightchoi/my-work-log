@@ -256,7 +256,7 @@ SLH1 #7호기,Ray-Out 이후,5,"I/O Check
  -> Cylinder 정상 동작 확인
  -> MANUAL에서 Cylinder 동작 후 LED 점등 확인 
  -> 미비된 부분 I/O LIST,PC에 저장 후 전장 수정 요청 진행
- -> 전장 수정 후 수정되었는지 동작,LED 확인",⬜ 대기,,,
+ -> 전장 수정 후 수정되었는지 동작,LED 확인",⏳ 작업중,"I/O 전장수정 완료, 확인 대기중",,최염광 (26-03-08)
 SLH1 #7호기,Ray-Out 이후,6,공압 Leak Check,⬜ 대기,,,
 SLH1 #7호기,Ray-Out 이후,7,Cylinder Take Time,⬜ 대기,,,
 SLH1 #7호기,기구물 Setting,1,"Stacker Conveyor Belt Inverter 값 설정
