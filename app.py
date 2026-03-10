@@ -17,7 +17,6 @@ st.markdown("""
         div.stDownloadButton > button { padding: 4px 10px !important; font-size: 12px !important; width: 100% !important; }
         .info-box { background-color: #1e212b; padding: 12px; border-radius: 4px; border-left: 3px solid #4CAF50; margin-bottom: 15px; font-size: 13px; }
         .streamlit-expanderHeader { font-weight: bold !important; font-size: 1.1rem !important; color: #4CAF50 !important; }
-        /* 프로그레스 바 색상 커스텀 (초록색 톤) */
         .stProgress > div > div > div > div { background-color: #4CAF50; }
     </style>
     """, unsafe_allow_html=True)
@@ -90,12 +89,10 @@ class DataManager:
         if sha: self.repo.update_file(self.file_path, message, csv_buffer.getvalue(), sha)
         else: self.repo.create_file(self.file_path, "Init Creation", csv_buffer.getvalue())
 
-# 데이터 저장 시 순서 고정 함수
 def maintain_project_order(df, original_order):
     df['__proj_cat__'] = pd.Categorical(df['프로젝트명'], categories=original_order, ordered=True)
     return df.sort_values(by=['__proj_cat__'], kind='stable').drop(columns=['__proj_cat__']).reset_index(drop=True)
 
-# 표 상태별 색상 적용 함수
 def get_row_color(row):
     val = row.get('상태', '')
     if val == '✅ 완료':
@@ -121,7 +118,8 @@ def render_work_log_page(db_log):
         with st.sidebar.form("add_form", clear_on_submit=True):
             d_val = st.date_input("날짜", datetime.today())
             e_type = st.selectbox("장비", EQUIPMENT_OPTIONS)
-            c_val = st.text_area("업무 내용", height=120)
+            # ★ 변경: 글자 수 제한 해제(max_chars=None) 및 칸 높이 400px로 대폭 확대 ★
+            c_val = st.text_area("업무 내용", height=400, max_chars=None)
             n_val = st.text_input("비고")
             f_name = st.text_input("파일명 (미입력 시 비워둠)")
             if st.form_submit_button("저장하기", use_container_width=True):
@@ -137,7 +135,8 @@ def render_work_log_page(db_log):
             with st.sidebar.form("edit_form"):
                 e_date = st.date_input("날짜 수정", pd.to_datetime(df_log.loc[edit_idx, "날짜"]))
                 e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(df_log.loc[edit_idx, "장비"]) if df_log.loc[edit_idx, "장비"] in EQUIPMENT_OPTIONS else 0)
-                e_content = st.text_area("내용 수정", value=df_log.loc[edit_idx, "업무내용"])
+                # ★ 변경: 글자 수 제한 해제(max_chars=None) 및 칸 높이 400px로 대폭 확대 ★
+                e_content = st.text_area("내용 수정", value=df_log.loc[edit_idx, "업무내용"], height=400, max_chars=None)
                 e_note = st.text_input("비고 수정", value=df_log.loc[edit_idx, "비고"])
                 e_link = st.text_input("첨부 수정", value=df_log.loc[edit_idx, "첨부"])
                 if st.form_submit_button("수정 완료"):
@@ -195,7 +194,6 @@ def render_cs_flow_page(db_flow):
     if st.session_state['current_proj'] not in project_list:
         st.session_state['current_proj'] = project_list[0] if project_list else ""
     
-    # ★ 추가 1: 프로젝트별 전체 진행률(%)을 미리 계산해두는 딕셔너리 생성 ★
     progress_dict = {}
     if not df_flow.empty:
         for proj in project_list:
@@ -204,11 +202,9 @@ def render_cs_flow_page(db_flow):
             completed_items = len(p_df[p_df["상태"] == "✅ 완료"])
             pct = int((completed_items / total_items) * 100) if total_items > 0 else 0
             
-            # 10칸짜리 배터리 UI 제작
             blocks = pct // 10
             bar = "🟩" * blocks + "⬜" * (10 - blocks)
             batt_icon = "🔋" if pct >= 20 else "🪫"
-            
             progress_dict[proj] = f"{proj}  |  {batt_icon} {pct}% [{bar}]"
 
     col_a, col_b = st.columns(2)
@@ -218,7 +214,6 @@ def render_cs_flow_page(db_flow):
                 new_proj = st.text_input("새 프로젝트명 (예: SLH1 #7호기)")
                 source_options = ["기본 템플릿(초기화 상태)"] + project_list
                 
-                # 새 프로젝트 만들 때 보여주는 옵션명에도 % 적용 (기본 템플릿 제외)
                 def format_source_opt(x):
                     return progress_dict.get(x, x)
                 source_proj = st.selectbox("어떤 형식과 내용을 복사해서 생성할까요?", source_options, format_func=format_source_opt)
@@ -261,7 +256,6 @@ def render_cs_flow_page(db_flow):
         default_idx = project_list.index(st.session_state['current_proj']) if project_list else 0
         
         with sel_col: 
-            # ★ 추가 2: 드롭다운 선택 메뉴에 진행률(배터리) UI 적용 ★
             selected_proj = st.selectbox(
                 "📌 진행 상황 확인할 프로젝트", 
                 project_list, 
@@ -273,14 +267,45 @@ def render_cs_flow_page(db_flow):
         with save_col: 
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
             btn_save = st.button("💾 저장", use_container_width=True)
+            
         with del_col: 
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-            btn_del = st.button("🗑️ 삭제", use_container_width=True)
+            if st.button("🗑️ 삭제", use_container_width=True):
+                st.session_state['delete_target_proj'] = selected_proj
+                st.rerun()
 
         mask = df_flow["프로젝트명"] == selected_proj
         proj_df = df_flow[mask].copy()
 
-        # ★ 추가 3: 선택된 프로젝트 내부 상단에 시각적 프로그레스 바 표시 ★
+        if st.session_state.get('delete_target_proj') == selected_proj:
+            st.markdown(f"""
+                <div style='background-color: #ffebee; border-left: 5px solid #f44336; padding: 15px; border-radius: 4px; margin-bottom: 15px;'>
+                    <h3 style='color: #d32f2f; margin-top: 0;'>🚨 프로젝트 영구 삭제 경고</h3>
+                    <p style='color: #000; font-size: 15px;'><b>[{selected_proj}]</b> 프로젝트를 삭제하시겠습니까?<br>
+                    이 작업은 <b>절대 복구할 수 없으며</b>, 기록된 모든 세부 작업과 메모가 즉시 영구 삭제됩니다.</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            agree_delete = st.checkbox("네, 복구가 불가능하다는 것을 확인했으며 모두 삭제하는 것에 동의합니다.")
+            
+            conf_col1, conf_col2 = st.columns(2)
+            with conf_col1:
+                if agree_delete:
+                    if st.button("⚠️ 모든 것을 지우고 완전히 삭제합니다", type="primary", use_container_width=True):
+                        db_flow.save(df_flow[~mask], sha_flow, f"Delete: {selected_proj}")
+                        st.session_state['delete_target_proj'] = None
+                        st.session_state['current_proj'] = project_list[0] if len(project_list) > 1 else ""
+                        st.success("🗑️ 프로젝트가 완전히 삭제되었습니다.")
+                        st.rerun()
+                else:
+                    st.button("⚠️ 위 체크박스에 동의해야 삭제할 수 있습니다", disabled=True, use_container_width=True)
+                    
+            with conf_col2:
+                if st.button("❌ 아니오, 취소합니다 (돌아가기)", use_container_width=True):
+                    st.session_state['delete_target_proj'] = None
+                    st.rerun()
+            st.stop() 
+
         total_tasks = len(proj_df)
         comp_tasks = len(proj_df[proj_df["상태"] == "✅ 완료"])
         pct_float = (comp_tasks / total_tasks) if total_tasks > 0 else 0.0
@@ -368,7 +393,7 @@ def render_cs_flow_page(db_flow):
                     with st.form("delete_cat_form", clear_on_submit=True):
                         del_cat_name = st.selectbox("삭제할 대항목(그룹) 선택", existing_cats)
                         st.error("⚠️ 주의: 해당 그룹을 삭제하면 안에 있는 모든 세부 작업 내용도 함께 영구 삭제됩니다!")
-                        confirm_del = st.checkbox("네, 모두 삭제하는 것에 동의합니다.")
+                        confirm_del = st.checkbox("네, 일부 그룹만 삭제하는 것에 동의합니다.")
                         if st.form_submit_button("그룹 완전히 삭제하기"):
                             if confirm_del and del_cat_name:
                                 df_flow = df_flow[~((df_flow['프로젝트명'] == selected_proj) & (df_flow['대항목'] == del_cat_name))]
@@ -378,6 +403,8 @@ def render_cs_flow_page(db_flow):
                             elif not confirm_del:
                                 st.warning("삭제를 진행하시려면 체크박스에 동의해주세요.")
         
+        st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> 상태를 변경하고 우측 상단의 <b>'💾 저장'</b> 버튼을 누르면 <b>색상이 적용</b>되며 탭의 상태 아이콘(🟢🟡🔴)도 자동 갱신됩니다!</div>", unsafe_allow_html=True)
+
         status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
         custom_column_config = {
             "프로젝트명": None, 
@@ -400,7 +427,6 @@ def render_cs_flow_page(db_flow):
             cat = group_df['대항목'].iloc[0]
             display_df = group_df.drop(columns=['group_id']).reset_index(drop=True)
             
-            # ★ 완벽하게 개선된 탭 제목(상태) 판별 로직 ★
             current_statuses = display_df['상태'].tolist()
             
             if '🚨 보류' in current_statuses:
@@ -462,11 +488,6 @@ def render_cs_flow_page(db_flow):
             st.success("✅ 변경사항 및 상태가 성공적으로 저장되었습니다.")
             st.rerun()
 
-        if btn_del:
-            db_flow.save(df_flow[~mask], sha_flow, f"Delete: {selected_proj}")
-            st.warning("🗑️ 프로젝트가 삭제되었습니다.")
-            st.session_state['current_proj'] = project_list[0] if len(project_list) > 1 else ""
-            st.rerun()
     else:
         st.info("진행 중인 프로젝트가 없습니다.")
 
