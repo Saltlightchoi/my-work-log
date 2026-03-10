@@ -170,7 +170,7 @@ SLH1 #5호기,기구물 Setting,11,LD/EMPTY Stacker Align Guide 1번 JIG 장착 
 SLH1 #5호기,기구물 Setting,12,"LD/ULD Hand Deviation Sensor Setting
 - LD Hand T-Tray Place Pos' -5.0mm 적용 후 Setting
 - ULD Hand Fix Buffer Place 후 -12.00mm 적용 후 Setting
-  -> ULD Hand Z축 Motor Touqe 값 확인 후 Setting 필요.",✅ 완료,,,최염광 (26-03-10)
+  -> ULD Hand Z축 Motor Touqe 값 확인 후 Setting 필요.",✅ 완료,Reject Buffer Pos' ULD Hand Picker Cylinder UP 상태 Z-Axis Down Check Sequence 수정,,최염광 (26-03-10)
 SLH1 #5호기,직진도 측정,1,"LD Hand X,Y축 직진도 (±0.5mm) Setting 및 측정
 - Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-07)
 SLH1 #5호기,직진도 측정,2,"ULD Hand X,Y축 직진도 (±0.5mm) Setting 및 측정
