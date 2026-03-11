@@ -318,7 +318,7 @@ SLH1 #7호기,기구물 Setting,6,InPut/OutPut Bottom Feeder UP Cylinder Rod(16.
 SLH1 #7호기,기구물 Setting,7,"L/D, UL/D Middle Rail Up/Down 높이,평탄,직진도 SETTING (T-TRAY 사용)
  -> T-Tray 사용,UP/DOWN 상태에서 T-Tray가 흘려 내려가지 않게 SETTING
  -> Stopper 사용하여 UP/DOWN 높이 레벨 조정 (Up :48.5mm, Down :  42.5mm)
- -> UP 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽Rail 위치 조정 필요",⬜ 대기,,,
+ -> UP 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽Rail 위치 조정 필요",✅ 완료,,,최염광 (26-03-11)
 SLH1 #7호기,기구물 Setting,8,"배출 Fan 장착 및 전원 Connect 연결
  -> I/O 번호 확인, OS에서 FAN Check 확인",⬜ 대기,,,
 SLH1 #7호기,기구물 Setting,9,Hand Vac/Blow Air Line CDA Main to Hand Regulator Direct Connect Setting,⬜ 대기,,,
