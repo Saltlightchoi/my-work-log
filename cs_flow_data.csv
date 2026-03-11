@@ -398,7 +398,9 @@ SLH1 #7호기,Runnning,4,Normal Run 진행(자재 투입),⬜ 대기,,,
 SLH1 #7호기,Runnning,5,Running Data 취득(3000M),⬜ 대기,,,
 SLH1 #7호기,Set-Up,1,전/후면부 Docking 분리,⬜ 대기,,,
 SLH1 #7호기,Set-Up,2,포장 및 필요 Part Check 포장,⬜ 대기,,,
-SLH1 #7호기,Set-Up,3,Lay-Out 이동 및 임시 Leveling,⬜ 대기,,,
+SLH1 #7호기,Set-Up,3,"Lay-Out 이동 및 임시 Leveling
+ - Handler 전/후면부 위치 맞춘 후 임시 Level 시 Foot 하단 받침  필수
+ - 우익 요청 수급 후에 모든 Foot 하단에 적용",⬜ 대기,,,
 SLH1 #7호기,Set-Up,4,전/후면부 Docking 및 Auto Leveling,⬜ 대기,,,
 SLH1 #7호기,Set-Up,5,Tester Docking,⬜ 대기,,,
 SLH1 #7호기,Set-Up,6,Utility Connect,⬜ 대기,,,
