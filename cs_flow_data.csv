@@ -421,9 +421,9 @@ SLH1 #7호기,Set-Up,11,양산 Qual,⬜ 대기,,,
 SLH1 #7호기,Set-Up,12,시 양산 및 안정화,⬜ 대기,,,
 SLH1 #4호기,Ray-Out 이후,1,"전면부/후면부1차 Levelling
  -> Auto Leveler 사용
- -> Stacker Base 상단 -> 바닥면 400mm",⬜ 대기,,,
-SLH1 #4호기,Ray-Out 이후,2,전/후면부 Docking 및 Leveling Detail 조정,⬜ 대기,,,
-SLH1 #4호기,Ray-Out 이후,3,Main 공압 포설,⬜ 대기,,,
+ -> Stacker Base 상단 -> 바닥면 400mm",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Ray-Out 이후,2,전/후면부 Docking 및 Leveling Detail 조정,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Ray-Out 이후,3,Main 공압 포설,✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Ray-Out 이후,4,"Regulator Setting
  - 전면부 Main 0.65Mpa, 후면부 Main 0.5Mpa
  - Main Digital Pressure Switch 설정법
@@ -438,123 +438,124 @@ SLH1 #4호기,Ray-Out 이후,4,"Regulator Setting
   -> T/S Front : 0.2    T/S Rear : 0.2  Press : 0.2 
   ->  Rail, Lock Pin : 0.4Mpa
  - Main Digital Pressure Switch Setting 
-  ->",⬜ 대기,,,
+  ->",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Ray-Out 이후,5,"I/O Check
  -> OUP PUT으로 동작 후 IN PUT LED 확인.
  -> Cylinder 정상 동작 확인
  -> MANUAL에서 Cylinder 동작 후 LED 점등 확인 
  -> 미비된 부분 I/O LIST,PC에 저장 후 전장 수정 요청 진행
- -> 전장 수정 후 수정되었는지 동작,LED 확인",⬜ 대기,,,
-SLH1 #4호기,Ray-Out 이후,6,공압 Leak Check,⬜ 대기,,,
-SLH1 #4호기,Ray-Out 이후,7,Cylinder Take Time,⬜ 대기,,,
+ -> 전장 수정 후 수정되었는지 동작,LED 확인",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Ray-Out 이후,6,공압 Leak Check,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Ray-Out 이후,7,Cylinder Take Time,✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,기구물 Setting,1,"Stacker Conveyor Belt Inverter 값 설정
 ->운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)
 -> P3 60  P4 : 60(고속), P5 : 30(중속), P6 : 10(저속)
--> P7 : 5 (가속),  P8 : 0 (감속)",⬜ 대기,,,
+-> P7 : 5 (가속),  P8 : 0 (감속)",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,기구물 Setting,2,"Reject Stacker Front/Rear Base 높이 조정
- -> Rear Base Cylinder Rod 최대로 내린뒤, front를 무두 볼트 사용하여 Setting",⬜ 대기,,,
-SLH1 #4호기,기구물 Setting,3,Set-Plate Support Lock/Unlock Cylinder Rod SETTING,⬜ 대기,,,
-SLH1 #4호기,기구물 Setting,4,LD/ULD Middle Gripper UP Cylinder Rod (37mm) SETTING,⬜ 대기,,,
+ -> Rear Base Cylinder Rod 최대로 내린뒤, front를 무두 볼트 사용하여 Setting",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,기구물 Setting,3,Set-Plate Support Lock/Unlock Cylinder Rod SETTING,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,기구물 Setting,4,LD/ULD Middle Gripper UP Cylinder Rod (37mm) SETTING,✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,기구물 Setting,5,"LD/ULD Flow Presicer Up Rod (60mm) Setting 
- -> T-Tray <-> Frame 간 공차 없게 조정",⬜ 대기,,,
-SLH1 #4호기,기구물 Setting,6,InPut/OutPut Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,⬜ 대기,,,
+ -> T-Tray <-> Frame 간 공차 없게 조정",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,기구물 Setting,6,InPut/OutPut Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,기구물 Setting,7,"L/D, UL/D Middle Rail Up/Down 높이,평탄,직진도 SETTING (T-TRAY 사용)
  -> T-Tray 사용,UP/DOWN 상태에서 T-Tray가 흘려 내려가지 않게 SETTING
  -> Stopper 사용하여 UP/DOWN 높이 레벨 조정 (Up :48.5mm, Down :  42.5mm)
- -> UP 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽Rail 위치 조정 필요",⬜ 대기,,,
+ -> UP 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽Rail 위치 조정 필요",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,기구물 Setting,8,"배출 Fan 장착 및 전원 Connect 연결
- -> I/O 번호 확인, OS에서 FAN Check 확인",⬜ 대기,,,
-SLH1 #4호기,기구물 Setting,9,Hand Vac/Blow Air Line CDA Main to Hand Regulator Direct Connect Setting,⬜ 대기,,,
-SLH1 #4호기,기구물 Setting,10,LD/ULD Gripper Up/Down Air Line 스피드콘 장착,⬜ 대기,,,
-SLH1 #4호기,기구물 Setting,11,LD/EMPTY Stacker Align Guide 1번 JIG 장착 상태 Setting,⬜ 대기,,,
+ -> I/O 번호 확인, OS에서 FAN Check 확인",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,기구물 Setting,9,Hand Vac/Blow Air Line CDA Main to Hand Regulator Direct Connect Setting,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,기구물 Setting,10,LD/ULD Gripper Up/Down Air Line 스피드콘 장착,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,기구물 Setting,11,LD/EMPTY Stacker Align Guide 1번 JIG 장착 상태 Setting,✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,기구물 Setting,12,"LD/ULD Hand Deviation Sensor Setting
 - LD Hand T-Tray Place Pos' -5.0mm 적용 후 Setting
 - ULD Hand Fix Buffer Place 후 -12.00mm 적용 후 Setting
-  -> ULD Hand Z축 Motor Touqe 값 확인 후 Setting 필요.",⬜ 대기,,,
+  -> ULD Hand Z축 Motor Touqe 값 확인 후 Setting 필요.",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,직진도 측정,1,"LD Hand X,Y축 직진도 (±0.5mm) Setting 및 측정
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,직진도 측정,2,"ULD Hand X,Y축 직진도 (±0.5mm) Setting 및 측정
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,직진도 측정,3,"LD Transfer X,Z축 직진도 평탄도(±0.3mm) SETTING 및 측정
  ->dial gauge Indicator  0.01mm(바늘) 
  -> 모든 무두 볼트 풀어놓은 후 측정 후 무드 볼트 조정
- -> Z 축 ±Limit Sensor 이동, Hard Stopper 위치변경",⬜ 대기,,,
+ -> Z 축 ±Limit Sensor 이동, Hard Stopper 위치변경",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,직진도 측정,4,"ULD Transfer X,Z축 직진도(±0.3mm) SETTING 및 측정
  ->dial gauge Indicator  0.01mm(바늘) 
  -> 모든 무두 볼트 풀어놓은 후 측정 후 무드 볼트 조정
- -> Z 축 ±Limit Sensor 이동, Hard Stopper 위치변경",⬜ 대기,,,
+ -> Z 축 ±Limit Sensor 이동, Hard Stopper 위치변경",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,직진도 측정,5,"Set-Plate 직진도( ±0.2) Setting 및 측정
  ->dial gauge Indicator  0.01mm(바늘) 
  -> Hand Robot에 가네텍 마그네틱 베이스 
- -> Set-Plate Guage Block 안착 후 X축 이동",⬜ 대기,,,
+ -> Set-Plate Guage Block 안착 후 X축 이동",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,평탄도 측정,1,"LD Stacker 1,2 Base 평탄도(±0.2mm) Setting 및 측정
 - Base Up 상태 측정.
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,평탄도 측정,2,"ULD Stacker 1,2 Base 평탄도(±0.2mm) Setting 및 측정
 - Base Up 상태 측정.
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,평탄도 측정,3,"Empty , Reject Stacker Base 평탄도(±0.2mm) Setting 및 측정
 - Base Up 상태 측정.
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,평탄도 측정,4,"InPut-> Testsite -> Out T-Tray 평탄도 Setting 및 측정
-- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",⬜ 대기,,,
-SLH1 #4호기,Software,1,OS 설치,⬜ 대기,,,
+- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Software,1,OS 설치,✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Software,2,"Motor Parameter Setting 및 다회전 클리어
 - S/W 팀 요청
-- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",⬜ 대기,,,
-SLH1 #4호기,Software,3,"BCR, Vision Setting",⬜ 대기,,,
-SLH1 #4호기,Software,4,LD/ULD Hand 반진동 Test,⬜ 대기,,,
-SLH1 #4호기,조립정밀도,1,LD/ULD Hand Pitch 측정(Pitch JIG 삽입),⬜ 대기,,,
+- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Software,3,"BCR, Vision Setting",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Software,4,LD/ULD Hand 반진동 Test,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,조립정밀도,1,LD/ULD Hand Pitch 측정(Pitch JIG 삽입),✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,조립정밀도,2,"LD/ULD Hand Z-axis 측정
  - Cylinder Down 상태(±0.15mm)
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,조립정밀도,3,"Set-Plate Down Hard Stopper 높이 SETTING (24mm) 및 측정
-ex) L/D 1,2 : 21mm UL/D 1,2 24mm pass",⬜ 대기,,,
-SLH1 #4호기,조립정밀도,4,Transfer JIG -> Set-Plate -> Stacker JIG Setting,⬜ 대기,,,
+ex) L/D 1,2 : 21mm UL/D 1,2 24mm pass",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,조립정밀도,4,Transfer JIG -> Set-Plate -> Stacker JIG Setting,✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Test Site 평탄도,1,"Front, Rear Press 평탄도(±0.25mm) Setting 및 측정
 - 디지털 거리 측정기, 측정 지그 사용
-- 무두 볼트 풀어놓은 후 측정 -> + 수치가 제일 큰 부분에 리셋 -> 무두 볼트 사용하여 평탄도 Setting",⬜ 대기,,,
+- 무두 볼트 풀어놓은 후 측정 -> + 수치가 제일 큰 부분에 리셋 -> 무두 볼트 사용하여 평탄도 Setting",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Test Site 평탄도,2,"Front, Rear Press Load Cell (0.2bar, 0.29bar) Setting 및 측정
 - Load Cell, 측정 지그
 - 언 컨텍 값(기구 이동 가능), 컨택값(해당 수치 도달 지점)
-- Load Cell 로드를 Match Plate X,Y 중간에서 컨택 해야함",⬜ 대기,,,
+- Load Cell 로드를 Match Plate X,Y 중간에서 컨택 해야함",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Test Site 평탄도,3,"Front, Rear T-Tray Rail 평탄도(±0.2mm) Setting 및 측정
 - 디지털 전자 수평계 사용
-- 측정 위치 : T-Tray 왼쪽 중간 오른쪽",⬜ 대기,,,
+- 측정 위치 : T-Tray 왼쪽 중간 오른쪽",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,반복정밀도,1,"LD/ULD Hand X,Y축 반복도(±0.05mm) 측정 (10회)
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,반복정밀도,2,"LD/ULD Hand Transfer X,Z축 반복도(±0.05mm) 측정 (10회)
- -> Digital Indicator (0.001mm) 사용",⬜ 대기,,,
+ -> Digital Indicator (0.001mm) 사용",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,반복정밀도,3,"Bottom Feeder X축 반복도(±0.05mm) 측정 (10회)
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,,
-SLH1 #4호기,환경안전,1,"Ionizer Loader A-01, Unloader A-02 설정",⬜ 대기,,,
-SLH1 #4호기,환경안전,2,접지 연결 및 확인,⬜ 대기,,,
-SLH1 #4호기,환경안전,3,LD/ULD Conveyor Inverter 장착 Pannel 모서리 안전띠 부착,⬜ 대기,,,
-SLH1 #4호기,환경안전,4,Motor Belt Tension 조정 및 측정,⬜ 대기,,,
-SLH1 #4호기,환경안전,5,"Door Safety Check, EMS 완료.",⬜ 대기,,,
-SLH1 #4호기,환경안전,6,"후면부 덕트 -> 측면(Door) -> 후면(Door) -> 상부 Cover 장착 -> 부속 Cover 장착, Door Key, Door Sensor 장착 및 OS 확인",⬜ 대기,,,
-SLH1 #4호기,환경안전,7,환경 검수 List 확인 및 품질팀 Support,⬜ 대기,,,
-SLH1 #4호기,Runnning,1,"Transfer, Hand, Middle Feeder, Input, Output Motor Teaching",⬜ 대기,,,
-SLH1 #4호기,Runnning,2,Initial 및 Long Run 진행 (T-Tray 미사용),⬜ 대기,,,
-SLH1 #4호기,Runnning,3,Dry Run 진행 (T-Tray 사용),⬜ 대기,,,
-SLH1 #4호기,Runnning,4,Normal Run 진행(자재 투입),⬜ 대기,,,
-SLH1 #4호기,Runnning,5,Running Data 취득(3000M),⬜ 대기,,,
-SLH1 #4호기,Set-Up,1,전/후면부 Docking 분리,⬜ 대기,,,
-SLH1 #4호기,Set-Up,2,포장 및 필요 Part Check 포장,⬜ 대기,,,
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,환경안전,1,"Ionizer Loader A-01, Unloader A-02 설정",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,환경안전,2,접지 연결 및 확인,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,환경안전,3,LD/ULD Conveyor Inverter 장착 Pannel 모서리 안전띠 부착,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,환경안전,4,Motor Belt Tension 조정 및 측정,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,환경안전,5,"Door Safety Check, EMS 완료.",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,환경안전,6,"후면부 덕트 -> 측면(Door) -> 후면(Door) -> 상부 Cover 장착 -> 부속 Cover 장착, Door Key, Door Sensor 장착 및 OS 확인",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,환경안전,7,환경 검수 List 확인 및 품질팀 Support,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Runnning,1,"Transfer, Hand, Middle Feeder, Input, Output Motor Teaching",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Runnning,2,Initial 및 Long Run 진행 (T-Tray 미사용),✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Runnning,3,Dry Run 진행 (T-Tray 사용),✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Runnning,4,Normal Run 진행(자재 투입),✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Runnning,5,Running Data 취득(3000M),✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Set-Up,1,전/후면부 Docking 분리,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Set-Up,2,포장 및 필요 Part Check 포장,✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Set-Up,3,"Lay-Out 이동 및 임시 Leveling 
  - Handler 전/후면부 위치 맞춘 후 임시 Level 시 Foot 하단 받침  필수
- - 우익 요청 수급 후에 모든 Foot 하단에 적용",⬜ 대기,,,
+ - 우익 요청 수급 후에 모든 Foot 하단에 적용",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Set-Up,4,"전/후면부 Docking 및 Auto Leveling
  - 전면부 Conveyor Belt to Bottom Hight Spec 400mm 이상 Check 필수
  - 전면부 Auto-Leveling 후 후면부 Level Docking Pin 높이, 좌우 맞춘 후 Docking
- - 후면부 최종 Leveling 후 연결 Pin 고정",⬜ 대기,,,
+ - 후면부 최종 Leveling 후 연결 Pin 고정",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Set-Up,5,"Tester Docking
- - Handler TestSite -> Tester MB 상단 삽입 JIG 사용 Setting 및 확인",⬜ 대기,,,
+ - Handler TestSite -> Tester MB 상단 삽입 JIG 사용 Setting 및 확인",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Set-Up,6,"Uitility Connect
  -  Power Cable Set-Up Report 기준에 따라 굴곡 형성 배선 요청 및 확인
- - Hand 별 Regulator 장착 후 0.55 Mpa 이하 Setting",⬜ 대기,,,
-SLH1 #4호기,Set-Up,7,Turn-ON,⬜ 대기,,,
-SLH1 #4호기,Set-Up,8,I/O Check,⬜ 대기,,,
-SLH1 #4호기,Set-Up,9,Teaching,⬜ 대기,,,
-SLH1 #4호기,Set-Up,10, Dry Run -> Dummy Run,⬜ 대기,,,
+ - Hand 별 Regulator 장착 후 0.55 Mpa 이하 Setting",✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Set-Up,7,Turn-ON,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Set-Up,8,I/O Check,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Set-Up,9,Teaching,✅ 완료,,,최염광 (26-03-11)
+SLH1 #4호기,Set-Up,10, Dry Run -> Dummy Run,⏳ 작업중,,,최염광 (26-03-11)
 SLH1 #4호기,Set-Up,11,양산 Qual,⬜ 대기,,,
+SLH1 #4호기,Set-Up,12,시 양산 및 안정화,⬜ 대기,,,
