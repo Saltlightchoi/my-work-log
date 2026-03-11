@@ -407,7 +407,9 @@ SLH1 #7호기,Set-Up,4,"전/후면부 Docking 및 Auto Leveling
  - 후면부 최종 Leveling 후 연결 Pin 고정",⬜ 대기,,,
 SLH1 #7호기,Set-Up,5,"Tester Docking
  - Handler TestSite -> Tester MB 상단 삽입 JIG 사용 Setting 및 확인",⬜ 대기,,,
-SLH1 #7호기,Set-Up,6,Utility Connect,⬜ 대기,,,
+SLH1 #7호기,Set-Up,6,"Utility Connect
+ -  Power Cable Set-Up Report 기준에 따라 굴곡 형성 배선 요청 및 확인
+ - Hand 별 Regulator 장착 후 0.55 Mpa 이하 Setting",⬜ 대기,,,
 SLH1 #7호기,Set-Up,7,Turn ON,⬜ 대기,,,
 SLH1 #7호기,Set-Up,8,I/O Check,⬜ 대기,,,
 SLH1 #7호기,Set-Up,9,Long Run -> Dry Run -> Dummy Run,⬜ 대기,,,
