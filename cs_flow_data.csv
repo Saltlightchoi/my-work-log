@@ -295,7 +295,7 @@ SLH1 #7호기,Ray-Out 이후,4,"Regulator Setting
   -> T/S Front : 0.2    T/S Rear : 0.2  Press : 0.2 
   ->  Rail, Lock Pin : 0.4Mpa
  - Main Digital Pressure Switch Setting 
-  ->",✅ 완료,"Main 공압 부족, CDA Line 추가 포설 예정",,최염광 (26-03-08)
+  ->",✅ 완료,,,최염광 (26-03-11)
 SLH1 #7호기,Ray-Out 이후,5,"I/O Check
  -> OUP PUT으로 동작 후 IN PUT LED 확인.
  -> Cylinder 정상 동작 확인
