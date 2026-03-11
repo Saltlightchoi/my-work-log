@@ -405,7 +405,8 @@ SLH1 #7호기,Set-Up,4,"전/후면부 Docking 및 Auto Leveling
  - 전면부 Conveyor Belt to Bottom Hight Spec 400mm 이상 Check 필수
  - 전면부 Auto-Leveling 후 후면부 Level Docking Pin 높이, 좌우 맞춘 후 Docking
  - 후면부 최종 Leveling 후 연결 Pin 고정",⬜ 대기,,,
-SLH1 #7호기,Set-Up,5,Tester Docking,⬜ 대기,,,
+SLH1 #7호기,Set-Up,5,"Tester Docking
+ - Handler TestSite -> Tester MB 상단 삽입 JIG 사용 Setting 및 확인",⬜ 대기,,,
 SLH1 #7호기,Set-Up,6,Utility Connect,⬜ 대기,,,
 SLH1 #7호기,Set-Up,7,Turn ON,⬜ 대기,,,
 SLH1 #7호기,Set-Up,8,I/O Check,⬜ 대기,,,
