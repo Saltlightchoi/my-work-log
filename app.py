@@ -482,7 +482,7 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 장비가동데이터 최신 문법 에러 수정본)
+# 4. 화면 UI 보따리 (★ 탭 3: 인코딩 및 칸 수 불일치 에러 완벽 해결본)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Output & Jam Rate)</div>", unsafe_allow_html=True)
@@ -508,20 +508,42 @@ def render_equipment_data_page():
     month_num = month_str.replace("월", "")
 
     try:
-        # 1. 파일 불러오기
-        try:
-            df_raw = pd.read_csv(target_file, header=None, encoding='utf-8-sig')
-        except:
-            df_raw = pd.read_csv(target_file, header=None, encoding='cp949')
+        # 1. 파일 불러오기 (★수정된 부분: 인코딩 자동 감지 및 불규칙한 칸 수 해결)
+        df_raw = None
+        encodings_to_try = ['utf-8-sig', 'utf-8', 'cp949', 'euc-kr']
+        
+        for enc in encodings_to_try:
+            try:
+                # names=range(100): 엑셀 줄마다 칸 수가 달라서 나는 에러(ParserError)를 완벽 방지
+                df_raw = pd.read_csv(target_file, header=None, names=range(100), encoding=enc)
+                break  # 에러 없이 성공하면 반복문 탈출
+            except Exception:
+                continue  # 실패하면 다음 인코딩 시도
+                
+        if df_raw is None:
+            st.error(f"⚠️ '{target_file}' 파일의 인코딩을 읽을 수 없습니다.")
+            return
 
-        # 2. 원하는 데이터 행(Row)만 찾아서 1일~31일 데이터 뽑아내기
-        output_row_idx = df_raw[df_raw[1].astype(str).str.strip() == '#1_Output'].index[0]
-        output_data = df_raw.iloc[output_row_idx, 2:33].values 
+        # 2. 데이터가 어디에 숨어있든 행(Row)을 통째로 뒤져서 키워드 찾기
+        output_row = df_raw[df_raw.apply(lambda r: r.astype(str).str.contains('#1_Output', case=False).any(), axis=1)]
+        jam_row = df_raw[df_raw.apply(lambda r: r.astype(str).str.contains('#1_Jam Count', case=False).any(), axis=1)]
 
-        jam_row_idx = df_raw[df_raw[1].astype(str).str.strip() == '#1_Jam Count'].index[0]
-        jam_data = df_raw.iloc[jam_row_idx, 2:33].values
+        if output_row.empty or jam_row.empty:
+            st.error("⚠️ 데이터 파일 안에서 '#1_Output' 또는 '#1_Jam Count' 텍스트를 찾을 수 없습니다.")
+            return
 
-        # 3. 그래프용 데이터프레임 조립
+        # 3. 찾은 행을 파이썬 리스트(목록)로 변환
+        output_list = output_row.iloc[0].astype(str).tolist()
+        jam_list = jam_row.iloc[0].astype(str).tolist()
+
+        # 4. 키워드가 있는 칸 바로 다음 칸부터 데이터를 가져옵니다.
+        out_start = next(i for i, x in enumerate(output_list) if '#1_Output' in x) + 1
+        jam_start = next(i for i, x in enumerate(jam_list) if '#1_Jam Count' in x) + 1
+
+        # 5. 31일 치 데이터를 뽑고, 날짜가 짧은 달(2월 등)의 빈칸은 '0'으로 채워줍니다.
+        output_data = (output_list[out_start : out_start + 31] + ['0']*31)[:31]
+        jam_data = (jam_list[jam_start : jam_start + 31] + ['0']*31)[:31]
+
         days = [f"{month_num}월 {i}일" for i in range(1, 32)]
         df = pd.DataFrame({
             '날짜': days,
@@ -529,13 +551,13 @@ def render_equipment_data_page():
             'Jam_Count': jam_data
         })
 
-        # 4. 데이터 정제: 쉼표(,) 제거, '비가동' 등 문자를 0으로 변경 후 숫자로 완벽 변환
-        df['생산량(Output)'] = pd.to_numeric(df['생산량(Output)'].astype(str).str.replace(',', '', regex=False).replace(['비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
-        df['Jam_Count'] = pd.to_numeric(df['Jam_Count'].astype(str).str.replace(',', '', regex=False).replace(['비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
+        # 6. 데이터 정제: 쉼표(,) 제거나 빈칸, 'nan', '비가동' 텍스트를 모두 숫자 0으로 완벽 변환
+        df['생산량(Output)'] = pd.to_numeric(df['생산량(Output)'].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
+        df['Jam_Count'] = pd.to_numeric(df['Jam_Count'].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
 
         st.subheader(f"[{equipment} - {unit}] {month_str} 가동 현황")
 
-        # 5. Plotly 이중 축 그래프 생성
+        # 7. Plotly 이중 축 그래프 생성
         fig = go.Figure()
 
         fig.add_trace(go.Bar(
@@ -548,7 +570,6 @@ def render_equipment_data_page():
             line=dict(color='#ED7D31', width=3), marker=dict(size=8), yaxis='y2'
         ))
 
-        # ★ 에러 수정 포인트: range 데이터 강제 float 변환 및 title 속성 최신 문법으로 변경
         max_jam = df['Jam_Count'].max()
         max_jam_range = 5.0 if pd.isna(max_jam) or max_jam == 0 else float(max_jam) + 5.0
 
@@ -556,16 +577,16 @@ def render_equipment_data_page():
             height=500,
             xaxis=dict(title="날짜", tickangle=-45),
             yaxis=dict(
-                title=dict(text="생산량 (EA)", font=dict(color="#5B9BD5")), # 최신 문법
+                title=dict(text="생산량 (EA)", font=dict(color="#5B9BD5")),
                 tickfont=dict(color="#5B9BD5"), 
                 side="left"
             ),
             yaxis2=dict(
-                title=dict(text="Jam 발생 (건)", font=dict(color="#ED7D31")), # 최신 문법
+                title=dict(text="Jam 발생 (건)", font=dict(color="#ED7D31")),
                 tickfont=dict(color="#ED7D31"), 
                 overlaying="y", 
                 side="right",
-                range=[0, max_jam_range] # 에러가 발생하던 부분 수정 완료
+                range=[0, max_jam_range]
             ),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             hovermode="x unified",
@@ -574,11 +595,8 @@ def render_equipment_data_page():
 
         st.plotly_chart(fig, use_container_width=True)
 
-    except FileNotFoundError:
-        st.error(f"⚠️ 폴더 내에 '{target_file}' 파일이 없습니다. 이름을 다시 확인해 주세요.")
     except Exception as e:
-        st.error(f"⚠️ 데이터를 읽는 중 오류가 발생했습니다: {e}")
-
+        st.error(f"⚠️ 데이터를 처리하는 중 오류가 발생했습니다: {e}")
 
 # ==========================================
 # 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
@@ -622,6 +640,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
