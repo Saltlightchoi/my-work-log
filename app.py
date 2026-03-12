@@ -492,12 +492,12 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 장비 가동 데이터 전용 - 실선 및 빈칸 차단 완결판)
+# 4. 화면 UI 보따리 (★ 탭 3: PPJ 날짜 출력 버그 완벽 해결본)
 # ==========================================
-import re
-from plotly.subplots import make_subplots
-
 def render_equipment_data_page():
+    import re
+    from plotly.subplots import make_subplots
+
     st.markdown("""
         <style>
             .final-report-table {
@@ -552,12 +552,10 @@ def render_equipment_data_page():
         for c in ['Unit', 'Jam', 'PPJ']:
             chart_df[c] = pd.to_numeric(chart_df[c].astype(str).str.replace(',', '').replace(['nan','비가동','미가동','None',''], '0'), errors='coerce').fillna(0)
 
-        # ★ 월 누적 PPJ 계산
         chart_df['Cum_Unit'] = chart_df['Unit'].cumsum()
         chart_df['Cum_Jam'] = chart_df['Jam'].cumsum()
         chart_df['Cum_PPJ'] = chart_df.apply(lambda row: round(row['Cum_Unit'] / row['Cum_Jam'], 1) if row['Cum_Jam'] > 0 else 0, axis=1)
 
-        # 📊 2단 그래프: 상단(Unit/Jam 보조축), 하단(PPJ 바 + 누적 PPJ 굵은 빨간 실선)
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.12,
                             subplot_titles=("투입량(Unit) 및 에러(Jam) 건수", "생산 효율(PPJ) 추이"),
                             specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
@@ -565,7 +563,6 @@ def render_equipment_data_page():
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
         fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
         
-        # ★ 수정된 부분: dash='dot' 완전히 제거, 두께(width) 4, 눈에 띄는 빨간색(#FF0000)
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.8), row=2, col=1)
         fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Cum_PPJ'], name='월 누적 PPJ (실선)', mode='lines+markers', line=dict(color='#FF0000', width=4)), row=2, col=1)
         
@@ -575,7 +572,7 @@ def render_equipment_data_page():
         fig.update_yaxes(title_text="PPJ", row=2, col=1)
         st.plotly_chart(fig, use_container_width=True)
 
-        # [하단 상세 리스트 - 극강의 빈칸 쓰레기 데이터 차단]
+        # [하단 상세 리스트]
         st.subheader(f"📋 {month_str} 에러 상세 리스트")
         h_idx = -1
         for i, row in df_raw.iterrows():
@@ -583,7 +580,8 @@ def render_equipment_data_page():
                 h_idx = i; h_row = row.tolist(); break
 
         if h_idx != -1:
-            m = {'D': 0, 'C': 0, 'M': 0, 'A': 0, 'T': 0, 'L': 0, 'P': 0}
+            # ★ 핵심 1. 0이 아니라 None으로 초기화 (날짜를 잘못 가져오는 치명적 버그 해결)
+            m = {'D': None, 'C': None, 'M': None, 'A': None, 'T': None, 'L': None, 'P': None}
             for i, v in enumerate(h_row):
                 v_l = str(v).lower().strip()
                 if 'date' in v_l: m['D'] = i
@@ -594,46 +592,62 @@ def render_equipment_data_page():
                 elif 'point' in v_l: m['L'] = i
                 elif 'ppj' in v_l: m['P'] = i
 
+            # ★ 핵심 2. 엑셀의 PPJ 글자가 깨져서 못 찾았다면? 에러코드 바로 다음 칸(+1)을 무조건 PPJ로 지정!
+            if m['P'] is None and m['C'] is not None:
+                m['P'] = m['C'] + 1
+
             data_slice = df_raw.iloc[h_idx + 1:].copy()
             cleaned_list = []
             
-            # ★ 엑셀의 쓰레기 값을 판별하는 강력한 함수 (정규식 도입)
-            def is_valid_data(val):
-                v_str = str(val).strip().lower()
-                if v_str in ['nan', 'none', 'null', '', '0', '0.0', '-', '_']:
-                    return False
-                # 영어, 숫자, 한글이 하나라도 포함되어 있어야만 '유효한 데이터'로 인정
-                if not re.search(r'[a-zA-Z0-9가-힣]', v_str):
-                    return False
-                return True
-
             for _, r in data_slice.iterrows():
-                has_code = is_valid_data(r[m['C']])
-                has_msg = is_valid_data(r[m['M']])
+                # 인덱스가 없을 경우를 대비한 방어 코드
+                code_v = str(r[m['C']]).strip() if m['C'] is not None else ""
+                msg_v = str(r[m['M']]).strip() if m['M'] is not None else ""
                 
-                # ★ 코드와 메시지 둘 다 "유효한 글자"가 없으면 완전 무시하고 다음 줄로 이동!
-                if not has_code and not has_msg:
+                invalid_vals = ['nan', 'none', '', '0', '0.0']
+                
+                # 쓰레기 데이터 걸러내기
+                if code_v.lower() in invalid_vals and msg_v.lower() in invalid_vals:
+                    continue
+                if (m['C'] is not None and pd.isna(r[m['C']])) and (m['M'] is not None and pd.isna(r[m['M']])):
                     continue
                 
-                # 살아남은 진짜 데이터만 정제
-                code_orig = str(r[m['C']]).strip() if has_code else ""
-                if code_orig.endswith('.0'): code_orig = code_orig[:-2] # '4030.0' 같은 경우 '4030'으로 수정
+                code_orig = code_v if code_v.lower() not in invalid_vals else ""
+                if code_orig.endswith('.0'): code_orig = code_orig[:-2]
+                msg_orig = msg_v if msg_v.lower() not in invalid_vals else ""
+
+                # 날짜 처리
+                dt = None
+                if m['D'] is not None:
+                    raw_d = r[m['D']]
+                    if not pd.isna(raw_d) and str(raw_d).strip().lower() != 'nan':
+                        if str(raw_d).replace('.','').isdigit():
+                            dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
+                        else: 
+                            dt = str(raw_d).split(' ')[0]
+
+                # PPJ 처리 (이제 무조건 올바른 칸의 데이터를 가져옴)
+                ppj_val = None
+                if m['P'] is not None and m['P'] < len(r):
+                    raw_p = str(r[m['P']]).strip()
+                    if raw_p.lower() not in invalid_vals:
+                        ppj_val = raw_p.split('.')[0]
+
+                # 시간 등 기타 처리
+                t_val = ""
+                if m['T'] is not None and m['T'] < len(r):
+                    raw_t = str(r[m['T']]).split('.')[0] if ':' in str(r[m['T']]) else str(r[m['T']])
+                    if raw_t.lower() != 'nan': t_val = raw_t
                 
-                msg_orig = str(r[m['M']]).strip() if has_msg else ""
-
-                dt = r[m['D']]
-                if pd.isna(dt) or str(dt).strip().lower() == 'nan': dt = None
-                elif str(dt).replace('.','').isdigit():
-                    dt = pd.to_datetime(float(dt), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                else: dt = str(dt).split(' ')[0]
-
-                ppj_val = str(r[m['P']]).split('.')[0] if not pd.isna(r[m['P']]) and str(r[m['P']]).lower() != 'nan' else None
-
-                t_val = str(r[m['T']]).split('.')[0] if ':' in str(r[m['T']]) else str(r[m['T']])
-                if t_val.lower() == 'nan': t_val = ""
-                
-                a_val = str(r[m['A']]) if str(r[m['A']]).lower() != 'nan' else ""
-                l_val = str(r[m['L']]) if str(r[m['L']]).lower() != 'nan' else ""
+                a_val = ""
+                if m['A'] is not None and m['A'] < len(r):
+                    raw_a = str(r[m['A']])
+                    if raw_a.lower() != 'nan': a_val = raw_a
+                    
+                l_val = ""
+                if m['L'] is not None and m['L'] < len(r):
+                    raw_l = str(r[m['L']])
+                    if raw_l.lower() != 'nan': l_val = raw_l
 
                 cleaned_list.append({
                     "Date": dt, "Code": code_orig, "PPJ": ppj_val,
@@ -642,7 +656,7 @@ def render_equipment_data_page():
 
             if cleaned_list:
                 final_df = pd.DataFrame(cleaned_list)
-                final_df['Date'] = final_df['Date'].ffill() # 비어있는 날짜를 위의 날짜로 채움
+                final_df['Date'] = final_df['Date'].ffill() 
                 final_df['PPJ'] = final_df['PPJ'].ffill().fillna("0")
                 
                 rows_html = ""
@@ -694,6 +708,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
