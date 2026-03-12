@@ -482,27 +482,26 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 데이터 정밀 정제 후 HTML 변환 최종본)
+# 4. 화면 UI 보따리 (★ 탭 3: 데이터 정합성 및 화면 출력 오류 최종 해결본)
 # ==========================================
 def render_equipment_data_page():
-    # 표 디자인 (경계선 강화 및 너비 고정)
+    # 1. CSS 스타일 정의 (진한 검정색 테두리와 고정 너비)
     st.markdown("""
         <style>
-            .final-report-table {
-                width: 100%; border-collapse: collapse; border: 2px solid #000000;
-                font-size: 12px; color: #000000; background-color: #ffffff;
+            .fixed-table-container { width: 100%; overflow-x: auto; }
+            .fixed-table-container table {
+                width: 100%; border-collapse: collapse; border: 2px solid #000000 !important;
+                font-size: 13px; color: #000000;
             }
-            .final-report-table th, .final-report-table td {
-                border: 1px solid #000000 !important; padding: 4px 6px; text-align: center;
-                word-break: break-all;
+            .fixed-table-container th, .fixed-table-container td {
+                border: 1px solid #000000 !important; padding: 6px; text-align: center !important;
             }
-            .final-report-table th { background-color: #d9e1f2; font-weight: bold; }
-            .w-date { width: 75px; } .w-code { width: 60px; } .w-ppj { width: 60px; }
-            .w-time { width: 65px; } .w-loc { width: 100px; } .t-left { text-align: left !important; }
+            .fixed-table-container th { background-color: #d9e1f2 !important; font-weight: bold; }
+            .fixed-table-container td:nth-child(4), .fixed-table-container td:nth-child(5) { text-align: left !important; }
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='main-title'>📊 장비 가동 데이터 통합 분석</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Unit/Jam/PPJ 통합 분석)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
@@ -524,28 +523,28 @@ def render_equipment_data_page():
         if df_raw is None:
             st.error("⚠️ 가동 데이터 시트를 찾을 수 없습니다."); return
 
-        # [1. 상단 3축 그래프 추출]
-        def get_sum_row(k):
+        # [1. 요약 데이터 추출 및 3축 그래프]
+        def get_sum_row(k_list):
             for _, r in df_raw.iterrows():
-                s = "".join(r.astype(str)).lower().replace(" ", "")
-                if any(kw in s for kw in k) and not any(x in s for x in ['%', '발생률']):
+                row_str = "".join(r.astype(str)).lower().replace(" ", "")
+                if any(k in row_str for k in k_list) and not any(x in row_str for x in ['%', '발생률']):
                     vals = r.tolist()
                     for i, v in enumerate(vals):
-                        if str(v).replace('.', '').isdigit(): return (vals[i:i+31]+[0]*31)[:31]
+                        if str(v).replace('.','').replace(',','').strip().isdigit(): return (vals[i:i+31]+[0]*31)[:31]
             return [0]*31
 
-        t_units = get_sum_row(['totalunit'])
-        j_counts = get_sum_row(['jamcount'])
-        p_values = get_sum_row(['ppj'])
+        units = get_sum_row(['totalunit'])
+        jams = get_sum_row(['jamcount'])
+        ppjs = get_sum_row(['ppj'])
 
-        c_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': t_units, 'Jam': j_counts, 'PPJ': p_values})
+        chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': units, 'Jam': jams, 'PPJ': ppjs})
         for c in ['Unit', 'Jam', 'PPJ']:
-            c_df[c] = pd.to_numeric(c_df[c].astype(str).str.replace(',', '').replace(['nan','비가동','미가동',''], '0'), errors='coerce').fillna(0)
+            chart_df[c] = pd.to_numeric(chart_df[c].astype(str).str.replace(',', '').replace(['nan','비가동','미가동','None',''], '0'), errors='coerce').fillna(0)
 
         fig = go.Figure()
-        fig.add_trace(go.Bar(x=c_df['날짜'], y=c_df['Unit'], name='투입량(Unit)', marker_color='#5B9BD5', yaxis='y1'))
-        fig.add_trace(go.Scatter(x=c_df['날짜'], y=c_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2), yaxis='y2'))
-        fig.add_trace(go.Scatter(x=c_df['날짜'], y=c_df['PPJ'], name='효율(PPJ)', mode='lines+markers', line=dict(color='#70AD47', width=2, dash='dot'), yaxis='y3'))
+        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입량(Unit)', marker_color='#5B9BD5', yaxis='y1'))
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2), yaxis='y2'))
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['PPJ'], name='효율(PPJ)', mode='lines+markers', line=dict(color='#70AD47', width=2, dash='dot'), yaxis='y3'))
         fig.update_layout(height=400, xaxis=dict(tickangle=-45), 
             yaxis=dict(title=dict(text="Unit", font=dict(color="#5B9BD5")), tickfont=dict(color="#5B9BD5")),
             yaxis2=dict(title=dict(text="Jam", font=dict(color="#ED7D31")), tickfont=dict(color="#ED7D31"), overlaying="y", side="right"),
@@ -553,82 +552,59 @@ def render_equipment_data_page():
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1), margin=dict(l=50, r=120, t=50, b=50), hovermode="x unified")
         st.plotly_chart(fig, use_container_width=True)
 
-        # [2. 하단 상세 내역 표 정밀 가공]
-        st.subheader(f"📋 {month_str} 에러 상세 리스트")
+        # [2. 상세 내역 데이터 정제]
+        st.subheader(f"📋 {month_str} 에러 상세 분석 리스트")
         h_idx = -1
         for i, row in df_raw.iterrows():
             if 'error code' in " ".join(row.astype(str)).lower():
                 h_idx = i; h_row = row.tolist(); break
 
         if h_idx != -1:
-            m = {'Date': None, 'Code': None, 'Msg': None, 'Act': None, 'Time': None, 'Loc': None, 'PPJ': None}
+            col_pos = {'날짜': 0, '에러코드': 0, '에러내용': 0, '조치내용': 0, '시간': 0, '위치': 0, 'PPJ': 0}
             for i, v in enumerate(h_row):
                 v_l = str(v).lower().strip()
-                if 'date' in v_l: m['Date'] = i
-                elif 'error code' in v_l: m['Code'] = i
-                elif 'error massage' in v_l: m['Msg'] = i
-                elif 'finding/action' in v_l: m['Act'] = i
-                elif 'err. time' in v_l: m['Time'] = i
-                elif 'err. point' in v_l: m['Loc'] = i
-                elif 'ppj' in v_l: m['PPJ'] = i
+                if 'date' in v_l: col_pos['날짜'] = i
+                elif 'error code' in v_l: col_pos['에러코드'] = i
+                elif 'error massage' in v_l: col_pos['에러내용'] = i
+                elif 'finding/action' in v_l: col_pos['조치내용'] = i
+                elif 'err. time' in v_l: col_pos['시간'] = i
+                elif 'err. point' in v_l: col_pos['위치'] = i
+                elif 'ppj' in v_l: col_pos['PPJ'] = i
 
-            data_p = df_raw.iloc[h_idx + 1:].copy()
-            cleaned_list = []
+            data_slice = df_raw.iloc[h_idx + 1:].copy()
+            cleaned_rows = []
             
-            for _, r in data_p.iterrows():
-                code = str(r[m['Code']]).strip() if m['Code'] is not None else ""
-                if code in ['nan', 'None', '']: continue
+            for _, r in data_slice.iterrows():
+                code_val = str(r[col_pos['에러코드']]).strip()
+                if code_val in ['nan', 'None', '']: continue
                 
-                dt = r[m['Date']] if m['Date'] is not None else None
+                # 날짜 및 PPJ (Forward Fill 로직 포함)
+                dt = r[col_pos['날짜']]
                 if pd.isna(dt) or str(dt).strip() == 'nan': dt = None
                 elif str(dt).replace('.','').isdigit():
                     dt = pd.to_datetime(float(dt), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
                 else: dt = str(dt).split(' ')[0]
 
-                ppj = str(r[m['PPJ']]).strip() if m['PPJ'] is not None else "0"
-                ppj = ppj.split('.')[0] if ppj not in ['nan', 'None', ''] else None
+                ppj_val = str(r[col_pos['PPJ']]).split('.')[0] if not pd.isna(r[col_pos['PPJ']]) else None
 
-                cleaned_list.append({
-                    "Date": dt, "Code": code, "PPJ": ppj,
-                    "Msg": str(r[m['Msg']]), "Act": str(r[m['Act']]),
-                    "Time": str(r[m['Time']]), "Loc": str(r[m['Loc']])
+                cleaned_rows.append({
+                    "날짜": dt, "에러코드": code_val, "PPJ": ppj_val,
+                    "에러내용": str(r[col_pos['에러내용']]), "조치내용": str(r[col_pos['조치내용']]),
+                    "시간": str(r[col_pos['시간']]).split('.')[0], "위치": str(r[col_pos['위치']])
                 })
 
-            if cleaned_list:
-                df_final = pd.DataFrame(cleaned_list)
-                df_final['Date'] = df_final['Date'].ffill()
-                df_final['PPJ'] = df_final['PPJ'].ffill().fillna("0")
+            if cleaned_rows:
+                final_df = pd.DataFrame(cleaned_rows)
+                final_df['날짜'] = final_df['날짜'].ffill()
+                final_df['PPJ'] = final_df['PPJ'].ffill().fillna("0")
                 
-                rows_html = ""
-                for _, row in df_final.iterrows():
-                    time_val = str(row['Time']).split('.')[0] if ':' in str(row['Time']) else str(row['Time'])
-                    rows_html += f"""
-                        <tr>
-                            <td class='w-date'>{row['Date']}</td>
-                            <td class='w-code'>{row['Code']}</td>
-                            <td class='w-ppj'>{row['PPJ']}</td>
-                            <td class='t-left'>{row['Msg']}</td>
-                            <td class='t-left'>{row['Act']}</td>
-                            <td class='w-time'>{time_val}</td>
-                            <td class='w-loc'>{row['Loc']}</td>
-                        </tr>
-                    """
-                
-                st.markdown(f"""
-                    <table class='final-report-table'>
-                        <thead>
-                            <tr>
-                                <th class='w-date'>날짜</th><th class='w-code'>에러코드</th><th class='w-ppj'>PPJ</th>
-                                <th>에러내용</th><th>조치내용</th><th class='w-time'>시간</th><th class='w-loc'>위치</th>
-                            </tr>
-                        </thead>
-                        <tbody>{rows_html}</tbody>
-                    </table>
-                """, unsafe_allow_html=True)
-            else: st.info("상세 데이터가 없습니다.")
-        else: st.info("헤더를 찾을 수 없습니다.")
+                # HTML 테이블 생성 (데이터 밀림 방지 위해 DataFrame에서 바로 변환)
+                table_html = final_df.to_html(index=False, border=0, classes='final-report-table')
+                st.markdown(f'<div class="fixed-table-container">{table_html}</div>', unsafe_allow_html=True)
+            else: st.info("기록된 상세 에러 내역이 없습니다.")
+        else: st.info("데이터 헤더를 찾을 수 없습니다.")
 
-    except Exception as e: st.error(f"⚠️ 오류 발생: {e}")
+    except Exception as e: st.error(f"⚠️ 시스템 오류: {e}")
         
 # ==========================================
 # 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
@@ -672,6 +648,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
