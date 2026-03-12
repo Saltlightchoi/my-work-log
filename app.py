@@ -482,16 +482,32 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 가독성 및 레이아웃 최종 최적화 버전)
+# 4. 화면 UI 보따리 (★ 탭 3: 경계선 강화 및 글자 깨짐 완벽 해결 버전)
 # ==========================================
 def render_equipment_data_page():
-    # 표 경계선을 명확하게 만들기 위한 커스텀 CSS 주입
+    # 표 가독성을 위해 테두리를 아주 진하게 만드는 CSS 주입
     st.markdown("""
         <style>
-            /* 데이터프레임 경계선 및 눈금선 강화 */
-            [data-testid="stTable"] { border: 1px solid #555 !important; }
-            div[data-testid="stDataFrame"] > div { border: 1px solid #444 !important; }
-            .stDataFrame td, .stDataFrame th { border: 1px solid #333 !important; }
+            /* 전체 표 테두리 및 칸 경계선 강화 */
+            .main-table-container table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+                border: 2px solid #000000 !important; /* 바깥 테두리 검정 */
+            }
+            .main-table-container th, .main-table-container td {
+                border: 1px solid #444444 !important; /* 칸 사이 경계선 진하게 */
+                padding: 6px 10px !important;
+                text-align: center !important;
+                font-size: 13px !important;
+            }
+            .main-table-container th {
+                background-color: #f0f2f6 !important;
+                font-weight: bold !important;
+                color: #000000 !important;
+            }
+            /* 너비 타이트하게 조절 */
+            .col-narrow { width: 70px !important; }
+            .col-medium { width: 100px !important; }
         </style>
     """, unsafe_allow_html=True)
 
@@ -560,7 +576,7 @@ def render_equipment_data_page():
             fig.update_layout(height=400, xaxis=dict(tickangle=-45), yaxis2=dict(overlaying='y', side='right'), margin=dict(l=40, r=40, t=20, b=40), hovermode="x unified")
             st.plotly_chart(fig, use_container_width=True)
 
-        # [하단 상세 내역 표 정제 - 요청 사항 반영]
+        # [하단 상세 내역 표 정제]
         st.subheader(f"📋 {month_str} 장비 에러 상세 리스트")
         
         header_row_idx = -1
@@ -571,6 +587,7 @@ def render_equipment_data_page():
                 break
 
         if header_row_idx != -1:
+            # 컬럼 인덱스 찾기
             col_map = {}
             for i, val in enumerate(header_row):
                 v_lower = str(val).lower().strip()
@@ -587,46 +604,38 @@ def render_equipment_data_page():
 
             for _, row in data_part.iterrows():
                 err_code = str(row[col_map.get('Error code', 0)]).strip()
-                if not err_code or err_code == 'nan': continue
+                if not err_code or err_code == 'nan' or err_code == '': continue
 
-                # 1. 날짜에서 시간 삭제 (문자열 처리)
+                # 날짜 처리
                 raw_date = row[col_map.get('Date', 0)]
                 try:
                     if str(raw_date).replace('.','').isdigit():
-                        fmt_date = pd.to_datetime(float(raw_date), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                    else: 
-                        # '2026-03-01 00:00:00' 형태인 경우 앞부분만 추출
-                        fmt_date = str(raw_date).split(' ')[0]
+                        fmt_date = pd.to_datetime(float(raw_date), unit='D', origin='1899-12-30').strftime('%m-%d')
+                    else: fmt_date = str(raw_date).split(' ')[0]
                 except: fmt_date = str(raw_date)
+
+                # PPJ 값 깨끗하게 추출
+                ppj_val = str(row[col_map.get('PPJ', 0)]).split('.')[0] if col_map.get('PPJ') is not None else "0"
+                if ppj_val == 'nan' or ppj_val == 'None': ppj_val = "0"
 
                 final_rows.append({
                     "날짜": fmt_date,
-                    "에러 코드": row[col_map.get('Error code', 0)],
-                    "PPJ": row[col_map.get('PPJ', 0)], # 위치 이동 준비
-                    "에러 내용": row[col_map.get('Error Massage', 0)],
-                    "조치 사항": row[col_map.get('Finding/Action', 0)],
-                    "발생 시간": row[col_map.get('Err. Time', 0)],
-                    "발생 위치": row[col_map.get('Err. Point', 0)]
+                    "에러 코드": err_code,
+                    "PPJ": ppj_val, # 깨끗한 문자열로 변환하여 깨짐 방지
+                    "에러 내용": str(row[col_map.get('Error Massage', 0)]),
+                    "조치 사항": str(row[col_map.get('Finding/Action', 0)]),
+                    "시간": str(row[col_map.get('Err. Time', 0)]),
+                    "위치": str(row[col_map.get('Err. Point', 0)])
                 })
 
             if final_rows:
+                # 📢 st.table을 사용하여 경계선이 명확한 표 출력
                 display_df = pd.DataFrame(final_rows)
-                st.dataframe(
-                    display_df,
-                    use_container_width=True,
-                    hide_index=True,
-                    # 2. 컬럼 순서 및 너비 타이트하게 조정
-                    column_config={
-                        "날짜": st.column_config.TextColumn("날짜", width=90),
-                        "에러 코드": st.column_config.TextColumn("에러 코드", width=80),
-                        "PPJ": st.column_config.TextColumn("PPJ", width=70),
-                        "에러 내용": st.column_config.TextColumn("에러 내용", width="large"),
-                        "조치 사항": st.column_config.TextColumn("조치 사항", width="large"),
-                        "발생 시간": st.column_config.TextColumn("시간", width=70),
-                        "발생 위치": st.column_config.TextColumn("위치", width=120)
-                    },
-                    column_order=["날짜", "에러 코드", "PPJ", "에러 내용", "조치 사항", "발생 시간", "발생 위치"]
-                )
+                
+                # 표를 감싸는 컨테이너에 CSS 적용
+                st.markdown('<div class="main-table-container">', unsafe_allow_html=True)
+                st.table(display_df)
+                st.markdown('</div>', unsafe_allow_html=True)
             else:
                 st.info("기록된 에러 상세 내역이 없습니다.")
         else:
@@ -677,6 +686,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
