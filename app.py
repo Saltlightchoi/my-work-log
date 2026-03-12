@@ -482,9 +482,19 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 중복 컬럼 에러 완벽 해결 및 표 가독성 버전)
+# 4. 화면 UI 보따리 (★ 탭 3: 가독성 및 레이아웃 최종 최적화 버전)
 # ==========================================
 def render_equipment_data_page():
+    # 표 경계선을 명확하게 만들기 위한 커스텀 CSS 주입
+    st.markdown("""
+        <style>
+            /* 데이터프레임 경계선 및 눈금선 강화 */
+            [data-testid="stTable"] { border: 1px solid #555 !important; }
+            div[data-testid="stDataFrame"] > div { border: 1px solid #444 !important; }
+            .stDataFrame td, .stDataFrame th { border: 1px solid #333 !important; }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Total Unit & Jam Count)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
@@ -520,7 +530,7 @@ def render_equipment_data_page():
             st.error("⚠️ 데이터를 포함한 시트를 찾을 수 없습니다.")
             return
 
-        # [상단 요약 데이터 추출 및 PPJ 계산]
+        # [상단 요약 데이터 추출 및 그래프]
         def get_summary_row(keywords):
             for _, row in df_raw.iterrows():
                 row_str = " ".join(row.astype(str)).lower().replace(" ", "")
@@ -539,7 +549,6 @@ def render_equipment_data_page():
         total_units = get_summary_row(['total unit', 'totalunit'])
         jam_counts = get_summary_row(['jam count', 'jamcount'])
 
-        # 그래프 출력
         if total_units and jam_counts:
             chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Total_Unit': total_units, 'Jam_Count': jam_counts})
             for col in ['Total_Unit', 'Jam_Count']:
@@ -551,7 +560,7 @@ def render_equipment_data_page():
             fig.update_layout(height=400, xaxis=dict(tickangle=-45), yaxis2=dict(overlaying='y', side='right'), margin=dict(l=40, r=40, t=20, b=40), hovermode="x unified")
             st.plotly_chart(fig, use_container_width=True)
 
-        # [하단 상세 내역 표 정제 - 중복 컬럼 에러 해결 버전]
+        # [하단 상세 내역 표 정제 - 요청 사항 반영]
         st.subheader(f"📋 {month_str} 장비 에러 상세 리스트")
         
         header_row_idx = -1
@@ -562,7 +571,6 @@ def render_equipment_data_page():
                 break
 
         if header_row_idx != -1:
-            # 1. 컬럼 인덱스 매핑 (이름이 아닌 위치로 가져와서 중복 에러 원천 차단)
             col_map = {}
             for i, val in enumerate(header_row):
                 v_lower = str(val).lower().strip()
@@ -574,31 +582,31 @@ def render_equipment_data_page():
                 elif 'err. point' in v_lower: col_map['Err. Point'] = i
                 elif 'ppj' in v_lower: col_map['PPJ'] = i
 
-            # 2. 필요한 데이터만 슬라이싱 및 정리
             data_part = df_raw.iloc[header_row_idx + 1:].copy()
             final_rows = []
 
             for _, row in data_part.iterrows():
-                # Error code가 있는 줄만 가져옴 (미발생 일자 제거)
                 err_code = str(row[col_map.get('Error code', 0)]).strip()
                 if not err_code or err_code == 'nan': continue
 
-                # 엑셀 날짜 숫자 -> 실제 날짜 변환
+                # 1. 날짜에서 시간 삭제 (문자열 처리)
                 raw_date = row[col_map.get('Date', 0)]
                 try:
                     if str(raw_date).replace('.','').isdigit():
                         fmt_date = pd.to_datetime(float(raw_date), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                    else: fmt_date = str(raw_date)
+                    else: 
+                        # '2026-03-01 00:00:00' 형태인 경우 앞부분만 추출
+                        fmt_date = str(raw_date).split(' ')[0]
                 except: fmt_date = str(raw_date)
 
                 final_rows.append({
                     "날짜": fmt_date,
                     "에러 코드": row[col_map.get('Error code', 0)],
+                    "PPJ": row[col_map.get('PPJ', 0)], # 위치 이동 준비
                     "에러 내용": row[col_map.get('Error Massage', 0)],
                     "조치 사항": row[col_map.get('Finding/Action', 0)],
                     "발생 시간": row[col_map.get('Err. Time', 0)],
-                    "발생 위치": row[col_map.get('Err. Point', 0)],
-                    "PPJ": row[col_map.get('PPJ', 0)]
+                    "발생 위치": row[col_map.get('Err. Point', 0)]
                 })
 
             if final_rows:
@@ -607,23 +615,25 @@ def render_equipment_data_page():
                     display_df,
                     use_container_width=True,
                     hide_index=True,
+                    # 2. 컬럼 순서 및 너비 타이트하게 조정
                     column_config={
-                        "날짜": st.column_config.TextColumn("날짜", width="medium"),
-                        "에러 코드": st.column_config.TextColumn("에러 코드", width="small"),
+                        "날짜": st.column_config.TextColumn("날짜", width=90),
+                        "에러 코드": st.column_config.TextColumn("에러 코드", width=80),
+                        "PPJ": st.column_config.TextColumn("PPJ", width=70),
                         "에러 내용": st.column_config.TextColumn("에러 내용", width="large"),
                         "조치 사항": st.column_config.TextColumn("조치 사항", width="large"),
-                        "발생 시간": st.column_config.TextColumn("발생 시간", width="small"),
-                        "발생 위치": st.column_config.TextColumn("발생 위치", width="medium"),
-                        "PPJ": st.column_config.TextColumn("PPJ", width="small")
-                    }
+                        "발생 시간": st.column_config.TextColumn("시간", width=70),
+                        "발생 위치": st.column_config.TextColumn("위치", width=120)
+                    },
+                    column_order=["날짜", "에러 코드", "PPJ", "에러 내용", "조치 사항", "발생 시간", "발생 위치"]
                 )
             else:
-                st.info("해당 월에 기록된 에러 상세 내역이 없습니다.")
+                st.info("기록된 에러 상세 내역이 없습니다.")
         else:
-            st.info("표의 헤더(Error code)를 찾을 수 없습니다.")
+            st.info("표의 헤더를 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"⚠️ 데이터를 처리하는 중 오류가 발생했습니다: {e}")
+        st.error(f"⚠️ 오류 발생: {e}")
         
 # ==========================================
 # 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
@@ -667,6 +677,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
