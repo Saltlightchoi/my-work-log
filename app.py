@@ -488,20 +488,21 @@ def render_equipment_data_page():
     # 표 디자인 (경계선 강화 및 너비 고정)
     st.markdown("""
         <style>
-            .report-table {
+            .final-report-table {
                 width: 100%; border-collapse: collapse; border: 2px solid #000000;
                 font-size: 12px; color: #000000; background-color: #ffffff;
             }
-            .report-table th, .report-table td {
-                border: 1px solid #000000 !important; padding: 5px; text-align: center;
+            .final-report-table th, .final-report-table td {
+                border: 1px solid #000000 !important; padding: 4px 6px; text-align: center;
+                word-break: break-all;
             }
-            .report-table th { background-color: #d9e1f2; font-weight: bold; }
-            .w-date { width: 70px; } .w-code { width: 60px; } .w-ppj { width: 50px; }
-            .w-time { width: 60px; } .w-loc { width: 90px; } .t-left { text-align: left !important; }
+            .final-report-table th { background-color: #d9e1f2; font-weight: bold; }
+            .w-date { width: 75px; } .w-code { width: 60px; } .w-ppj { width: 60px; }
+            .w-time { width: 65px; } .w-loc { width: 100px; } .t-left { text-align: left !important; }
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='main-title'>📊 장비 가동 데이터 통합 분석 (Unit/Jam/PPJ)</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>📊 장비 가동 데이터 통합 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
@@ -523,7 +524,7 @@ def render_equipment_data_page():
         if df_raw is None:
             st.error("⚠️ 가동 데이터 시트를 찾을 수 없습니다."); return
 
-        # [1. 상단 요약 및 3축 그래프]
+        # [1. 상단 3축 그래프 추출]
         def get_sum_row(k):
             for _, r in df_raw.iterrows():
                 s = "".join(r.astype(str)).lower().replace(" ", "")
@@ -560,8 +561,7 @@ def render_equipment_data_page():
                 h_idx = i; h_row = row.tolist(); break
 
         if h_idx != -1:
-            # 컬럼 위치 정확히 찾기
-            m = {'Date': 0, 'Code': 0, 'Msg': 0, 'Act': 0, 'Time': 0, 'Loc': 0, 'PPJ': 0}
+            m = {'Date': None, 'Code': None, 'Msg': None, 'Act': None, 'Time': None, 'Loc': None, 'PPJ': None}
             for i, v in enumerate(h_row):
                 v_l = str(v).lower().strip()
                 if 'date' in v_l: m['Date'] = i
@@ -576,20 +576,17 @@ def render_equipment_data_page():
             cleaned_list = []
             
             for _, r in data_p.iterrows():
-                code = str(r[m['Code']]).strip()
+                code = str(r[m['Code']]).strip() if m['Code'] is not None else ""
                 if code in ['nan', 'None', '']: continue
                 
-                # 날짜 처리 (숫자 날짜 대응 및 ffill 준비)
-                dt = r[m['Date']]
+                dt = r[m['Date']] if m['Date'] is not None else None
                 if pd.isna(dt) or str(dt).strip() == 'nan': dt = None
                 elif str(dt).replace('.','').isdigit():
                     dt = pd.to_datetime(float(dt), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
                 else: dt = str(dt).split(' ')[0]
 
-                # PPJ 처리 (공백/nan 제거)
-                ppj = str(r[m['PPJ']]).strip()
-                if ppj in ['nan', 'None', '']: ppj = None
-                else: ppj = ppj.split('.')[0]
+                ppj = str(r[m['PPJ']]).strip() if m['PPJ'] is not None else "0"
+                ppj = ppj.split('.')[0] if ppj not in ['nan', 'None', ''] else None
 
                 cleaned_list.append({
                     "Date": dt, "Code": code, "PPJ": ppj,
@@ -599,24 +596,26 @@ def render_equipment_data_page():
 
             if cleaned_list:
                 df_final = pd.DataFrame(cleaned_list)
-                # ★ 사진처럼 동일 날짜/PPJ 빈칸 채우기 (Forward Fill)
                 df_final['Date'] = df_final['Date'].ffill()
                 df_final['PPJ'] = df_final['PPJ'].ffill().fillna("0")
                 
-                # HTML 표 생성
                 rows_html = ""
                 for _, row in df_final.iterrows():
+                    time_val = str(row['Time']).split('.')[0] if ':' in str(row['Time']) else str(row['Time'])
                     rows_html += f"""
                         <tr>
-                            <td class='w-date'>{row['Date']}</td><td class='w-code'>{row['Code']}</td>
-                            <td class='w-ppj'>{row['PPJ']}</td><td class='t-left'>{row['Msg']}</td>
-                            <td class='t-left'>{row['Act']}</td><td class='w-time'>{row['Time']}</td>
+                            <td class='w-date'>{row['Date']}</td>
+                            <td class='w-code'>{row['Code']}</td>
+                            <td class='w-ppj'>{row['PPJ']}</td>
+                            <td class='t-left'>{row['Msg']}</td>
+                            <td class='t-left'>{row['Act']}</td>
+                            <td class='w-time'>{time_val}</td>
                             <td class='w-loc'>{row['Loc']}</td>
                         </tr>
                     """
                 
                 st.markdown(f"""
-                    <table class='report-table'>
+                    <table class='final-report-table'>
                         <thead>
                             <tr>
                                 <th class='w-date'>날짜</th><th class='w-code'>에러코드</th><th class='w-ppj'>PPJ</th>
@@ -673,6 +672,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
