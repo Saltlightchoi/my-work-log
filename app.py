@@ -482,7 +482,7 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 엑셀(.xlsx)과 CSV 동시 지원 업그레이드본)
+# 4. 화면 UI 보따리 (★ 탭 3: 실제 엑셀 파일명 완벽 매칭본)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Output & Jam Rate)</div>", unsafe_allow_html=True)
@@ -499,11 +499,10 @@ def render_equipment_data_page():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 🚨 현재 깃허브에 올라가 있는 실제 파일명과 똑같이 적어주세요.
-    # (예시로 적어둔 것이니, 실제 1월, 2월, 3월 파일명에 맞게 수정하세요!)
+    # 🚨 1월=January, 2월=February, 3월=March 로 올바르게 수정되었습니다!
     file_map = {
-        "1월": "SLH1 - February 2026.xlsx", 
-        "2월": "SLH1 - January 2026.xlsx", # 에러가 났던 엑셀 파일 이름
+        "1월": "SLH1 - January 2026.xlsx", 
+        "2월": "SLH1 - February 2026.xlsx", 
         "3월": "SLH1 - March 2026.xlsx"
     }
     
@@ -511,14 +510,18 @@ def render_equipment_data_page():
     month_num = month_str.replace("월", "")
 
     try:
-        # 1. 파일 불러오기 (★ 엑셀과 CSV 자동 구별 기능 추가)
+        # 1. 파일 불러오기 (★ 엑셀의 모든 시트 자동 탐색)
         df_raw = None
         
-        if target_file.endswith('.xlsx'):
-            # 확장자가 .xlsx 인 경우 엑셀 전용 읽기 모드 작동
-            df_raw = pd.read_excel(target_file, header=None)
+        if target_file.endswith('.xlsx') or target_file.endswith('.xls'):
+            # 엑셀 파일인 경우 모든 시트를 읽어서 데이터가 있는 시트를 똑똑하게 찾아냅니다.
+            xls = pd.read_excel(target_file, sheet_name=None, header=None)
+            for sheet_name, sheet_data in xls.items():
+                if sheet_data.apply(lambda r: r.astype(str).str.contains('#1_Output', case=False).any(), axis=1).any():
+                    df_raw = sheet_data
+                    break # 데이터를 찾으면 탐색 종료!
         else:
-            # 확장자가 .csv 인 경우 (기존 로직 유지)
+            # CSV 파일인 경우
             encodings_to_try = ['utf-8-sig', 'utf-8', 'cp949', 'euc-kr']
             for enc in encodings_to_try:
                 try:
@@ -528,7 +531,7 @@ def render_equipment_data_page():
                     continue 
                 
         if df_raw is None or df_raw.empty:
-            st.error(f"⚠️ '{target_file}' 파일을 제대로 읽지 못했습니다. 파일명이나 인코딩을 확인해주세요.")
+            st.error(f"⚠️ '{target_file}' 파일을 제대로 읽지 못했거나, 파일 내 어떤 시트에도 데이터가 없습니다.")
             return
 
         # 2. 데이터가 어디에 숨어있든 행(Row)을 통째로 뒤져서 키워드 찾기
@@ -606,6 +609,7 @@ def render_equipment_data_page():
         st.error(f"⚠️ '{target_file}' 파일을 찾을 수 없습니다. 깃허브에 파일이 있는지, 이름이 똑같은지 확인해 주세요.")
     except Exception as e:
         st.error(f"⚠️ 데이터를 처리하는 중 오류가 발생했습니다: {e}")
+        
 # ==========================================
 # 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
 # ==========================================
@@ -648,6 +652,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
