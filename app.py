@@ -3,6 +3,7 @@ import pandas as pd
 from github import Github
 import io
 from datetime import datetime
+import plotly.graph_objects as go  # 📊 그래프를 그리기 위해 추가된 라이브러리
 
 # ==========================================
 # 1. 환경 설정 및 기본 상수
@@ -18,6 +19,9 @@ st.markdown("""
         .info-box { background-color: #1e212b; padding: 12px; border-radius: 4px; border-left: 3px solid #4CAF50; margin-bottom: 15px; font-size: 13px; }
         .streamlit-expanderHeader { font-weight: bold !important; font-size: 1.1rem !important; color: #4CAF50 !important; }
         .stProgress > div > div > div > div { background-color: #4CAF50; }
+        
+        /* 탭 디자인 커스텀 (글씨 크기 및 굵기) */
+        button[data-baseweb="tab"] { font-size: 18px !important; font-weight: bold !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -95,16 +99,13 @@ def maintain_project_order(df, original_order):
 
 def get_row_color(row):
     val = row.get('상태', '')
-    if val == '✅ 완료':
-        return ['background-color: rgba(76, 175, 80, 0.2)'] * len(row)
-    elif val == '⏳ 작업중':
-        return ['background-color: rgba(255, 193, 7, 0.2)'] * len(row)
-    elif val == '🚨 보류':
-        return ['background-color: rgba(244, 67, 54, 0.2)'] * len(row)
+    if val == '✅ 완료': return ['background-color: rgba(76, 175, 80, 0.2)'] * len(row)
+    elif val == '⏳ 작업중': return ['background-color: rgba(255, 193, 7, 0.2)'] * len(row)
+    elif val == '🚨 보류': return ['background-color: rgba(244, 67, 54, 0.2)'] * len(row)
     return [''] * len(row)
 
 # ==========================================
-# 3. 화면 UI 보따리
+# 3. 화면 UI 보따리 (탭 1: 업무일지)
 # ==========================================
 def render_work_log_page(db_log):
     df_log, sha_log = db_log.load()
@@ -118,7 +119,6 @@ def render_work_log_page(db_log):
         with st.sidebar.form("add_form", clear_on_submit=True):
             d_val = st.date_input("날짜", datetime.today())
             e_type = st.selectbox("장비", EQUIPMENT_OPTIONS)
-            # ★ 변경: 글자 수 제한 해제(max_chars=None) 및 칸 높이 400px로 대폭 확대 ★
             c_val = st.text_area("업무 내용", height=400, max_chars=None)
             n_val = st.text_input("비고")
             f_name = st.text_input("파일명 (미입력 시 비워둠)")
@@ -135,7 +135,6 @@ def render_work_log_page(db_log):
             with st.sidebar.form("edit_form"):
                 e_date = st.date_input("날짜 수정", pd.to_datetime(df_log.loc[edit_idx, "날짜"]))
                 e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(df_log.loc[edit_idx, "장비"]) if df_log.loc[edit_idx, "장비"] in EQUIPMENT_OPTIONS else 0)
-                # ★ 변경: 글자 수 제한 해제(max_chars=None) 및 칸 높이 400px로 대폭 확대 ★
                 e_content = st.text_area("내용 수정", value=df_log.loc[edit_idx, "업무내용"], height=400, max_chars=None)
                 e_note = st.text_input("비고 수정", value=df_log.loc[edit_idx, "비고"])
                 e_link = st.text_input("첨부 수정", value=df_log.loc[edit_idx, "첨부"])
@@ -154,17 +153,13 @@ def render_work_log_page(db_log):
                 db_log.save(df_log.drop(del_idx), sha_log, "Delete Log")
                 st.rerun()
 
-    col_title, col_excel, col_btn = st.columns([5, 1.5, 2.5])
+    # 기존에 있던 페이지 이동 버튼 제거 완료
+    col_title, col_excel = st.columns([8.5, 1.5])
     with col_title:
-        st.markdown("<div class='main-title'>📊 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'>📝 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
     with col_excel:
         csv_data = df_log.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
         st.download_button(label="📥 엑셀 다운로드", data=csv_data, file_name=f"work_log_{datetime.now().strftime('%Y%m%d')}.csv", use_container_width=True)
-    with col_btn:
-        st.markdown("<div style='margin-top: 2px;'></div>", unsafe_allow_html=True)
-        if st.button("➡️ CS 작업 체크 시트로 이동", type="primary", use_container_width=True):
-            st.session_state['current_page'] = "CS Flow"
-            st.rerun()
 
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
     search = st.text_input("🔍 검색", label_visibility="collapsed", placeholder="검색어를 입력하세요...")
@@ -172,19 +167,14 @@ def render_work_log_page(db_log):
     if search: display_df = display_df[display_df.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
     st.dataframe(display_df, use_container_width=True, hide_index=True, column_config={"업무내용": st.column_config.TextColumn("📝 업무내용", width="large"), "첨부": st.column_config.TextColumn("📎 첨부(클릭복사)")})
 
-
+# ==========================================
+# 3. 화면 UI 보따리 (탭 2: CS 작업체크시트)
+# ==========================================
 def render_cs_flow_page(db_flow):
     df_flow, sha_flow = db_flow.load()
     
-    col_title, col_empty, col_btn = st.columns([6.5, 0.5, 2.5])
-    with col_title:
-        st.markdown("<div class='main-title'>⚙️ CS 작업 체크 시트 (대항목 관리)</div>", unsafe_allow_html=True)
-    with col_btn:
-        st.markdown("<div style='margin-top: 2px;'></div>", unsafe_allow_html=True)
-        if st.button("➡️ 팀 업무일지로 이동", type="primary", use_container_width=True):
-            st.session_state['current_page'] = "업무일지"
-            st.rerun()
-            
+    # 기존에 있던 페이지 이동 버튼 제거 완료
+    st.markdown("<div class='main-title'>✅ CS 작업 체크 시트 (대항목 관리)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     project_list = df_flow["프로젝트명"].unique().tolist() if not df_flow.empty else []
@@ -492,7 +482,69 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 메인 실행 (Main App)
+# 4. 화면 UI 보따리 (★ 탭 3: 장비가동데이터 신규 추가)
+# ==========================================
+def render_equipment_data_page():
+    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Output & Jam Rate)</div>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+
+    # 장비와 호기 선택을 좌우 나란히 배치
+    col1, col2 = st.columns(2)
+    with col1:
+        equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
+    with col2:
+        unit = st.selectbox("호기 선택", ["1호기", "2호기", "3호기", "4호기", "5호기"], key="eq_data_unit")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 차트 생성을 위한 데이터셋 구성 (나중에 DB 연동 시 이 부분을 pd.read_csv 등으로 변경하시면 됩니다)
+    data = {
+        '날짜': [f"3월 {i}일" for i in range(1, 16)],
+        '생산량(Output)': [3712, 6221, 5879, 9037, 2220, 0, 0, 7425, 8000, 8500, 7800, 8100, 8900, 0, 0],
+        'Jam_Count': [3, 2, 3, 4, 2, 0, 0, 1, 5, 2, 3, 2, 4, 0, 0]
+    }
+    df = pd.DataFrame(data)
+
+    st.subheader(f"[{equipment} - {unit}] 일별 가동 데이터 확인")
+
+    # Plotly를 활용한 이중 축 그래프 생성
+    fig = go.Figure()
+
+    # (1) 생산량 - 막대 그래프 (파란색)
+    fig.add_trace(go.Bar(
+        x=df['날짜'], y=df['생산량(Output)'], name='생산량(Output)', 
+        marker_color='#5B9BD5', yaxis='y1'
+    ))
+
+    # (2) Jam 발생 건수 - 꺾은선 그래프 (주황색)
+    fig.add_trace(go.Scatter(
+        x=df['날짜'], y=df['Jam_Count'], name='Jam 건수', mode='lines+markers',
+        line=dict(color='#ED7D31', width=3), marker=dict(size=8), yaxis='y2'
+    ))
+
+    # (3) 그래프 레이아웃 및 이중 축 설정
+    fig.update_layout(
+        height=500,
+        xaxis=dict(title="날짜"),
+        yaxis=dict(
+            title="생산량 (EA)", titlefont=dict(color="#5B9BD5"),
+            tickfont=dict(color="#5B9BD5"), side="left"
+        ),
+        yaxis2=dict(
+            title="Jam 발생 (건)", titlefont=dict(color="#ED7D31"),
+            tickfont=dict(color="#ED7D31"), overlaying="y", side="right",
+            range=[0, max(df['Jam_Count']) + 5]
+        ),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        hovermode="x unified",
+        margin=dict(l=40, r=40, t=40, b=40)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+# ==========================================
+# 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
 # ==========================================
 def main():
     try:
@@ -504,8 +556,7 @@ def main():
         st.error(f"⚠️ 연결 설정 오류: {e}")
         return
 
-    if 'current_page' not in st.session_state: 
-        st.session_state['current_page'] = "업무일지"
+    # 기존의 current_page 세션 관리는 탭 사용으로 인해 더 이상 필요하지 않아 제거했습니다.
 
     if 'logged_in' not in st.session_state: 
         st.session_state.update({'logged_in': False, 'user_name': ""})
@@ -517,15 +568,20 @@ def main():
                 st.session_state.update({'logged_in': True, 'user_name': name})
                 st.rerun()
     else:
-        st.sidebar.markdown(f"👤 {st.session_state['user_name']} 님")
+        st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
         if st.sidebar.button("로그아웃"): 
             st.session_state['logged_in'] = False
             st.rerun()
         
-        if st.session_state['current_page'] == "업무일지": 
+        # ★ 핵심 변경 사항: 항상 상단에 보이도록 3개의 탭 생성
+        tab1, tab2, tab3 = st.tabs(["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터"])
+        
+        with tab1:
             render_work_log_page(db_log)
-        else: 
+        with tab2:
             render_cs_flow_page(db_flow)
+        with tab3:
+            render_equipment_data_page()
 
 if __name__ == "__main__":
     main()
