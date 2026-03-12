@@ -482,65 +482,102 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 장비가동데이터 신규 추가)
+# 4. 화면 UI 보따리 (★ 탭 3: 장비가동데이터 최신 문법 에러 수정본)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Output & Jam Rate)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-    # 장비와 호기 선택을 좌우 나란히 배치
-    col1, col2 = st.columns(2)
+    # 장비, 호기, 그리고 '월(Month)' 선택을 3칸으로 나란히 배치
+    col1, col2, col3 = st.columns(3)
     with col1:
         equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
     with col2:
         unit = st.selectbox("호기 선택", ["1호기", "2호기", "3호기", "4호기", "5호기"], key="eq_data_unit")
+    with col3:
+        month_str = st.selectbox("조회할 월 선택", ["1월", "2월", "3월"], key="eq_data_month")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 차트 생성을 위한 데이터셋 구성 (나중에 DB 연동 시 이 부분을 pd.read_csv 등으로 변경하시면 됩니다)
-    data = {
-        '날짜': [f"3월 {i}일" for i in range(1, 16)],
-        '생산량(Output)': [3712, 6221, 5879, 9037, 2220, 0, 0, 7425, 8000, 8500, 7800, 8100, 8900, 0, 0],
-        'Jam_Count': [3, 2, 3, 4, 2, 0, 0, 1, 5, 2, 3, 2, 4, 0, 0]
+    file_map = {
+        "1월": "SLH1(WOOIK) Daily Test Report_26년.xlsx - 26'01.csv",
+        "2월": "SLH1(WOOIK) Daily Test Report_26년.xlsx - 26'02.csv",
+        "3월": "SLH1(WOOIK) Daily Test Report_26년.xlsx - 26'03.csv"
     }
-    df = pd.DataFrame(data)
+    target_file = file_map[month_str]
+    month_num = month_str.replace("월", "")
 
-    st.subheader(f"[{equipment} - {unit}] 일별 가동 데이터 확인")
+    try:
+        # 1. 파일 불러오기
+        try:
+            df_raw = pd.read_csv(target_file, header=None, encoding='utf-8-sig')
+        except:
+            df_raw = pd.read_csv(target_file, header=None, encoding='cp949')
 
-    # Plotly를 활용한 이중 축 그래프 생성
-    fig = go.Figure()
+        # 2. 원하는 데이터 행(Row)만 찾아서 1일~31일 데이터 뽑아내기
+        output_row_idx = df_raw[df_raw[1].astype(str).str.strip() == '#1_Output'].index[0]
+        output_data = df_raw.iloc[output_row_idx, 2:33].values 
 
-    # (1) 생산량 - 막대 그래프 (파란색)
-    fig.add_trace(go.Bar(
-        x=df['날짜'], y=df['생산량(Output)'], name='생산량(Output)', 
-        marker_color='#5B9BD5', yaxis='y1'
-    ))
+        jam_row_idx = df_raw[df_raw[1].astype(str).str.strip() == '#1_Jam Count'].index[0]
+        jam_data = df_raw.iloc[jam_row_idx, 2:33].values
 
-    # (2) Jam 발생 건수 - 꺾은선 그래프 (주황색)
-    fig.add_trace(go.Scatter(
-        x=df['날짜'], y=df['Jam_Count'], name='Jam 건수', mode='lines+markers',
-        line=dict(color='#ED7D31', width=3), marker=dict(size=8), yaxis='y2'
-    ))
+        # 3. 그래프용 데이터프레임 조립
+        days = [f"{month_num}월 {i}일" for i in range(1, 32)]
+        df = pd.DataFrame({
+            '날짜': days,
+            '생산량(Output)': output_data,
+            'Jam_Count': jam_data
+        })
 
-    # (3) 그래프 레이아웃 및 이중 축 설정
-    fig.update_layout(
-        height=500,
-        xaxis=dict(title="날짜"),
-        yaxis=dict(
-            title="생산량 (EA)", titlefont=dict(color="#5B9BD5"),
-            tickfont=dict(color="#5B9BD5"), side="left"
-        ),
-        yaxis2=dict(
-            title="Jam 발생 (건)", titlefont=dict(color="#ED7D31"),
-            tickfont=dict(color="#ED7D31"), overlaying="y", side="right",
-            range=[0, max(df['Jam_Count']) + 5]
-        ),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        hovermode="x unified",
-        margin=dict(l=40, r=40, t=40, b=40)
-    )
+        # 4. 데이터 정제: 쉼표(,) 제거, '비가동' 등 문자를 0으로 변경 후 숫자로 완벽 변환
+        df['생산량(Output)'] = pd.to_numeric(df['생산량(Output)'].astype(str).str.replace(',', '', regex=False).replace(['비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
+        df['Jam_Count'] = pd.to_numeric(df['Jam_Count'].astype(str).str.replace(',', '', regex=False).replace(['비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
 
-    st.plotly_chart(fig, use_container_width=True)
+        st.subheader(f"[{equipment} - {unit}] {month_str} 가동 현황")
+
+        # 5. Plotly 이중 축 그래프 생성
+        fig = go.Figure()
+
+        fig.add_trace(go.Bar(
+            x=df['날짜'], y=df['생산량(Output)'], name='생산량(Output)', 
+            marker_color='#5B9BD5', yaxis='y1'
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=df['날짜'], y=df['Jam_Count'], name='Jam 건수', mode='lines+markers',
+            line=dict(color='#ED7D31', width=3), marker=dict(size=8), yaxis='y2'
+        ))
+
+        # ★ 에러 수정 포인트: range 데이터 강제 float 변환 및 title 속성 최신 문법으로 변경
+        max_jam = df['Jam_Count'].max()
+        max_jam_range = 5.0 if pd.isna(max_jam) or max_jam == 0 else float(max_jam) + 5.0
+
+        fig.update_layout(
+            height=500,
+            xaxis=dict(title="날짜", tickangle=-45),
+            yaxis=dict(
+                title=dict(text="생산량 (EA)", font=dict(color="#5B9BD5")), # 최신 문법
+                tickfont=dict(color="#5B9BD5"), 
+                side="left"
+            ),
+            yaxis2=dict(
+                title=dict(text="Jam 발생 (건)", font=dict(color="#ED7D31")), # 최신 문법
+                tickfont=dict(color="#ED7D31"), 
+                overlaying="y", 
+                side="right",
+                range=[0, max_jam_range] # 에러가 발생하던 부분 수정 완료
+            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            hovermode="x unified",
+            margin=dict(l=40, r=40, t=40, b=40)
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    except FileNotFoundError:
+        st.error(f"⚠️ 폴더 내에 '{target_file}' 파일이 없습니다. 이름을 다시 확인해 주세요.")
+    except Exception as e:
+        st.error(f"⚠️ 데이터를 읽는 중 오류가 발생했습니다: {e}")
 
 
 # ==========================================
@@ -585,3 +622,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
