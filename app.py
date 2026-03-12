@@ -482,50 +482,38 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 3축 그래프 + 날짜 자동채우기 + 경계선 강화 최종본)
+# 4. 화면 UI 보따리 (★ 탭 3: 데이터 위치 고정 및 표 레이아웃 최종 종결본)
 # ==========================================
 def render_equipment_data_page():
-    # 1. 표 경계선을 아주 명확하고 진하게 만드는 CSS
+    # 표의 경계선을 아주 진하게 만들고 칸 너비를 강제 고정하는 CSS
     st.markdown("""
         <style>
-            .main-table-container table {
-                border-collapse: collapse !important;
-                width: 100% !important;
-                border: 2px solid #000000 !important;
-                color: #000000 !important;
+            .custom-table {
+                width: 100%; border-collapse: collapse; border: 2px solid black;
+                font-size: 13px; color: black; background-color: white;
             }
-            .main-table-container th, .main-table-container td {
-                border: 1px solid #000000 !important; /* 칸 경계선 검정색으로 강조 */
-                padding: 4px 8px !important;
-                text-align: center !important;
-                font-size: 13px !important;
+            .custom-table th, .custom-table td {
+                border: 1px solid black !important; padding: 5px; text-align: center;
             }
-            .main-table-container th {
-                background-color: #dee2e6 !important;
-                font-weight: bold !important;
-            }
+            .custom-table th { background-color: #e9ecef; font-weight: bold; }
+            .col-date { width: 70px; }
+            .col-code { width: 80px; }
+            .col-ppj { width: 60px; }
+            .col-time { width: 70px; }
+            .col-loc { width: 100px; }
+            .col-text { text-align: left !important; }
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Unit/Jam/PPJ 통합 분석)</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>📊 장비 가동 데이터 통합 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
-    with col1:
-        equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
-    with col2:
-        unit = st.selectbox("호기 선택", ["1호기", "2호기", "3호기", "4호기", "5호기"], key="eq_data_unit")
-    with col3:
-        month_str = st.selectbox("조회할 월 선택", ["1월", "2월", "3월"], key="eq_data_month")
+    with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
+    with col2: unit = st.selectbox("호기 선택", ["1호기", "2호기", "3호기", "4호기", "5호기"], key="eq_data_unit")
+    with col3: month_str = st.selectbox("조회할 월 선택", ["1월", "2월", "3월"], key="eq_data_month")
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    file_map = {
-        "1월": "SLH1 - January 2026.xlsx", 
-        "2월": "SLH1 - February 2026.xlsx", 
-        "3월": "SLH1 - March 2026.xlsx"
-    }
-    
+    file_map = {"1월": "SLH1 - January 2026.xlsx", "2월": "SLH1 - February 2026.xlsx", "3월": "SLH1 - March 2026.xlsx"}
     target_file = file_map.get(month_str, "")
     month_num = month_str.replace("월", "")
 
@@ -534,53 +522,48 @@ def render_equipment_data_page():
         df_raw = None
         for sheet_name, sheet_data in xls.items():
             combined_text = " ".join(sheet_data.astype(str).values.flatten()).lower()
-            if 'total unit' in combined_text or 'totalunit' in combined_text:
-                df_raw = sheet_data
-                break
+            if 'total unit' in combined_text:
+                df_raw = sheet_data; break
         
         if df_raw is None:
-            st.error("⚠️ 가동 데이터 시트를 찾을 수 없습니다.")
-            return
+            st.error("⚠️ 데이터를 포함한 시트를 찾을 수 없습니다."); return
 
-        # [상단 요약 데이터 추출]
+        # [상단 요약 데이터 추출 및 3축 그래프]
         def get_summary_row(keywords):
             for _, row in df_raw.iterrows():
                 row_str = " ".join(row.astype(str)).lower().replace(" ", "")
                 if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률']):
                     vals = row.tolist()
                     for i, v in enumerate(vals):
-                        v_s = str(v).replace('.', '').replace(',', '').strip()
-                        if v_s.isdigit() or v in ['비가동', '미가동']:
+                        if str(v).replace('.', '').replace(',', '').strip().isdigit():
                             return (vals[i : i + 31] + [0]*31)[:31]
-            return None
+            return [0]*31
 
         t_units = get_summary_row(['total unit', 'totalunit'])
         j_counts = get_summary_row(['jam count', 'jamcount'])
         p_values = get_summary_row(['ppj'])
 
-        # 그래프용 데이터 정제
         chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': t_units, 'Jam': j_counts, 'PPJ': p_values})
         for c in ['Unit', 'Jam', 'PPJ']:
-            chart_df[c] = pd.to_numeric(chart_df[c].astype(str).str.replace(',', '').replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
+            chart_df[c] = pd.to_numeric(chart_df[c].astype(str).str.replace(',', '').replace(['nan', '비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
 
-        # 2. 그래프 출력 (에러 났던 레이아웃 속성 완벽 수정)
+        # 그래프: 투입량(Unit), Jam건수, PPJ 효율 표시
         fig = go.Figure()
-        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입량(Unit)', marker_color='#5B9BD5', yaxis='y1'))
-        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2), yaxis='y2'))
-        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['PPJ'], name='효율(PPJ)', mode='lines+markers', line=dict(color='#70AD47', width=2, dash='dot'), yaxis='y3'))
+        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='Unit(투입)', marker_color='#5B9BD5', yaxis='y1'))
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='Jam(건)', mode='lines+markers', line=dict(color='#ED7D31', width=2), yaxis='y2'))
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['PPJ'], name='PPJ(효율)', mode='lines+markers', line=dict(color='#70AD47', width=2, dash='dot'), yaxis='y3'))
 
         fig.update_layout(
-            height=450,
-            xaxis=dict(tickangle=-45),
-            yaxis=dict(title=dict(text="투입 수량 (Unit)", font=dict(color="#5B9BD5")), tickfont=dict(color="#5B9BD5")),
-            yaxis2=dict(title=dict(text="에러 건수 (Jam)", font=dict(color="#ED7D31")), tickfont=dict(color="#ED7D31"), overlaying="y", side="right"),
+            height=400, xaxis=dict(tickangle=-45),
+            yaxis=dict(title=dict(text="Unit", font=dict(color="#5B9BD5")), tickfont=dict(color="#5B9BD5")),
+            yaxis2=dict(title=dict(text="Jam", font=dict(color="#ED7D31")), tickfont=dict(color="#ED7D31"), overlaying="y", side="right"),
             yaxis3=dict(title=dict(text="PPJ", font=dict(color="#70AD47")), tickfont=dict(color="#70AD47"), overlaying="y", side="right", anchor="free", position=0.95),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             margin=dict(l=50, r=100, t=50, b=50), hovermode="x unified"
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # [하단 상세 내역 표 추출]
+        # [하단 상세 내역: HTML 방식으로 표 강제 고정]
         st.subheader(f"📋 {month_str} 에러 상세 리스트")
         h_idx = -1
         for i, row in df_raw.iterrows():
@@ -588,7 +571,8 @@ def render_equipment_data_page():
                 h_idx = i; h_row = row.tolist(); break
 
         if h_idx != -1:
-            col_map = {}
+            # 컬럼 위치 찾기 (찾지 못할 경우를 대비해 None으로 초기화)
+            col_map = {'Date': None, 'Code': None, 'Msg': None, 'Act': None, 'Time': None, 'Loc': None, 'PPJ': None}
             for i, v in enumerate(h_row):
                 v_l = str(v).lower().strip()
                 if 'date' in v_l: col_map['Date'] = i
@@ -600,36 +584,49 @@ def render_equipment_data_page():
                 elif 'ppj' in v_l: col_map['PPJ'] = i
 
             data_p = df_raw.iloc[h_idx + 1:].copy()
-            f_rows = []
+            html_rows = ""
+            prev_date = ""
+
             for _, r in data_p.iterrows():
-                code = str(r[col_map.get('Code', 0)]).strip()
+                # 에러 코드가 없으면 건너뜀
+                code = str(r[col_map['Code']]).strip() if col_map['Code'] is not None else ""
                 if code in ['nan', 'None', '']: continue
                 
-                # 날짜 변환 및 3. 날짜 자동 채우기(Forward Fill) 준비
-                dt = r[col_map.get('Date', 0)]
-                try:
-                    if str(dt).replace('.','').isdigit():
-                        fmt_dt = pd.to_datetime(float(dt), unit='D', origin='1899-12-30').strftime('%m-%d')
-                    else: fmt_dt = str(dt).split(' ')[0]
-                except: fmt_dt = str(dt)
+                # 날짜 처리 (ffill 효과)
+                curr_date = str(r[col_map['Date']]).split(' ')[0] if col_map['Date'] is not None and str(r[col_map['Date']]) != 'nan' else prev_date
+                if curr_date == 'nan': curr_date = prev_date
+                prev_date = curr_date
 
-                f_rows.append({
-                    "날짜": fmt_dt, "에러 코드": code, 
-                    "PPJ": str(r[col_map.get('PPJ', 0)]).split('.')[0].replace('nan','0'),
-                    "에러 내용": str(r[col_map.get('Msg', 0)]), "조치 사항": str(r[col_map.get('Act', 0)]),
-                    "시간": str(r[col_map.get('Time', 0)]), "위치": str(r[col_map.get('Loc', 0)])
-                })
+                # PPJ 처리 (날짜와 섞이지 않도록 인덱스 체크 강화)
+                ppj_val = str(r[col_map['PPJ']]).split('.')[0] if col_map['PPJ'] is not None else "0"
+                if ppj_val == 'nan' or ppj_val == 'None': ppj_val = "0"
 
-            if f_rows:
-                df_final = pd.DataFrame(f_rows)
-                # ★ 같은 날짜 에러 nan 해결
-                df_final['날짜'] = df_final['날짜'].replace(['nan', 'None', ''], pd.NA).ffill()
-                
-                st.markdown('<div class="main-table-container">', unsafe_allow_html=True)
-                st.table(df_final) # st.table을 사용해야 경계선이 명확함
-                st.markdown('</div>', unsafe_allow_html=True)
-            else: st.info("상세 데이터가 없습니다.")
-        else: st.info("헤더를 찾을 수 없습니다.")
+                html_rows += f"""
+                    <tr>
+                        <td class='col-date'>{curr_date}</td>
+                        <td class='col-code'>{code}</td>
+                        <td class='col-ppj'>{ppj_val}</td>
+                        <td class='col-text'>{str(r[col_map['Msg']])}</td>
+                        <td class='col-text'>{str(r[col_map['Act']])}</td>
+                        <td class='col-time'>{str(r[col_map['Time']])}</td>
+                        <td class='col-loc'>{str(r[col_map['Loc']])}</td>
+                    </tr>
+                """
+
+            # 최종 HTML 표 출력
+            st.markdown(f"""
+                <table class='custom-table'>
+                    <thead>
+                        <tr>
+                            <th class='col-date'>날짜</th><th class='col-code'>에러코드</th>
+                            <th class='col-ppj'>PPJ</th><th>에러내용</th><th>조치내용</th>
+                            <th class='col-time'>시간</th><th class='col-loc'>위치</th>
+                        </tr>
+                    </thead>
+                    <tbody>{html_rows}</tbody>
+                </table>
+            """, unsafe_allow_html=True)
+        else: st.info("상세 내역을 찾을 수 없습니다.")
 
     except Exception as e: st.error(f"⚠️ 오류 발생: {e}")
         
@@ -675,6 +672,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
