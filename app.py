@@ -482,36 +482,32 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 경계선 강화 및 글자 깨짐 완벽 해결 버전)
+# 4. 화면 UI 보따리 (★ 탭 3: 날짜 채우기, PPJ 추출 및 그래프 통합 최종본)
 # ==========================================
 def render_equipment_data_page():
-    # 표 가독성을 위해 테두리를 아주 진하게 만드는 CSS 주입
+    # 표 가독성 강화를 위한 CSS
     st.markdown("""
         <style>
-            /* 전체 표 테두리 및 칸 경계선 강화 */
             .main-table-container table {
                 border-collapse: collapse !important;
                 width: 100% !important;
-                border: 2px solid #000000 !important; /* 바깥 테두리 검정 */
+                border: 2px solid #000000 !important;
             }
             .main-table-container th, .main-table-container td {
-                border: 1px solid #444444 !important; /* 칸 사이 경계선 진하게 */
+                border: 1px solid #444444 !important;
                 padding: 6px 10px !important;
                 text-align: center !important;
                 font-size: 13px !important;
+                color: #000000 !important;
             }
             .main-table-container th {
                 background-color: #f0f2f6 !important;
                 font-weight: bold !important;
-                color: #000000 !important;
             }
-            /* 너비 타이트하게 조절 */
-            .col-narrow { width: 70px !important; }
-            .col-medium { width: 100px !important; }
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Total Unit & Jam Count)</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Unit/Jam/PPJ 분석)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
@@ -546,11 +542,11 @@ def render_equipment_data_page():
             st.error("⚠️ 데이터를 포함한 시트를 찾을 수 없습니다.")
             return
 
-        # [상단 요약 데이터 추출 및 그래프]
+        # [1. 상단 요약 데이터 추출 및 그래프용 가공]
         def get_summary_row(keywords):
             for _, row in df_raw.iterrows():
                 row_str = " ".join(row.astype(str)).lower().replace(" ", "")
-                if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률', 'ppj']):
+                if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률']):
                     vals = row.tolist()
                     start_idx = -1
                     for i, v in enumerate(vals):
@@ -564,21 +560,30 @@ def render_equipment_data_page():
 
         total_units = get_summary_row(['total unit', 'totalunit'])
         jam_counts = get_summary_row(['jam count', 'jamcount'])
+        ppj_summary = get_summary_row(['ppj']) # 상단 요약 PPJ
 
-        if total_units and jam_counts:
-            chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Total_Unit': total_units, 'Jam_Count': jam_counts})
-            for col in ['Total_Unit', 'Jam_Count']:
-                chart_df[col] = pd.to_numeric(chart_df[col].astype(str).str.replace(',', '').replace(['nan', '비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
-            
-            fig = go.Figure()
-            fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Total_Unit'], name='투입 수량', marker_color='#5B9BD5', yaxis='y1'))
-            fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam_Count'], name='에러 건수', mode='lines+markers', line=dict(color='#ED7D31', width=3), yaxis='y2'))
-            fig.update_layout(height=400, xaxis=dict(tickangle=-45), yaxis2=dict(overlaying='y', side='right'), margin=dict(l=40, r=40, t=20, b=40), hovermode="x unified")
-            st.plotly_chart(fig, use_container_width=True)
+        chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Total_Unit': total_units, 'Jam_Count': jam_counts, 'PPJ': ppj_summary})
+        for col in ['Total_Unit', 'Jam_Count', 'PPJ']:
+            chart_df[col] = pd.to_numeric(chart_df[col].astype(str).str.replace(',', '').replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
 
-        # [하단 상세 내역 표 정제]
-        st.subheader(f"📋 {month_str} 장비 에러 상세 리스트")
-        
+        # 그래프 출력 (3축: Unit(Bar), Jam(Line), PPJ(Line))
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Total_Unit'], name='투입 수량(Unit)', marker_color='#5B9BD5', yaxis='y1'))
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam_Count'], name='에러 건수(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2), yaxis='y2'))
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['PPJ'], name='PPJ', mode='lines+markers', line=dict(color='#70AD47', width=2, dash='dash'), yaxis='y3'))
+
+        fig.update_layout(
+            height=450, xaxis=dict(tickangle=-45),
+            yaxis=dict(title="투입 수량 (Unit)", titlefont=dict(color="#5B9BD5"), tickfont=dict(color="#5B9BD5")),
+            yaxis2=dict(title="에러 건수 (Jam)", titlefont=dict(color="#ED7D31"), tickfont=dict(color="#ED7D31"), overlaying="y", side="right"),
+            yaxis3=dict(title="PPJ", titlefont=dict(color="#70AD47"), tickfont=dict(color="#70AD47"), overlaying="y", side="right", anchor="free", position=0.95),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            margin=dict(l=50, r=100, t=50, b=50), hovermode="x unified"
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        # [2. 하단 상세 내역 표 추출 및 날짜 채우기]
+        st.subheader(f"📋 {month_str} 에러 상세 리스트")
         header_row_idx = -1
         for i, row in df_raw.iterrows():
             if 'error code' in " ".join(row.astype(str)).lower():
@@ -587,7 +592,6 @@ def render_equipment_data_page():
                 break
 
         if header_row_idx != -1:
-            # 컬럼 인덱스 찾기
             col_map = {}
             for i, val in enumerate(header_row):
                 v_lower = str(val).lower().strip()
@@ -603,10 +607,11 @@ def render_equipment_data_page():
             final_rows = []
 
             for _, row in data_part.iterrows():
+                # Error code가 비어있으면 데이터가 없는 것으로 간주하고 건너뜀
                 err_code = str(row[col_map.get('Error code', 0)]).strip()
                 if not err_code or err_code == 'nan' or err_code == '': continue
 
-                # 날짜 처리
+                # 날짜 처리 및 엑셀 숫자 -> 날짜 변환
                 raw_date = row[col_map.get('Date', 0)]
                 try:
                     if str(raw_date).replace('.','').isdigit():
@@ -614,14 +619,10 @@ def render_equipment_data_page():
                     else: fmt_date = str(raw_date).split(' ')[0]
                 except: fmt_date = str(raw_date)
 
-                # PPJ 값 깨끗하게 추출
-                ppj_val = str(row[col_map.get('PPJ', 0)]).split('.')[0] if col_map.get('PPJ') is not None else "0"
-                if ppj_val == 'nan' or ppj_val == 'None': ppj_val = "0"
-
                 final_rows.append({
                     "날짜": fmt_date,
                     "에러 코드": err_code,
-                    "PPJ": ppj_val, # 깨끗한 문자열로 변환하여 깨짐 방지
+                    "PPJ": str(row[col_map.get('PPJ', 0)]).split('.')[0],
                     "에러 내용": str(row[col_map.get('Error Massage', 0)]),
                     "조치 사항": str(row[col_map.get('Finding/Action', 0)]),
                     "시간": str(row[col_map.get('Err. Time', 0)]),
@@ -629,20 +630,21 @@ def render_equipment_data_page():
                 })
 
             if final_rows:
-                # 📢 st.table을 사용하여 경계선이 명확한 표 출력
                 display_df = pd.DataFrame(final_rows)
+                # ★ 사진처럼 동일 날짜 nan 해결 (Forward Fill)
+                display_df['날짜'] = display_df['날짜'].replace(['nan', 'None', ''], pd.NA).ffill()
                 
-                # 표를 감싸는 컨테이너에 CSS 적용
+                # 표 출력
                 st.markdown('<div class="main-table-container">', unsafe_allow_html=True)
                 st.table(display_df)
                 st.markdown('</div>', unsafe_allow_html=True)
             else:
-                st.info("기록된 에러 상세 내역이 없습니다.")
+                st.info("기록된 상세 에러 데이터가 없습니다.")
         else:
-            st.info("표의 헤더를 찾을 수 없습니다.")
+            st.info("상세 내역 테이블 헤더를 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"⚠️ 오류 발생: {e}")
+        st.error(f"⚠️ 데이터 처리 오류: {e}")
         
 # ==========================================
 # 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
@@ -686,6 +688,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
