@@ -492,11 +492,12 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI 보따리 (★ 탭 3: 장비 가동 데이터 전용)
+# 4. 화면 UI - 탭 3: 장비 가동 데이터 (★ 빈칸 완벽 제거 & PPJ 점선)
 # ==========================================
-from plotly.subplots import make_subplots
-
 def render_equipment_data_page():
+    import re
+    from plotly.subplots import make_subplots
+
     st.markdown("""
         <style>
             .final-report-table {
@@ -533,6 +534,7 @@ def render_equipment_data_page():
         if df_raw is None:
             st.error("⚠️ 가동 데이터를 찾을 수 없습니다."); return
 
+        # [상단 3축 그래프 추출]
         def get_sum_row(keywords):
             for _, row in df_raw.iterrows():
                 row_str = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
@@ -556,18 +558,18 @@ def render_equipment_data_page():
         chart_df['Cum_Jam'] = chart_df['Jam'].cumsum()
         chart_df['Cum_PPJ'] = chart_df.apply(lambda row: round(row['Cum_Unit'] / row['Cum_Jam'], 1) if row['Cum_Jam'] > 0 else 0, axis=1)
 
-        # 📊 2단 그래프: 상단(Unit/Jam) 하단(일별 PPJ Bar + 누적 PPJ Line)
+        # 📊 2단 그래프: 상단(Unit/Jam 보조축), 하단(PPJ 바 + 누적 PPJ 빨간 점선)
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.12,
                             subplot_titles=("투입량(Unit) 및 에러(Jam) 건수", "생산 효율(PPJ) 추이"),
                             specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
         
-        # 위쪽 그래프
+        # 위쪽: 투입량(막대) + 에러건수(선)
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
         fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
         
-        # ★ 아래쪽 그래프 (일별 PPJ = 막대, 누적 PPJ = 눈에 띄는 빨간 실선)
-        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.7), row=2, col=1)
-        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Cum_PPJ'], name='월 누적 PPJ', mode='lines+markers', line=dict(color='#FF0000', width=3)), row=2, col=1) # 빨간 실선으로 변경
+        # ★ 아래쪽: 일별 PPJ(막대) + 월 누적 PPJ(빨간 점선)
+        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.8), row=2, col=1)
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Cum_PPJ'], name='월 누적 PPJ', mode='lines+markers', line=dict(color='#FF0000', width=3, dash='dot')), row=2, col=1)
         
         fig.update_layout(height=650, margin=dict(l=50, r=50, t=50, b=50), hovermode="x unified", showlegend=True)
         fig.update_yaxes(title_text="투입량 (EA)", secondary_y=False, row=1, col=1)
@@ -575,7 +577,7 @@ def render_equipment_data_page():
         fig.update_yaxes(title_text="PPJ", row=2, col=1)
         st.plotly_chart(fig, use_container_width=True)
 
-        # [하단 상세 에러 리스트 - 찌꺼기 데이터 차단 강력 필터]
+        # [하단 상세 리스트 - 빈칸 쓰레기 데이터 원천 봉쇄]
         st.subheader(f"📋 {month_str} 에러 상세 리스트")
         h_idx = -1
         for i, row in df_raw.iterrows():
@@ -601,16 +603,17 @@ def render_equipment_data_page():
                 code_v = str(r[m['C']]).strip()
                 msg_v = str(r[m['M']]).strip()
                 
-                # ★ 강력한 빈칸 찌꺼기 차단: '0', '0.0', 'nan', 빈 문자열 모두 통과 못함!
-                invalid_vals = ['nan', 'none', '', '0', '0.0']
-                if code_v.lower() in invalid_vals and msg_v.lower() in invalid_vals:
-                    continue
-                if pd.isna(r[m['C']]) and pd.isna(r[m['M']]):
+                # ★ 핵심 로직: 엑셀 서식 찌꺼기(0, nan, 빈칸) 완벽 차단
+                chk_code = code_v.lower() if code_v.lower() not in ['nan', 'none', '', '0', '0.0'] else ""
+                chk_msg = msg_v.lower() if msg_v.lower() not in ['nan', 'none', '', '0', '0.0'] else ""
+                
+                # 코드와 메시지가 둘 다 비어있으면 볼 것도 없이 버림 (표에 아예 추가 안 함)
+                if not chk_code and not chk_msg:
                     continue
                 
-                # 정상 데이터 처리
-                code_orig = code_v if code_v.lower() not in invalid_vals else ""
-                msg_orig = msg_v if msg_v.lower() not in invalid_vals else ""
+                # 살아남은 진짜 데이터만 정제
+                code_orig = code_v if chk_code else ""
+                msg_orig = msg_v if chk_msg else ""
 
                 dt = r[m['D']]
                 if pd.isna(dt) or str(dt).strip().lower() == 'nan': dt = None
@@ -633,7 +636,7 @@ def render_equipment_data_page():
 
             if cleaned_list:
                 final_df = pd.DataFrame(cleaned_list)
-                final_df['Date'] = final_df['Date'].ffill()
+                final_df['Date'] = final_df['Date'].ffill() # 비어있는 날짜를 위의 날짜로 채움
                 final_df['PPJ'] = final_df['PPJ'].ffill().fillna("0")
                 
                 rows_html = ""
@@ -645,6 +648,7 @@ def render_equipment_data_page():
         else: st.info("데이터 헤더를 찾을 수 없습니다.")
 
     except Exception as e: st.error(f"⚠️ 시스템 오류: {e}")
+        
 # ==========================================
 # 6. 메인 실행 (로그인 및 탭 구성)
 # ==========================================
@@ -684,5 +688,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
