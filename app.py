@@ -492,11 +492,12 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: PPJ 날짜 출력 버그 완벽 해결본)
+# 5. 화면 UI 보따리 (★ 탭 3: PPJ 날짜 버그 및 빈칸 완벽 제거본)
 # ==========================================
 def render_equipment_data_page():
     import re
     from plotly.subplots import make_subplots
+    import pandas as pd
 
     st.markdown("""
         <style>
@@ -572,82 +573,77 @@ def render_equipment_data_page():
         fig.update_yaxes(title_text="PPJ", row=2, col=1)
         st.plotly_chart(fig, use_container_width=True)
 
-        # [하단 상세 리스트]
         st.subheader(f"📋 {month_str} 에러 상세 리스트")
         h_idx = -1
         for i, row in df_raw.iterrows():
-            if 'error code' in " ".join(row.astype(str)).lower():
+            row_str = "".join(row.astype(str)).lower()
+            if 'error code' in row_str or 'errorcode' in row_str:
                 h_idx = i; h_row = row.tolist(); break
 
         if h_idx != -1:
-            # ★ 핵심 1. 0이 아니라 None으로 초기화 (날짜를 잘못 가져오는 치명적 버그 해결)
+            # ★ 핵심 수정: 강제 매핑(m['C']+1) 로직 영구 삭제, 오직 헤더의 글자만 추적!
             m = {'D': None, 'C': None, 'M': None, 'A': None, 'T': None, 'L': None, 'P': None}
             for i, v in enumerate(h_row):
-                v_l = str(v).lower().strip()
-                if 'date' in v_l: m['D'] = i
-                elif 'error code' in v_l: m['C'] = i
-                elif 'error massage' in v_l: m['M'] = i
-                elif 'finding' in v_l: m['A'] = i
-                elif 'time' in v_l: m['T'] = i
-                elif 'point' in v_l: m['L'] = i
-                elif 'ppj' in v_l: m['P'] = i
-
-            # ★ 핵심 2. 엑셀의 PPJ 글자가 깨져서 못 찾았다면? 에러코드 바로 다음 칸(+1)을 무조건 PPJ로 지정!
-            if m['P'] is None and m['C'] is not None:
-                m['P'] = m['C'] + 1
+                v_str = str(v).lower().replace(' ', '').replace('\n', '')
+                if 'date' in v_str or '일자' in v_str: m['D'] = i
+                elif 'errorcode' in v_str or '코드' in v_str: m['C'] = i
+                elif 'massage' in v_str or 'message' in v_str or '내용' in v_str: m['M'] = i
+                elif 'finding' in v_str or 'action' in v_str or '조치' in v_str: m['A'] = i
+                elif 'time' in v_str or '시간' in v_str: m['T'] = i
+                elif 'point' in v_str or '위치' in v_str: m['L'] = i
+                elif 'ppj' in v_str: m['P'] = i
 
             data_slice = df_raw.iloc[h_idx + 1:].copy()
             cleaned_list = []
             
-            for _, r in data_slice.iterrows():
-                # 인덱스가 없을 경우를 대비한 방어 코드
-                code_v = str(r[m['C']]).strip() if m['C'] is not None else ""
-                msg_v = str(r[m['M']]).strip() if m['M'] is not None else ""
-                
-                invalid_vals = ['nan', 'none', '', '0', '0.0']
-                
-                # 쓰레기 데이터 걸러내기
-                if code_v.lower() in invalid_vals and msg_v.lower() in invalid_vals:
-                    continue
-                if (m['C'] is not None and pd.isna(r[m['C']])) and (m['M'] is not None and pd.isna(r[m['M']])):
-                    continue
-                
-                code_orig = code_v if code_v.lower() not in invalid_vals else ""
-                if code_orig.endswith('.0'): code_orig = code_orig[:-2]
-                msg_orig = msg_v if msg_v.lower() not in invalid_vals else ""
+            # ★ 찌꺼기 차단용 최종 병기 (한글, 숫자, 영어가 단 한 글자라도 있어야 유효 데이터로 인정)
+            def is_meaningful(val):
+                if pd.isna(val): return False
+                cleaned = re.sub(r'[^a-zA-Z0-9가-힣]', '', str(val))
+                return len(cleaned) > 0
 
-                # 날짜 처리
+            for _, r in data_slice.iterrows():
+                has_code = is_meaningful(r[m['C']]) if m['C'] is not None else False
+                has_msg = is_meaningful(r[m['M']]) if m['M'] is not None else False
+                
+                # ★ 코드와 내용에 아무런 '의미 있는 글자'가 없으면 그 줄은 무조건 버림!
+                if not has_code and not has_msg:
+                    continue
+                
+                code_orig = str(r[m['C']]).strip() if has_code else ""
+                if code_orig.endswith('.0'): code_orig = code_orig[:-2]
+                msg_orig = str(r[m['M']]).strip() if has_msg else ""
+
                 dt = None
                 if m['D'] is not None:
                     raw_d = r[m['D']]
-                    if not pd.isna(raw_d) and str(raw_d).strip().lower() != 'nan':
+                    if is_meaningful(raw_d):
                         if str(raw_d).replace('.','').isdigit():
                             dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                        else: 
+                        else:
                             dt = str(raw_d).split(' ')[0]
 
-                # PPJ 처리 (이제 무조건 올바른 칸의 데이터를 가져옴)
+                # ★ PPJ 값을 정확하게 엑셀에서 가져오기
                 ppj_val = None
                 if m['P'] is not None and m['P'] < len(r):
                     raw_p = str(r[m['P']]).strip()
-                    if raw_p.lower() not in invalid_vals:
+                    if is_meaningful(raw_p) and raw_p.lower() not in ['nan', 'none']:
                         ppj_val = raw_p.split('.')[0]
 
-                # 시간 등 기타 처리
                 t_val = ""
                 if m['T'] is not None and m['T'] < len(r):
-                    raw_t = str(r[m['T']]).split('.')[0] if ':' in str(r[m['T']]) else str(r[m['T']])
-                    if raw_t.lower() != 'nan': t_val = raw_t
+                    raw_t = str(r[m['T']]).strip()
+                    if is_meaningful(raw_t): t_val = raw_t.split('.')[0] if ':' in raw_t else raw_t
                 
                 a_val = ""
                 if m['A'] is not None and m['A'] < len(r):
-                    raw_a = str(r[m['A']])
-                    if raw_a.lower() != 'nan': a_val = raw_a
-                    
+                    raw_a = str(r[m['A']]).strip()
+                    if is_meaningful(raw_a): a_val = raw_a
+
                 l_val = ""
                 if m['L'] is not None and m['L'] < len(r):
-                    raw_l = str(r[m['L']])
-                    if raw_l.lower() != 'nan': l_val = raw_l
+                    raw_l = str(r[m['L']]).strip()
+                    if is_meaningful(raw_l): l_val = raw_l
 
                 cleaned_list.append({
                     "Date": dt, "Code": code_orig, "PPJ": ppj_val,
@@ -656,12 +652,14 @@ def render_equipment_data_page():
 
             if cleaned_list:
                 final_df = pd.DataFrame(cleaned_list)
-                final_df['Date'] = final_df['Date'].ffill() 
-                final_df['PPJ'] = final_df['PPJ'].ffill().fillna("0")
+                # ★ 비어있는 값들을 위에서부터 완벽하게 끌어내려 채움
+                final_df['Date'] = final_df['Date'].replace(['', 'nan', 'None'], pd.NA).ffill()
+                final_df['PPJ'] = final_df['PPJ'].replace(['', 'nan', 'None'], pd.NA).ffill().fillna("0")
                 
                 rows_html = ""
                 for _, row in final_df.iterrows():
-                    rows_html += f"<tr><td style='width:75px;'>{row['Date']}</td><td style='width:60px;'>{row['Code']}</td><td style='width:60px;'>{row['PPJ']}</td><td class='t-left'>{row['Msg']}</td><td class='t-left'>{row['Act']}</td><td style='width:65px;'>{row['Time']}</td><td style='width:90px;'>{row['Loc']}</td></tr>"
+                    date_td = f"{row['Date']}" if not pd.isna(row['Date']) else ""
+                    rows_html += f"<tr><td style='width:75px;'>{date_td}</td><td style='width:60px;'>{row['Code']}</td><td style='width:60px;'>{row['PPJ']}</td><td class='t-left'>{row['Msg']}</td><td class='t-left'>{row['Act']}</td><td style='width:65px;'>{row['Time']}</td><td style='width:90px;'>{row['Loc']}</td></tr>"
                 
                 st.markdown(f"<table class='final-report-table'><thead><tr><th style='width:75px;'>날짜</th><th style='width:60px;'>코드</th><th style='width:60px;'>PPJ</th><th>에러내용</th><th>조치내용</th><th style='width:65px;'>시간</th><th style='width:90px;'>위치</th></tr></thead><tbody>{rows_html}</tbody></table>", unsafe_allow_html=True)
             else: st.info("상세 데이터가 없습니다.")
@@ -708,6 +706,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
