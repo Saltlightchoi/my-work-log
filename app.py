@@ -482,7 +482,7 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 데이터 정리 및 표 가독성 극대화 버전)
+# 4. 화면 UI 보따리 (★ 탭 3: 중복 컬럼 에러 완벽 해결 및 표 가독성 버전)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Total Unit & Jam Count)</div>", unsafe_allow_html=True)
@@ -520,15 +520,16 @@ def render_equipment_data_page():
             st.error("⚠️ 데이터를 포함한 시트를 찾을 수 없습니다.")
             return
 
-        # [상단 요약 데이터 추출 및 PPJ 계산 준비]
+        # [상단 요약 데이터 추출 및 PPJ 계산]
         def get_summary_row(keywords):
             for _, row in df_raw.iterrows():
                 row_str = " ".join(row.astype(str)).lower().replace(" ", "")
-                if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률']):
+                if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률', 'ppj']):
                     vals = row.tolist()
                     start_idx = -1
                     for i, v in enumerate(vals):
-                        if str(v).replace('.', '').isdigit() or v in ['비가동', '미가동']:
+                        v_s = str(v).replace('.', '').replace(',', '').strip()
+                        if v_s.isdigit() or v in ['비가동', '미가동']:
                             start_idx = i
                             break
                     if start_idx != -1:
@@ -538,17 +539,8 @@ def render_equipment_data_page():
         total_units = get_summary_row(['total unit', 'totalunit'])
         jam_counts = get_summary_row(['jam count', 'jamcount'])
 
-        # 일별 PPJ 계산 (그래프 및 표 연동용)
-        daily_ppj = []
+        # 그래프 출력
         if total_units and jam_counts:
-            for t, j in zip(total_units, jam_counts):
-                try:
-                    t_val = float(str(t).replace(',', '')) if str(t).replace('.', '').isdigit() else 0
-                    j_val = float(str(j).replace(',', '')) if str(j).replace('.', '').isdigit() else 0
-                    daily_ppj.append(round(t_val / j_val, 1) if j_val > 0 else 0)
-                except: daily_ppj.append(0)
-
-            # 그래프 출력 영역
             chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Total_Unit': total_units, 'Jam_Count': jam_counts})
             for col in ['Total_Unit', 'Jam_Count']:
                 chart_df[col] = pd.to_numeric(chart_df[col].astype(str).str.replace(',', '').replace(['nan', '비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
@@ -559,65 +551,79 @@ def render_equipment_data_page():
             fig.update_layout(height=400, xaxis=dict(tickangle=-45), yaxis2=dict(overlaying='y', side='right'), margin=dict(l=40, r=40, t=20, b=40), hovermode="x unified")
             st.plotly_chart(fig, use_container_width=True)
 
-        # [하단 상세 내역 표 정제]
+        # [하단 상세 내역 표 정제 - 중복 컬럼 에러 해결 버전]
         st.subheader(f"📋 {month_str} 장비 에러 상세 리스트")
         
-        header_idx = -1
+        header_row_idx = -1
         for i, row in df_raw.iterrows():
             if 'error code' in " ".join(row.astype(str)).lower():
-                header_idx = i
+                header_row_idx = i
+                header_row = row.tolist()
                 break
 
-        if header_idx != -1:
-            detail_df = df_raw.iloc[header_idx:].copy()
-            detail_df.columns = detail_df.iloc[0]
-            detail_df = detail_df.iloc[1:].reset_index(drop=True)
+        if header_row_idx != -1:
+            # 1. 컬럼 인덱스 매핑 (이름이 아닌 위치로 가져와서 중복 에러 원천 차단)
+            col_map = {}
+            for i, val in enumerate(header_row):
+                v_lower = str(val).lower().strip()
+                if 'date' in v_lower: col_map['Date'] = i
+                elif 'error code' in v_lower: col_map['Error code'] = i
+                elif 'error massage' in v_lower: col_map['Error Massage'] = i
+                elif 'finding/action' in v_lower: col_map['Finding/Action'] = i
+                elif 'err. time' in v_lower: col_map['Err. Time'] = i
+                elif 'err. point' in v_lower: col_map['Err. Point'] = i
+                elif 'ppj' in v_lower: col_map['PPJ'] = i
 
-            # 1. 이상한 코드(Excel 숫자 날짜)를 실제 날짜 형식으로 변환
-            def format_excel_date(val):
+            # 2. 필요한 데이터만 슬라이싱 및 정리
+            data_part = df_raw.iloc[header_row_idx + 1:].copy()
+            final_rows = []
+
+            for _, row in data_part.iterrows():
+                # Error code가 있는 줄만 가져옴 (미발생 일자 제거)
+                err_code = str(row[col_map.get('Error code', 0)]).strip()
+                if not err_code or err_code == 'nan': continue
+
+                # 엑셀 날짜 숫자 -> 실제 날짜 변환
+                raw_date = row[col_map.get('Date', 0)]
                 try:
-                    if str(val).replace('.', '').isdigit():
-                        return pd.to_datetime(float(val), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                    return str(val)
-                except: return str(val)
-            
-            if 'Date' in detail_df.columns:
-                detail_df['Date'] = detail_df['Date'].apply(format_excel_date)
+                    if str(raw_date).replace('.','').isdigit():
+                        fmt_date = pd.to_datetime(float(raw_date), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
+                    else: fmt_date = str(raw_date)
+                except: fmt_date = str(raw_date)
 
-            # 2. Jam이 미발생하여 내용이 없는 행 제거 (Error code 기준)
-            detail_df = detail_df.dropna(subset=['Error code'])
-            detail_df = detail_df[detail_df['Error code'].astype(str).str.strip() != ""]
+                final_rows.append({
+                    "날짜": fmt_date,
+                    "에러 코드": row[col_map.get('Error code', 0)],
+                    "에러 내용": row[col_map.get('Error Massage', 0)],
+                    "조치 사항": row[col_map.get('Finding/Action', 0)],
+                    "발생 시간": row[col_map.get('Err. Time', 0)],
+                    "발생 위치": row[col_map.get('Err. Point', 0)],
+                    "PPJ": row[col_map.get('PPJ', 0)]
+                })
 
-            # 3. 일별 PPJ 매핑 (날짜 기준으로 요약 데이터의 PPJ 연결)
-            def get_ppj_for_date(date_str):
-                try:
-                    day = int(str(date_str).split('-')[-1])
-                    return daily_ppj[day-1] if 0 < day <= len(daily_ppj) else 0
-                except: return 0
-            
-            detail_df['PPJ'] = detail_df['Date'].apply(get_ppj_for_date)
-
-            # 4. 표 출력 (간격 조정 및 컬럼 추가)
-            st.dataframe(
-                detail_df,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "Date": st.column_config.TextColumn("날짜", width="medium"),
-                    "Error code": st.column_config.TextColumn("에러 코드", width="small"),
-                    "Error Massage": st.column_config.TextColumn("에러 내용", width="large"),
-                    "Finding/Action": st.column_config.TextColumn("에러 조치내용", width="large"),
-                    "Err. Time": st.column_config.TextColumn("발생 시간", width="small"),
-                    "Err. Point": st.column_config.TextColumn("발생 위치", width="medium"),
-                    "PPJ": st.column_config.NumberColumn("일일 PPJ", width="small", format="%.1f")
-                },
-                column_order=["Date", "Error code", "Error Massage", "Finding/Action", "Err. Time", "Err. Point", "PPJ"]
-            )
+            if final_rows:
+                display_df = pd.DataFrame(final_rows)
+                st.dataframe(
+                    display_df,
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "날짜": st.column_config.TextColumn("날짜", width="medium"),
+                        "에러 코드": st.column_config.TextColumn("에러 코드", width="small"),
+                        "에러 내용": st.column_config.TextColumn("에러 내용", width="large"),
+                        "조치 사항": st.column_config.TextColumn("조치 사항", width="large"),
+                        "발생 시간": st.column_config.TextColumn("발생 시간", width="small"),
+                        "발생 위치": st.column_config.TextColumn("발생 위치", width="medium"),
+                        "PPJ": st.column_config.TextColumn("PPJ", width="small")
+                    }
+                )
+            else:
+                st.info("해당 월에 기록된 에러 상세 내역이 없습니다.")
         else:
-            st.info("상세 내역 헤더를 찾을 수 없습니다.")
+            st.info("표의 헤더(Error code)를 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"데이터 처리 중 오류: {e}")
+        st.error(f"⚠️ 데이터를 처리하는 중 오류가 발생했습니다: {e}")
         
 # ==========================================
 # 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
@@ -661,6 +667,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
