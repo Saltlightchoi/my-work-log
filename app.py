@@ -482,10 +482,10 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 실제 사진 양식 맞춤 & 무적의 방어 코드)
+# 4. 화면 UI 보따리 (★ 탭 3: Total Unit 기준 최종 완성본)
 # ==========================================
 def render_equipment_data_page():
-    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Output & Jam Rate)</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Total Unit & Jam Count)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
@@ -508,114 +508,84 @@ def render_equipment_data_page():
     month_num = month_str.replace("월", "")
 
     import os
-    # 파일이 폴더에 존재하는지 먼저 체크
     if not os.path.exists(target_file):
-        st.error(f"⚠️ '{target_file}' 파일이 깃허브에 존재하지 않습니다. 파일명을 확인해주세요.")
+        st.error(f"⚠️ '{target_file}' 파일이 깃허브에 존재하지 않습니다.")
         return
 
     try:
         df_raw = None
-        
-        # [방어 1단계] 엑셀(.xlsx) 정석대로 읽기 시도
-        try:
-            xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
-            for sheet_name, sheet_data in xls.items():
-                # 띄어쓰기를 무시하고 '#1_output' 글자가 있는지 정확히 추적
-                if sheet_data.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('#1_output', case=False, na=False).any(), axis=1).any():
-                    df_raw = sheet_data
-                    break
-        except Exception:
-            pass # 에러가 나면 2단계로 넘어감
+        # 엑셀 시트 중 'Total Unit'과 'Jam Count'가 모두 포함된 시트를 찾습니다.
+        xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
+        for sheet_name, sheet_data in xls.items():
+            content_str = sheet_data.astype(str).apply(lambda row: ''.join(row), axis=1).str.cat()
+            if 'Total Unit' in content_str and 'Jam Count' in content_str:
+                df_raw = sheet_data
+                break
 
-        # [방어 2단계] 이름만 .xlsx이고 속은 CSV인 경우 읽기 시도
         if df_raw is None:
-            encodings_to_try = ['utf-8-sig', 'utf-8', 'cp949', 'euc-kr']
-            for enc in encodings_to_try:
-                try:
-                    temp_df = pd.read_csv(target_file, header=None, names=range(100), encoding=enc)
-                    if temp_df.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('#1_output', case=False, na=False).any(), axis=1).any():
-                        df_raw = temp_df
-                        break 
-                except Exception:
-                    continue
-
-        if df_raw is None or df_raw.empty:
-            st.error(f"⚠️ '{target_file}' 파일 안에서 '#1_Output' 데이터를 찾을 수 없습니다.")
+            st.error("⚠️ 파일 내에서 'Total Unit' 또는 'Jam Count' 행을 찾을 수 없습니다. 양식을 확인해주세요.")
             return
 
-        # 2. 사진에 있는 양식 그대로 '#1_Output'과 '#1_Jam Count' 행 찾기
-        out_mask = df_raw.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('#1_output', case=False, na=False).any(), axis=1)
-        jam_mask = df_raw.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('#1_jamcount', case=False, na=False).any(), axis=1)
+        # 1. Total Unit 행 찾기 및 데이터 추출
+        total_unit_mask = df_raw.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('TotalUnit', case=False, na=False).any(), axis=1)
+        # 2. Jam Count 행 찾기 및 데이터 추출
+        jam_count_mask = df_raw.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('JamCount', case=False, na=False).any() and not row.str.contains('대비|%|rate|PPJ', case=False, na=False).any(), axis=1)
 
-        if not out_mask.any() or not jam_mask.any():
-            st.error("⚠️ 시트 안에서 '#1_Output' 또는 '#1_Jam Count' 텍스트를 찾을 수 없습니다.")
-            return
+        def get_31day_data(mask_obj):
+            row_idx = mask_obj.idxmax()
+            row_list = df_raw.loc[row_idx].astype(str).tolist()
+            # 숫자 데이터가 시작되는 위치(보통 2~3번째 칸)를 동적으로 찾습니다.
+            start_idx = 0
+            for i, val in enumerate(row_list):
+                if any(char.isdigit() for char in val.replace('.', '').replace(',', '')) or '비가동' in val or '미가동' in val:
+                    start_idx = i
+                    break
+            return (row_list[start_idx : start_idx + 31] + ['0']*31)[:31]
 
-        # 3. 검색용 리스트와 실제 데이터 추출용 리스트 분리
-        output_search_list = df_raw.loc[out_mask.idxmax()].astype(str).str.replace(' ', '').tolist()
-        jam_search_list = df_raw.loc[jam_mask.idxmax()].astype(str).str.replace(' ', '').tolist()
-        
-        output_raw_list = df_raw.loc[out_mask.idxmax()].astype(str).tolist()
-        jam_raw_list = df_raw.loc[jam_mask.idxmax()].astype(str).tolist()
+        total_unit_data = get_31day_data(total_unit_mask)
+        jam_count_data = get_31day_data(jam_count_mask)
 
-        # 4. 글자가 적힌 칸 바로 '다음 칸(1일차)'부터 데이터 추적
-        out_start = next(i for i, x in enumerate(output_search_list) if '#1_output' in x.lower()) + 1
-        jam_start = next(i for i, x in enumerate(jam_search_list) if '#1_jamcount' in x.lower()) + 1
-
-        # 5. 31일 치 데이터 추출 (데이터가 부족하면 0으로 채움)
-        output_data = (output_raw_list[out_start : out_start + 31] + ['0']*31)[:31]
-        jam_data = (jam_raw_list[jam_start : jam_start + 31] + ['0']*31)[:31]
-
-        days = [f"{month_num}월 {i}일" for i in range(1, 32)]
         df = pd.DataFrame({
-            '날짜': days,
-            '생산량(Output)': output_data,
-            'Jam_Count': jam_data
+            '날짜': [f"{month_num}월 {i}일" for i in range(1, 32)],
+            'Total_Unit': total_unit_data,
+            'Jam_Count': jam_count_data
         })
 
-        # 6. 데이터 정제: 사진에 있던 '비가동' 텍스트 등을 깔끔하게 숫자 0으로 변환
-        df['생산량(Output)'] = pd.to_numeric(df['생산량(Output)'].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
-        df['Jam_Count'] = pd.to_numeric(df['Jam_Count'].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
+        # 데이터 정제 (숫자로 변환)
+        for col in ['Total_Unit', 'Jam_Count']:
+            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
 
-        st.subheader(f"[{equipment} - {unit}] {month_str} 가동 현황")
+        st.subheader(f"📊 {equipment} - {unit} 가동 분석 ({month_str})")
 
-        # 7. Plotly 이중 축 그래프 생성
+        # 그래프 그리기
         fig = go.Figure()
-
-        fig.add_trace(go.Bar(
-            x=df['날짜'], y=df['생산량(Output)'], name='생산량(Output)', 
-            marker_color='#5B9BD5', yaxis='y1'
-        ))
-
-        fig.add_trace(go.Scatter(
-            x=df['날짜'], y=df['Jam_Count'], name='Jam 건수', mode='lines+markers',
-            line=dict(color='#ED7D31', width=3), marker=dict(size=8), yaxis='y2'
-        ))
-
-        max_jam = df['Jam_Count'].max()
-        max_jam_range = 5.0 if pd.isna(max_jam) or max_jam == 0 else float(max_jam) + 5.0
+        # 투입 수량 (Bar)
+        fig.add_trace(go.Bar(x=df['날짜'], y=df['Total_Unit'], name='투입 수량(Total Unit)', marker_color='#5B9BD5', yaxis='y1'))
+        # 에러 건수 (Line)
+        fig.add_trace(go.Scatter(x=df['날짜'], y=df['Jam_Count'], name='에러 건수(Jam Count)', mode='lines+markers', line=dict(color='#ED7D31', width=3), yaxis='y2'))
 
         fig.update_layout(
             height=500,
-            xaxis=dict(title="날짜", tickangle=-45),
-            yaxis=dict(
-                title=dict(text="생산량 (EA)", font=dict(color="#5B9BD5")),
-                tickfont=dict(color="#5B9BD5"), side="left"
-            ),
-            yaxis2=dict(
-                title=dict(text="Jam 발생 (건)", font=dict(color="#ED7D31")),
-                tickfont=dict(color="#ED7D31"), overlaying="y", side="right",
-                range=[0, max_jam_range]
-            ),
+            xaxis=dict(tickangle=-45),
+            yaxis=dict(title="투입 수량 (Unit)", titlefont=dict(color="#5B9BD5"), tickfont=dict(color="#5B9BD5")),
+            yaxis2=dict(title="에러 발생 (건)", titlefont=dict(color="#ED7D31"), tickfont=dict(color="#ED7D31"), overlaying="y", side="right", range=[0, df['Jam_Count'].max() + 5]),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            hovermode="x unified",
-            margin=dict(l=40, r=40, t=40, b=40)
+            hovermode="x unified"
         )
-
         st.plotly_chart(fig, use_container_width=True)
 
+        # 요약 정보 표시
+        total_sum = int(df['Total_Unit'].sum())
+        jam_sum = int(df['Jam_Count'].sum())
+        avg_ppj = round(total_sum / jam_sum, 2) if jam_sum > 0 else 0
+        
+        c1, c2, c3 = st.columns(3)
+        c1.metric("총 투입 수량", f"{total_sum:,} Unit")
+        c2.metric("총 에러 건수", f"{jam_sum:,} 건")
+        c3.metric("평균 PPJ", f"{avg_ppj:,}")
+
     except Exception as e:
-        st.error(f"⚠️ 데이터를 처리하는 중 오류가 발생했습니다: {e}")
+        st.error(f"⚠️ 데이터를 읽는 중 오류가 발생했습니다: {e}")
         
 # ==========================================
 # 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
@@ -659,6 +629,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
