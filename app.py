@@ -492,12 +492,12 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI - 탭 3: 장비 가동 데이터 (★ 빈칸 완벽 제거 & PPJ 점선)
+# 4. 화면 UI 보따리 (★ 탭 3: 장비 가동 데이터 전용 - 실선 및 빈칸 차단 완결판)
 # ==========================================
-def render_equipment_data_page():
-    import re
-    from plotly.subplots import make_subplots
+import re
+from plotly.subplots import make_subplots
 
+def render_equipment_data_page():
     st.markdown("""
         <style>
             .final-report-table {
@@ -534,7 +534,6 @@ def render_equipment_data_page():
         if df_raw is None:
             st.error("⚠️ 가동 데이터를 찾을 수 없습니다."); return
 
-        # [상단 3축 그래프 추출]
         def get_sum_row(keywords):
             for _, row in df_raw.iterrows():
                 row_str = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
@@ -558,18 +557,17 @@ def render_equipment_data_page():
         chart_df['Cum_Jam'] = chart_df['Jam'].cumsum()
         chart_df['Cum_PPJ'] = chart_df.apply(lambda row: round(row['Cum_Unit'] / row['Cum_Jam'], 1) if row['Cum_Jam'] > 0 else 0, axis=1)
 
-        # 📊 2단 그래프: 상단(Unit/Jam 보조축), 하단(PPJ 바 + 누적 PPJ 빨간 점선)
+        # 📊 2단 그래프: 상단(Unit/Jam 보조축), 하단(PPJ 바 + 누적 PPJ 굵은 빨간 실선)
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.12,
                             subplot_titles=("투입량(Unit) 및 에러(Jam) 건수", "생산 효율(PPJ) 추이"),
                             specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
         
-        # 위쪽: 투입량(막대) + 에러건수(선)
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
         fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
         
-        # ★ 아래쪽: 일별 PPJ(막대) + 월 누적 PPJ(빨간 점선)
+        # ★ 수정된 부분: dash='dot' 완전히 제거, 두께(width) 4, 눈에 띄는 빨간색(#FF0000)
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.8), row=2, col=1)
-        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Cum_PPJ'], name='월 누적 PPJ', mode='lines+markers', line=dict(color='#FF0000', width=3, dash='dot')), row=2, col=1)
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Cum_PPJ'], name='월 누적 PPJ (실선)', mode='lines+markers', line=dict(color='#FF0000', width=4)), row=2, col=1)
         
         fig.update_layout(height=650, margin=dict(l=50, r=50, t=50, b=50), hovermode="x unified", showlegend=True)
         fig.update_yaxes(title_text="투입량 (EA)", secondary_y=False, row=1, col=1)
@@ -577,7 +575,7 @@ def render_equipment_data_page():
         fig.update_yaxes(title_text="PPJ", row=2, col=1)
         st.plotly_chart(fig, use_container_width=True)
 
-        # [하단 상세 리스트 - 빈칸 쓰레기 데이터 원천 봉쇄]
+        # [하단 상세 리스트 - 극강의 빈칸 쓰레기 데이터 차단]
         st.subheader(f"📋 {month_str} 에러 상세 리스트")
         h_idx = -1
         for i, row in df_raw.iterrows():
@@ -599,21 +597,29 @@ def render_equipment_data_page():
             data_slice = df_raw.iloc[h_idx + 1:].copy()
             cleaned_list = []
             
+            # ★ 엑셀의 쓰레기 값을 판별하는 강력한 함수 (정규식 도입)
+            def is_valid_data(val):
+                v_str = str(val).strip().lower()
+                if v_str in ['nan', 'none', 'null', '', '0', '0.0', '-', '_']:
+                    return False
+                # 영어, 숫자, 한글이 하나라도 포함되어 있어야만 '유효한 데이터'로 인정
+                if not re.search(r'[a-zA-Z0-9가-힣]', v_str):
+                    return False
+                return True
+
             for _, r in data_slice.iterrows():
-                code_v = str(r[m['C']]).strip()
-                msg_v = str(r[m['M']]).strip()
+                has_code = is_valid_data(r[m['C']])
+                has_msg = is_valid_data(r[m['M']])
                 
-                # ★ 핵심 로직: 엑셀 서식 찌꺼기(0, nan, 빈칸) 완벽 차단
-                chk_code = code_v.lower() if code_v.lower() not in ['nan', 'none', '', '0', '0.0'] else ""
-                chk_msg = msg_v.lower() if msg_v.lower() not in ['nan', 'none', '', '0', '0.0'] else ""
-                
-                # 코드와 메시지가 둘 다 비어있으면 볼 것도 없이 버림 (표에 아예 추가 안 함)
-                if not chk_code and not chk_msg:
+                # ★ 코드와 메시지 둘 다 "유효한 글자"가 없으면 완전 무시하고 다음 줄로 이동!
+                if not has_code and not has_msg:
                     continue
                 
                 # 살아남은 진짜 데이터만 정제
-                code_orig = code_v if chk_code else ""
-                msg_orig = msg_v if chk_msg else ""
+                code_orig = str(r[m['C']]).strip() if has_code else ""
+                if code_orig.endswith('.0'): code_orig = code_orig[:-2] # '4030.0' 같은 경우 '4030'으로 수정
+                
+                msg_orig = str(r[m['M']]).strip() if has_msg else ""
 
                 dt = r[m['D']]
                 if pd.isna(dt) or str(dt).strip().lower() == 'nan': dt = None
@@ -688,6 +694,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
