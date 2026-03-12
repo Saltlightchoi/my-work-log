@@ -482,13 +482,12 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 실제 엑셀 파일명 완벽 매칭본)
+# 4. 화면 UI 보따리 (★ 탭 3: 실제 사진 양식 맞춤 & 무적의 방어 코드)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Output & Jam Rate)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-    # 장비, 호기, 그리고 '월(Month)' 선택을 3칸으로 나란히 배치
     col1, col2, col3 = st.columns(3)
     with col1:
         equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
@@ -499,7 +498,6 @@ def render_equipment_data_page():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 🚨 1월=January, 2월=February, 3월=March 로 올바르게 수정되었습니다!
     file_map = {
         "1월": "SLH1 - January 2026.xlsx", 
         "2월": "SLH1 - February 2026.xlsx", 
@@ -509,50 +507,64 @@ def render_equipment_data_page():
     target_file = file_map.get(month_str, "")
     month_num = month_str.replace("월", "")
 
+    import os
+    # 파일이 폴더에 존재하는지 먼저 체크
+    if not os.path.exists(target_file):
+        st.error(f"⚠️ '{target_file}' 파일이 깃허브에 존재하지 않습니다. 파일명을 확인해주세요.")
+        return
+
     try:
-        # 1. 파일 불러오기 (★ 엑셀의 모든 시트 자동 탐색)
         df_raw = None
         
-        if target_file.endswith('.xlsx') or target_file.endswith('.xls'):
-            # 엑셀 파일인 경우 모든 시트를 읽어서 데이터가 있는 시트를 똑똑하게 찾아냅니다.
-            xls = pd.read_excel(target_file, sheet_name=None, header=None)
+        # [방어 1단계] 엑셀(.xlsx) 정석대로 읽기 시도
+        try:
+            xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
             for sheet_name, sheet_data in xls.items():
-                if sheet_data.apply(lambda r: r.astype(str).str.contains('#1_Output', case=False).any(), axis=1).any():
+                # 띄어쓰기를 무시하고 '#1_output' 글자가 있는지 정확히 추적
+                if sheet_data.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('#1_output', case=False, na=False).any(), axis=1).any():
                     df_raw = sheet_data
-                    break # 데이터를 찾으면 탐색 종료!
-        else:
-            # CSV 파일인 경우
+                    break
+        except Exception:
+            pass # 에러가 나면 2단계로 넘어감
+
+        # [방어 2단계] 이름만 .xlsx이고 속은 CSV인 경우 읽기 시도
+        if df_raw is None:
             encodings_to_try = ['utf-8-sig', 'utf-8', 'cp949', 'euc-kr']
             for enc in encodings_to_try:
                 try:
-                    df_raw = pd.read_csv(target_file, header=None, names=range(100), encoding=enc)
-                    break 
+                    temp_df = pd.read_csv(target_file, header=None, names=range(100), encoding=enc)
+                    if temp_df.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('#1_output', case=False, na=False).any(), axis=1).any():
+                        df_raw = temp_df
+                        break 
                 except Exception:
-                    continue 
-                
+                    continue
+
         if df_raw is None or df_raw.empty:
-            st.error(f"⚠️ '{target_file}' 파일을 제대로 읽지 못했거나, 파일 내 어떤 시트에도 데이터가 없습니다.")
+            st.error(f"⚠️ '{target_file}' 파일 안에서 '#1_Output' 데이터를 찾을 수 없습니다.")
             return
 
-        # 2. 데이터가 어디에 숨어있든 행(Row)을 통째로 뒤져서 키워드 찾기
-        output_row = df_raw[df_raw.apply(lambda r: r.astype(str).str.contains('#1_Output', case=False).any(), axis=1)]
-        jam_row = df_raw[df_raw.apply(lambda r: r.astype(str).str.contains('#1_Jam Count', case=False).any(), axis=1)]
+        # 2. 사진에 있는 양식 그대로 '#1_Output'과 '#1_Jam Count' 행 찾기
+        out_mask = df_raw.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('#1_output', case=False, na=False).any(), axis=1)
+        jam_mask = df_raw.astype(str).apply(lambda row: row.str.replace(' ', '').str.contains('#1_jamcount', case=False, na=False).any(), axis=1)
 
-        if output_row.empty or jam_row.empty:
-            st.error(f"⚠️ '{target_file}' 파일 안에서 '#1_Output' 또는 '#1_Jam Count' 텍스트를 찾을 수 없습니다.")
+        if not out_mask.any() or not jam_mask.any():
+            st.error("⚠️ 시트 안에서 '#1_Output' 또는 '#1_Jam Count' 텍스트를 찾을 수 없습니다.")
             return
 
-        # 3. 찾은 행을 파이썬 리스트(목록)로 변환
-        output_list = output_row.iloc[0].astype(str).tolist()
-        jam_list = jam_row.iloc[0].astype(str).tolist()
+        # 3. 검색용 리스트와 실제 데이터 추출용 리스트 분리
+        output_search_list = df_raw.loc[out_mask.idxmax()].astype(str).str.replace(' ', '').tolist()
+        jam_search_list = df_raw.loc[jam_mask.idxmax()].astype(str).str.replace(' ', '').tolist()
+        
+        output_raw_list = df_raw.loc[out_mask.idxmax()].astype(str).tolist()
+        jam_raw_list = df_raw.loc[jam_mask.idxmax()].astype(str).tolist()
 
-        # 4. 키워드가 있는 칸 바로 다음 칸부터 데이터를 가져옵니다.
-        out_start = next(i for i, x in enumerate(output_list) if '#1_Output' in x) + 1
-        jam_start = next(i for i, x in enumerate(jam_list) if '#1_Jam Count' in x) + 1
+        # 4. 글자가 적힌 칸 바로 '다음 칸(1일차)'부터 데이터 추적
+        out_start = next(i for i, x in enumerate(output_search_list) if '#1_output' in x.lower()) + 1
+        jam_start = next(i for i, x in enumerate(jam_search_list) if '#1_jamcount' in x.lower()) + 1
 
-        # 5. 31일 치 데이터를 뽑고, 날짜가 짧은 달(2월 등)의 빈칸은 '0'으로 채워줍니다.
-        output_data = (output_list[out_start : out_start + 31] + ['0']*31)[:31]
-        jam_data = (jam_list[jam_start : jam_start + 31] + ['0']*31)[:31]
+        # 5. 31일 치 데이터 추출 (데이터가 부족하면 0으로 채움)
+        output_data = (output_raw_list[out_start : out_start + 31] + ['0']*31)[:31]
+        jam_data = (jam_raw_list[jam_start : jam_start + 31] + ['0']*31)[:31]
 
         days = [f"{month_num}월 {i}일" for i in range(1, 32)]
         df = pd.DataFrame({
@@ -561,9 +573,9 @@ def render_equipment_data_page():
             'Jam_Count': jam_data
         })
 
-        # 6. 데이터 정제: 쉼표(,) 제거나 빈칸, 'nan', '비가동' 텍스트를 모두 숫자 0으로 완벽 변환
-        df['생산량(Output)'] = pd.to_numeric(df['생산량(Output)'].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
-        df['Jam_Count'] = pd.to_numeric(df['Jam_Count'].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
+        # 6. 데이터 정제: 사진에 있던 '비가동' 텍스트 등을 깔끔하게 숫자 0으로 변환
+        df['생산량(Output)'] = pd.to_numeric(df['생산량(Output)'].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
+        df['Jam_Count'] = pd.to_numeric(df['Jam_Count'].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
 
         st.subheader(f"[{equipment} - {unit}] {month_str} 가동 현황")
 
@@ -588,14 +600,11 @@ def render_equipment_data_page():
             xaxis=dict(title="날짜", tickangle=-45),
             yaxis=dict(
                 title=dict(text="생산량 (EA)", font=dict(color="#5B9BD5")),
-                tickfont=dict(color="#5B9BD5"), 
-                side="left"
+                tickfont=dict(color="#5B9BD5"), side="left"
             ),
             yaxis2=dict(
                 title=dict(text="Jam 발생 (건)", font=dict(color="#ED7D31")),
-                tickfont=dict(color="#ED7D31"), 
-                overlaying="y", 
-                side="right",
+                tickfont=dict(color="#ED7D31"), overlaying="y", side="right",
                 range=[0, max_jam_range]
             ),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -605,8 +614,6 @@ def render_equipment_data_page():
 
         st.plotly_chart(fig, use_container_width=True)
 
-    except FileNotFoundError:
-        st.error(f"⚠️ '{target_file}' 파일을 찾을 수 없습니다. 깃허브에 파일이 있는지, 이름이 똑같은지 확인해 주세요.")
     except Exception as e:
         st.error(f"⚠️ 데이터를 처리하는 중 오류가 발생했습니다: {e}")
         
@@ -652,6 +659,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
