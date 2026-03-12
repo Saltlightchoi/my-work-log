@@ -482,7 +482,7 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 그래프 + 상세 내역 표 통합 버전)
+# 4. 화면 UI 보따리 (★ 탭 3: 데이터 정리 및 표 가독성 극대화 버전)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Total Unit & Jam Count)</div>", unsafe_allow_html=True)
@@ -507,16 +507,9 @@ def render_equipment_data_page():
     target_file = file_map.get(month_str, "")
     month_num = month_str.replace("월", "")
 
-    import os
-    if not os.path.exists(target_file):
-        st.error(f"⚠️ '{target_file}' 파일이 깃허브에 존재하지 않습니다.")
-        return
-
     try:
-        df_raw = None
         xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
-        
-        # [1단계] 데이터 시트 탐색 (Total Unit 글자가 있는 시트)
+        df_raw = None
         for sheet_name, sheet_data in xls.items():
             combined_text = " ".join(sheet_data.astype(str).values.flatten()).lower()
             if 'total unit' in combined_text or 'totalunit' in combined_text:
@@ -524,98 +517,107 @@ def render_equipment_data_page():
                 break
         
         if df_raw is None:
-            st.error("⚠️ 파일 내에서 데이터 양식을 찾을 수 없습니다.")
+            st.error("⚠️ 데이터를 포함한 시트를 찾을 수 없습니다.")
             return
 
-        # [2단계] 상단 요약 데이터 추출 함수
+        # [상단 요약 데이터 추출 및 PPJ 계산 준비]
         def get_summary_row(keywords):
             for _, row in df_raw.iterrows():
                 row_str = " ".join(row.astype(str)).lower().replace(" ", "")
-                if any(k.lower().replace(" ", "") in row_str for k in keywords):
-                    if any(x in row_str for x in ['ppj', '%', '발생률', 'ratio']): continue
+                if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률']):
                     vals = row.tolist()
                     start_idx = -1
                     for i, v in enumerate(vals):
-                        v_str = str(v).replace(',', '').replace('.', '').strip()
-                        if v_str.isdigit() or v_str in ['비가동', '미가동', '0']:
+                        if str(v).replace('.', '').isdigit() or v in ['비가동', '미가동']:
                             start_idx = i
                             break
                     if start_idx != -1:
                         return (vals[start_idx : start_idx + 31] + [0]*31)[:31]
             return None
 
-        total_unit_raw = get_summary_row(['total unit', 'totalunit'])
-        jam_count_raw = get_summary_row(['jam count', 'jamcount'])
+        total_units = get_summary_row(['total unit', 'totalunit'])
+        jam_counts = get_summary_row(['jam count', 'jamcount'])
 
-        if total_unit_raw is not None and jam_count_raw is not None:
-            # 그래프용 데이터프레임 구성
-            chart_df = pd.DataFrame({
-                '날짜': [f"{month_num}월 {i}일" for i in range(1, 32)],
-                'Total_Unit': total_unit_raw,
-                'Jam_Count': jam_count_raw
-            })
+        # 일별 PPJ 계산 (그래프 및 표 연동용)
+        daily_ppj = []
+        if total_units and jam_counts:
+            for t, j in zip(total_units, jam_counts):
+                try:
+                    t_val = float(str(t).replace(',', '')) if str(t).replace('.', '').isdigit() else 0
+                    j_val = float(str(j).replace(',', '')) if str(j).replace('.', '').isdigit() else 0
+                    daily_ppj.append(round(t_val / j_val, 1) if j_val > 0 else 0)
+                except: daily_ppj.append(0)
+
+            # 그래프 출력 영역
+            chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Total_Unit': total_units, 'Jam_Count': jam_counts})
             for col in ['Total_Unit', 'Jam_Count']:
-                chart_df[col] = pd.to_numeric(chart_df[col].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
-
-            # 그래프 출력
-            st.subheader(f"📈 {equipment} 가동 현황 그래프 ({month_str})")
+                chart_df[col] = pd.to_numeric(chart_df[col].astype(str).str.replace(',', '').replace(['nan', '비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
+            
             fig = go.Figure()
             fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Total_Unit'], name='투입 수량', marker_color='#5B9BD5', yaxis='y1'))
             fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam_Count'], name='에러 건수', mode='lines+markers', line=dict(color='#ED7D31', width=3), yaxis='y2'))
-            fig.update_layout(
-                height=450, xaxis=dict(tickangle=-45),
-                yaxis=dict(title=dict(text="투입 수량 (Unit)", font=dict(color="#5B9BD5")), tickfont=dict(color="#5B9BD5")),
-                yaxis2=dict(title=dict(text="에러 건수 (건)", font=dict(color="#ED7D31")), tickfont=dict(color="#ED7D31"), overlaying="y", side="right", range=[0, chart_df['Jam_Count'].max() + 5]),
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                hovermode="x unified", margin=dict(l=40, r=40, t=40, b=40)
-            )
+            fig.update_layout(height=400, xaxis=dict(tickangle=-45), yaxis2=dict(overlaying='y', side='right'), margin=dict(l=40, r=40, t=20, b=40), hovermode="x unified")
             st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.subheader(f"📋 {month_str} 장비 에러 상세 내역")
-
-        # [3단계] 하단 상세 로그 테이블 추출
-        # 'Error code' 또는 'Error Massage'가 포함된 행을 찾아 헤더로 설정합니다.
-        detail_header_idx = -1
+        # [하단 상세 내역 표 정제]
+        st.subheader(f"📋 {month_str} 장비 에러 상세 리스트")
+        
+        header_idx = -1
         for i, row in df_raw.iterrows():
-            row_str = " ".join(row.astype(str)).lower()
-            if 'error code' in row_str or 'error massage' in row_str:
-                detail_header_idx = i
+            if 'error code' in " ".join(row.astype(str)).lower():
+                header_idx = i
                 break
 
-        if detail_header_idx != -1:
-            # 헤더 행부터 아래로 데이터 추출
-            detail_df = df_raw.iloc[detail_header_idx:].copy()
-            detail_df.columns = detail_df.iloc[0] # 첫 줄을 컬럼명으로
-            detail_df = detail_df.iloc[1:].reset_index(drop=True) # 헤더 줄 제외
+        if header_idx != -1:
+            detail_df = df_raw.iloc[header_idx:].copy()
+            detail_df.columns = detail_df.iloc[0]
+            detail_df = detail_df.iloc[1:].reset_index(drop=True)
+
+            # 1. 이상한 코드(Excel 숫자 날짜)를 실제 날짜 형식으로 변환
+            def format_excel_date(val):
+                try:
+                    if str(val).replace('.', '').isdigit():
+                        return pd.to_datetime(float(val), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
+                    return str(val)
+                except: return str(val)
             
-            # 사진 속 주요 컬럼만 필터링 (존재하는 경우에만)
-            target_cols = ['Date', 'Error code', 'Error Massage', 'Finding/Action', 'Err. Time', 'Err. Point']
-            available_cols = [c for c in target_cols if c in detail_df.columns]
+            if 'Date' in detail_df.columns:
+                detail_df['Date'] = detail_df['Date'].apply(format_excel_date)
+
+            # 2. Jam이 미발생하여 내용이 없는 행 제거 (Error code 기준)
+            detail_df = detail_df.dropna(subset=['Error code'])
+            detail_df = detail_df[detail_df['Error code'].astype(str).str.strip() != ""]
+
+            # 3. 일별 PPJ 매핑 (날짜 기준으로 요약 데이터의 PPJ 연결)
+            def get_ppj_for_date(date_str):
+                try:
+                    day = int(str(date_str).split('-')[-1])
+                    return daily_ppj[day-1] if 0 < day <= len(daily_ppj) else 0
+                except: return 0
             
-            if available_cols:
-                final_detail = detail_df[available_cols].dropna(subset=['Error code', 'Error Massage'], how='all')
-                
-                # 데이터가 너무 많을 수 있으므로 검색 기능 및 데이터프레임 출력
-                st.dataframe(
-                    final_detail, 
-                    use_container_width=True, 
-                    hide_index=True,
-                    column_config={
-                        "Date": st.column_config.TextColumn("날짜"),
-                        "Error code": st.column_config.TextColumn("에러 코드"),
-                        "Error Massage": st.column_config.TextColumn("에러 내용", width="large"),
-                        "Finding/Action": st.column_config.TextColumn("조치 사항", width="large"),
-                        "Err. Point": st.column_config.TextColumn("발생 위치")
-                    }
-                )
-            else:
-                st.info("해당 월의 상세 에러 내역 데이터가 없습니다.")
+            detail_df['PPJ'] = detail_df['Date'].apply(get_ppj_for_date)
+
+            # 4. 표 출력 (간격 조정 및 컬럼 추가)
+            st.dataframe(
+                detail_df,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Date": st.column_config.TextColumn("날짜", width="medium"),
+                    "Error code": st.column_config.TextColumn("에러 코드", width="small"),
+                    "Error Massage": st.column_config.TextColumn("에러 내용", width="large"),
+                    "Finding/Action": st.column_config.TextColumn("에러 조치내용", width="large"),
+                    "Err. Time": st.column_config.TextColumn("발생 시간", width="small"),
+                    "Err. Point": st.column_config.TextColumn("발생 위치", width="medium"),
+                    "PPJ": st.column_config.NumberColumn("일일 PPJ", width="small", format="%.1f")
+                },
+                column_order=["Date", "Error code", "Error Massage", "Finding/Action", "Err. Time", "Err. Point", "PPJ"]
+            )
         else:
-            st.info("파일 내에서 'Error code' 상세 내역 테이블을 찾을 수 없습니다.")
+            st.info("상세 내역 헤더를 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"⚠️ 데이터를 처리하는 중 오류가 발생했습니다: {e}")
+        st.error(f"데이터 처리 중 오류: {e}")
         
 # ==========================================
 # 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
@@ -659,6 +661,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
