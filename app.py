@@ -482,29 +482,28 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 2단 분할 그래프 & 표 추출 로직 강화 최종판)
+# 4. 화면 UI 보따리 (★ 탭 3: 가독성 폭발 & 데이터 정밀 타격 최종판)
 # ==========================================
 from plotly.subplots import make_subplots
 
 def render_equipment_data_page():
-    # 1. 표 디자인 (진한 검정색 테두리와 가독성 강화 CSS)
+    # 1. 표 디자인 (진한 테두리 및 텍스트 정렬 CSS)
     st.markdown("""
         <style>
-            .final-report-container { width: 100%; margin-top: 20px; }
+            .final-report-container { width: 100%; margin-top: 10px; }
             .final-report-table {
                 width: 100%; border-collapse: collapse; border: 2px solid #000000 !important;
                 font-size: 12px; color: #000000; background-color: #ffffff;
             }
             .final-report-table th, .final-report-table td {
                 border: 1px solid #000000 !important; padding: 5px 8px; text-align: center !important;
-                word-break: break-all;
             }
             .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; }
             .t-left { text-align: left !important; }
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Unit/Jam/PPJ 정밀 분석)</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Unit/Jam/PPJ 통합 분석)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
@@ -520,119 +519,98 @@ def render_equipment_data_page():
         xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
         df_raw = None
         for name, data in xls.items():
-            if data.astype(str).apply(lambda r: r.str.contains('Total Unit', case=False).any(), axis=1).any():
+            if data.astype(str).apply(lambda r: r.str.contains('Unit|Output', case=False).any(), axis=1).any():
                 df_raw = data; break
         
         if df_raw is None:
-            st.error("⚠️ 가동 데이터 시트를 찾을 수 없습니다."); return
+            st.error("⚠️ 가동 데이터를 찾을 수 없습니다."); return
 
-        # [1. 상단 2단 분할 그래프 생성 - PPJ 가독성 해결]
-        def get_sum_row(k_list):
-            for _, r in df_raw.iterrows():
-                row_str = "".join(r.astype(str)).lower().replace(" ", "")
-                if any(k in row_str for k in k_list) and not any(x in row_str for x in ['%', '발생률']):
-                    vals = r.tolist()
+        # [1. 상단 요약 데이터 추출 로직 - 키워드 무시하고 싹 뒤지기]
+        def get_sum_row(keywords):
+            for _, row in df_raw.iterrows():
+                # 특수문자(#, _)와 공백을 모두 지우고 비교
+                row_str = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
+                if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률', 'rate']):
+                    vals = row.tolist()
                     for i, v in enumerate(vals):
-                        if str(v).replace('.','').replace(',','').strip().isdigit(): return (vals[i:i+31]+[0]*31)[:31]
+                        v_s = str(v).replace('.','').replace(',','').strip()
+                        if v_s.isdigit() or v in ['비가동', '미가동']: return (vals[i:i+31]+[0]*31)[:31]
             return [0]*31
 
-        units = get_sum_row(['totalunit'])
-        jams = get_sum_row(['jamcount'])
+        units = get_sum_row(['totalunit', 'output'])
+        jams = get_sum_row(['jamcount', 'jam'])
         ppjs = get_sum_row(['ppj'])
 
-        c_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': units, 'Jam': jams, 'PPJ': ppjs})
+        chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': units, 'Jam': jams, 'PPJ': ppjs})
         for c in ['Unit', 'Jam', 'PPJ']:
-            c_df[c] = pd.to_numeric(c_df[c].astype(str).str.replace(',', '').replace(['nan','비가동','미가동','None',''], '0'), errors='coerce').fillna(0)
+            chart_df[c] = pd.to_numeric(chart_df[c].astype(str).str.replace(',', '').replace(['nan','비가동','미가동',''], '0'), errors='coerce').fillna(0)
 
-        # 2단 서브플롯 생성
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
-                            subplot_titles=("투입량(Unit) 및 에러 건수(Jam)", "생산 효율(PPJ) 추이"))
-
-        # (위) 투입량 Bar + 에러 건수 Line
-        fig.add_trace(go.Bar(x=c_df['날짜'], y=c_df['Unit'], name='투입량(Unit)', marker_color='#5B9BD5'), row=1, col=1)
-        fig.add_trace(go.Scatter(x=c_df['날짜'], y=c_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1)
-
-        # (아래) PPJ 전용 Line
-        fig.add_trace(go.Scatter(x=c_df['날짜'], y=c_df['PPJ'], name='PPJ', mode='lines+markers', line=dict(color='#70AD47', width=3)), row=2, col=1)
-
-        fig.update_layout(height=650, showlegend=True, margin=dict(l=50, r=50, t=50, b=50), hovermode="x unified")
+        # 📊 2단 그래프 (위: 투입량/에러, 아래: PPJ 효율)
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.12, subplot_titles=("투입량 및 에러 건수", "PPJ (생산 효율)"))
+        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1)
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['PPJ'], name='효율(PPJ)', mode='lines+markers', line=dict(color='#70AD47', width=3)), row=2, col=1)
+        fig.update_layout(height=600, margin=dict(l=50, r=50, t=50, b=50), hovermode="x unified")
         st.plotly_chart(fig, use_container_width=True)
 
-        # [2. 하단 상세 내역 데이터 정제 및 표 생성]
-        st.subheader(f"📋 {month_str} 에러 상세 분석 리스트")
+        # [2. 하단 상세 리스트 정밀 가공]
+        st.subheader(f"📋 {month_str} 에러 상세 분석")
         h_idx = -1
         for i, row in df_raw.iterrows():
             if 'error code' in " ".join(row.astype(str)).lower():
                 h_idx = i; h_row = row.tolist(); break
 
         if h_idx != -1:
-            # 컬럼 위치 찾기
-            m = {'Date': 0, 'Code': 0, 'Msg': 0, 'Act': 0, 'Time': 0, 'Loc': 0, 'PPJ': 0}
+            m = {'D': 0, 'C': 0, 'M': 0, 'A': 0, 'T': 0, 'L': 0, 'P': 0}
             for i, v in enumerate(h_row):
-                v_l = str(v).lower().strip()
-                if 'date' in v_l: m['Date'] = i
-                elif 'error code' in v_l: m['Code'] = i
-                elif 'error massage' in v_l: m['Msg'] = i
-                elif 'finding/action' in v_l: m['Act'] = i
-                elif 'err. time' in v_l: m['Time'] = i
-                elif 'err. point' in v_l: m['Loc'] = i
-                elif 'ppj' in v_l: m['PPJ'] = i
+                v_l = str(v).lower()
+                if 'date' in v_l: m['D'] = i
+                elif 'error code' in v_l: m['C'] = i
+                elif 'error massage' in v_l: m['M'] = i
+                elif 'finding' in v_l: m['A'] = i
+                elif 'time' in v_l: m['T'] = i
+                elif 'point' in v_l: m['L'] = i
+                elif 'ppj' in v_l: m['P'] = i
 
             data_slice = df_raw.iloc[h_idx + 1:].copy()
-            cleaned_rows = []
-            
+            rows_html = []
+            cur_d, cur_p = "", "0"
+
             for _, r in data_slice.iterrows():
-                # 에러코드뿐만 아니라 에러내용이나 조치내용 중 하나라도 있으면 데이터로 간주
-                c_val = str(r[m['Code']]).strip()
-                m_val = str(r[m['Msg']]).strip()
-                if c_val in ['nan', 'None', ''] and m_val in ['nan', 'None', '']: continue
+                # 에러코드나 내용이 있는 줄만 데이터로 인정
+                code_v = str(r[m['C']]).strip()
+                msg_v = str(r[m['M']]).strip()
+                if code_v in ['nan', 'None', ''] and msg_v in ['nan', 'None', '']: continue
                 
-                # 날짜 및 PPJ 처리
-                dt = r[m['Date']]
-                if pd.isna(dt) or str(dt).strip() == 'nan': dt = None
-                elif str(dt).replace('.','').isdigit():
-                    dt = pd.to_datetime(float(dt), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                else: dt = str(dt).split(' ')[0]
-
-                p_val = str(r[m['PPJ']]).split('.')[0] if not pd.isna(r[m['PPJ']]) and str(r[m['PPJ']]) != 'nan' else None
-
-                cleaned_rows.append({
-                    "날짜": dt, "에러코드": c_val, "PPJ": p_val,
-                    "에러내용": m_val, "조치내용": str(r[m['Act']]),
-                    "시간": str(r[r.index[m['Time']]]).split('.')[0] if m['Time'] < len(r) else "",
-                    "위치": str(r[r.index[m['Loc']]]) if m['Loc'] < len(r) else ""
-                })
-
-            if cleaned_rows:
-                f_df = pd.DataFrame(cleaned_rows)
-                f_df['날짜'] = f_df['날짜'].ffill()
-                f_df['PPJ'] = f_df['PPJ'].ffill().fillna("0")
+                # 날짜/PPJ 자동 채우기 (ffill)
+                if not pd.isna(r[m['D']]) and str(r[m['D']]).strip() != 'nan':
+                    cur_d = pd.to_datetime(float(r[m['D']]), unit='D', origin='1899-12-30').strftime('%Y-%m-%d') if str(r[m['D']]).replace('.','').isdigit() else str(r[m['D']]).split(' ')[0]
+                if not pd.isna(r[m['P']]) and str(r[m['P']]).strip() != 'nan':
+                    cur_p = str(r[m['P']]).split('.')[0]
                 
-                # HTML 테이블 생성
-                rows_html = ""
-                for _, row in f_df.iterrows():
-                    rows_html += f"""
-                        <tr>
-                            <td style='width:75px;'>{row['날짜']}</td><td style='width:60px;'>{row['에러코드']}</td>
-                            <td style='width:60px;'>{row['PPJ']}</td><td class='t-left'>{row['에러내용']}</td>
-                            <td class='t-left'>{row['조치내용']}</td><td style='width:65px;'>{row['시간']}</td>
-                            <td style='width:90px;'>{row['위치']}</td>
-                        </tr>
-                    """
-                
+                rows_html.append(f"""
+                    <tr>
+                        <td style='width:75px;'>{cur_d}</td><td style='width:60px;'>{code_v}</td>
+                        <td style='width:60px;'>{cur_p}</td><td class='t-left'>{msg_v}</td>
+                        <td class='t-left'>{str(r[m['A']])}</td><td style='width:65px;'>{str(r[m['T']]).split('.')[0]}</td>
+                        <td style='width:90px;'>{str(r[m['L']])}</td>
+                    </tr>
+                """)
+
+            if rows_html:
                 st.markdown(f"""
                     <div class='final-report-container'>
                         <table class='final-report-table'>
                             <thead>
                                 <tr>
-                                    <th>날짜</th><th>에러코드</th><th>PPJ</th><th>에러내용</th><th>조치내용</th><th>시간</th><th>위치</th>
+                                    <th>날짜</th><th>코드</th><th>PPJ</th><th>에러내용</th><th>조치내용</th><th>시간</th><th>위치</th>
                                 </tr>
                             </thead>
-                            <tbody>{rows_html}</tbody>
+                            <tbody>{"".join(rows_html)}</tbody>
                         </table>
                     </div>
                 """, unsafe_allow_html=True)
-            else: st.info("상세 에러 내역 데이터가 없습니다.")
+            else: st.info("상세 데이터가 없습니다.")
         else: st.info("데이터 헤더를 찾을 수 없습니다.")
 
     except Exception as e: st.error(f"⚠️ 시스템 오류: {e}")
@@ -679,6 +657,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
