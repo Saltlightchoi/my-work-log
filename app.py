@@ -482,7 +482,7 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: Plotly 최신 문법 및 사진 양식 완벽 반영본)
+# 4. 화면 UI 보따리 (★ 탭 3: 그래프 + 상세 내역 표 통합 버전)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Total Unit & Jam Count)</div>", unsafe_allow_html=True)
@@ -516,7 +516,7 @@ def render_equipment_data_page():
         df_raw = None
         xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
         
-        # [1단계] 사진 양식(Total Unit)이 있는 시트를 우선적으로 탐색
+        # [1단계] 데이터 시트 탐색 (Total Unit 글자가 있는 시트)
         for sheet_name, sheet_data in xls.items():
             combined_text = " ".join(sheet_data.astype(str).values.flatten()).lower()
             if 'total unit' in combined_text or 'totalunit' in combined_text:
@@ -524,20 +524,16 @@ def render_equipment_data_page():
                 break
         
         if df_raw is None:
-            st.error("⚠️ 파일 내에서 'Total Unit' 양식이 포함된 시트를 찾을 수 없습니다.")
+            st.error("⚠️ 파일 내에서 데이터 양식을 찾을 수 없습니다.")
             return
 
-        # [2단계] 데이터 추출 함수 (사진 속 행 명칭 정밀 타격)
-        def get_row_data(keywords):
+        # [2단계] 상단 요약 데이터 추출 함수
+        def get_summary_row(keywords):
             for _, row in df_raw.iterrows():
                 row_str = " ".join(row.astype(str)).lower().replace(" ", "")
                 if any(k.lower().replace(" ", "") in row_str for k in keywords):
-                    # PPJ나 비율이 포함된 계산 행은 제외
-                    if any(x in row_str for x in ['ppj', '%', '발생률', 'ratio']):
-                        continue
-                    
+                    if any(x in row_str for x in ['ppj', '%', '발생률', 'ratio']): continue
                     vals = row.tolist()
-                    # 숫자가 시작되는 지점(보통 2~3번째 칸) 탐색
                     start_idx = -1
                     for i, v in enumerate(vals):
                         v_str = str(v).replace(',', '').replace('.', '').strip()
@@ -548,66 +544,75 @@ def render_equipment_data_page():
                         return (vals[start_idx : start_idx + 31] + [0]*31)[:31]
             return None
 
-        total_unit_raw = get_row_data(['total unit', 'totalunit'])
-        jam_count_raw = get_row_data(['jam count', 'jamcount'])
+        total_unit_raw = get_summary_row(['total unit', 'totalunit'])
+        jam_count_raw = get_summary_row(['jam count', 'jamcount'])
 
-        if total_unit_raw is None or jam_count_raw is None:
-            st.error("⚠️ 'Total Unit' 또는 'Jam Count' 데이터 행을 찾지 못했습니다.")
-            return
+        if total_unit_raw is not None and jam_count_raw is not None:
+            # 그래프용 데이터프레임 구성
+            chart_df = pd.DataFrame({
+                '날짜': [f"{month_num}월 {i}일" for i in range(1, 32)],
+                'Total_Unit': total_unit_raw,
+                'Jam_Count': jam_count_raw
+            })
+            for col in ['Total_Unit', 'Jam_Count']:
+                chart_df[col] = pd.to_numeric(chart_df[col].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
 
-        # [3단계] 데이터프레임 조립 및 정제
-        df = pd.DataFrame({
-            '날짜': [f"{month_num}월 {i}일" for i in range(1, 32)],
-            'Total_Unit': total_unit_raw,
-            'Jam_Count': jam_count_raw
-        })
+            # 그래프 출력
+            st.subheader(f"📈 {equipment} 가동 현황 그래프 ({month_str})")
+            fig = go.Figure()
+            fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Total_Unit'], name='투입 수량', marker_color='#5B9BD5', yaxis='y1'))
+            fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam_Count'], name='에러 건수', mode='lines+markers', line=dict(color='#ED7D31', width=3), yaxis='y2'))
+            fig.update_layout(
+                height=450, xaxis=dict(tickangle=-45),
+                yaxis=dict(title=dict(text="투입 수량 (Unit)", font=dict(color="#5B9BD5")), tickfont=dict(color="#5B9BD5")),
+                yaxis2=dict(title=dict(text="에러 건수 (건)", font=dict(color="#ED7D31")), tickfont=dict(color="#ED7D31"), overlaying="y", side="right", range=[0, chart_df['Jam_Count'].max() + 5]),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                hovermode="x unified", margin=dict(l=40, r=40, t=40, b=40)
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
-        for col in ['Total_Unit', 'Jam_Count']:
-            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False).replace(['nan', '비가동', '미가동', 'None', ''], '0'), errors='coerce').fillna(0)
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader(f"📋 {month_str} 장비 에러 상세 내역")
 
-        # [4단계] Plotly 이중 축 그래프 생성 (에러 수정 포인트)
-        st.subheader(f"📊 {equipment} - {unit} 가동 현황 ({month_str})")
-        
-        fig = go.Figure()
-        
-        # 투입 수량 막대 그래프
-        fig.add_trace(go.Bar(x=df['날짜'], y=df['Total_Unit'], name='투입 수량(Total Unit)', marker_color='#5B9BD5', yaxis='y1'))
-        
-        # 에러 건수 꺾은선 그래프
-        fig.add_trace(go.Scatter(x=df['날짜'], y=df['Jam_Count'], name='에러 건수(Jam count)', mode='lines+markers', line=dict(color='#ED7D31', width=3), yaxis='y2'))
+        # [3단계] 하단 상세 로그 테이블 추출
+        # 'Error code' 또는 'Error Massage'가 포함된 행을 찾아 헤더로 설정합니다.
+        detail_header_idx = -1
+        for i, row in df_raw.iterrows():
+            row_str = " ".join(row.astype(str)).lower()
+            if 'error code' in row_str or 'error massage' in row_str:
+                detail_header_idx = i
+                break
 
-        # ★ 레이아웃 설정 (최신 Plotly 규격 적용)
-        max_jam = float(df['Jam_Count'].max())
-        fig.update_layout(
-            height=500,
-            xaxis=dict(title=dict(text="날짜"), tickangle=-45),
-            yaxis=dict(
-                title=dict(text="투입 수량 (Unit)", font=dict(color="#5B9BD5")), # titlefont 대신 title 사용
-                tickfont=dict(color="#5B9BD5"),
-                side="left"
-            ),
-            yaxis2=dict(
-                title=dict(text="에러 발생 (건)", font=dict(color="#ED7D31")),
-                tickfont=dict(color="#ED7D31"),
-                overlaying="y",
-                side="right",
-                range=[0, max_jam + 5]
-            ),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            hovermode="x unified",
-            margin=dict(l=40, r=40, t=40, b=40)
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-        # 하단 지표 요약
-        t_sum = int(df['Total_Unit'].sum())
-        j_sum = int(df['Jam_Count'].sum())
-        ppj = round(t_sum / j_sum, 1) if j_sum > 0 else 0
-        
-        c1, c2, c3 = st.columns(3)
-        c1.metric("총 투입량", f"{t_sum:,} Unit")
-        c2.metric("총 에러 건수", f"{j_sum:,} 건")
-        c3.metric("평균 PPJ", f"{ppj:,}")
+        if detail_header_idx != -1:
+            # 헤더 행부터 아래로 데이터 추출
+            detail_df = df_raw.iloc[detail_header_idx:].copy()
+            detail_df.columns = detail_df.iloc[0] # 첫 줄을 컬럼명으로
+            detail_df = detail_df.iloc[1:].reset_index(drop=True) # 헤더 줄 제외
+            
+            # 사진 속 주요 컬럼만 필터링 (존재하는 경우에만)
+            target_cols = ['Date', 'Error code', 'Error Massage', 'Finding/Action', 'Err. Time', 'Err. Point']
+            available_cols = [c for c in target_cols if c in detail_df.columns]
+            
+            if available_cols:
+                final_detail = detail_df[available_cols].dropna(subset=['Error code', 'Error Massage'], how='all')
+                
+                # 데이터가 너무 많을 수 있으므로 검색 기능 및 데이터프레임 출력
+                st.dataframe(
+                    final_detail, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Date": st.column_config.TextColumn("날짜"),
+                        "Error code": st.column_config.TextColumn("에러 코드"),
+                        "Error Massage": st.column_config.TextColumn("에러 내용", width="large"),
+                        "Finding/Action": st.column_config.TextColumn("조치 사항", width="large"),
+                        "Err. Point": st.column_config.TextColumn("발생 위치")
+                    }
+                )
+            else:
+                st.info("해당 월의 상세 에러 내역 데이터가 없습니다.")
+        else:
+            st.info("파일 내에서 'Error code' 상세 내역 테이블을 찾을 수 없습니다.")
 
     except Exception as e:
         st.error(f"⚠️ 데이터를 처리하는 중 오류가 발생했습니다: {e}")
@@ -654,6 +659,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
