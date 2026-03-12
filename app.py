@@ -500,9 +500,9 @@ def render_equipment_data_page():
     st.markdown("<br>", unsafe_allow_html=True)
 
     file_map = {
-        "1월": "SLH1(WOOIK) Daily Test Report_26년.xlsx - 26'01.csv",
-        "2월": "SLH1(WOOIK) Daily Test Report_26년.xlsx - 26'02.csv",
-        "3월": "SLH1(WOOIK) Daily Test Report_26년.xlsx - 26'03.csv"
+        "1월": "SLH1 - February 2026.xlsx - 26'01.csv",
+        "2월": "SLH1 - January 2026.xlsx - 26'02.csv",
+        "3월": "SLH1 - March 2026.xlsx - 26'03.csv"
     }
     target_file = file_map[month_str]
     month_num = month_str.replace("월", "")
@@ -622,4 +622,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
