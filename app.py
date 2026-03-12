@@ -482,7 +482,7 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 인코딩 및 칸 수 불일치 에러 완벽 해결본)
+# 4. 화면 UI 보따리 (★ 탭 3: 엑셀(.xlsx)과 CSV 동시 지원 업그레이드본)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Output & Jam Rate)</div>", unsafe_allow_html=True)
@@ -499,29 +499,36 @@ def render_equipment_data_page():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # 🚨 현재 깃허브에 올라가 있는 실제 파일명과 똑같이 적어주세요.
+    # (예시로 적어둔 것이니, 실제 1월, 2월, 3월 파일명에 맞게 수정하세요!)
     file_map = {
-        "1월": "SLH1 - February 2026.xlsx",
-        "2월": "SLH1 - January 2026.xlsx",
+        "1월": "SLH1 - February 2026.xlsx", 
+        "2월": "SLH1 - January 2026.xlsx", # 에러가 났던 엑셀 파일 이름
         "3월": "SLH1 - March 2026.xlsx"
     }
-    target_file = file_map[month_str]
+    
+    target_file = file_map.get(month_str, "")
     month_num = month_str.replace("월", "")
 
     try:
-        # 1. 파일 불러오기 (★수정된 부분: 인코딩 자동 감지 및 불규칙한 칸 수 해결)
+        # 1. 파일 불러오기 (★ 엑셀과 CSV 자동 구별 기능 추가)
         df_raw = None
-        encodings_to_try = ['utf-8-sig', 'utf-8', 'cp949', 'euc-kr']
         
-        for enc in encodings_to_try:
-            try:
-                # names=range(100): 엑셀 줄마다 칸 수가 달라서 나는 에러(ParserError)를 완벽 방지
-                df_raw = pd.read_csv(target_file, header=None, names=range(100), encoding=enc)
-                break  # 에러 없이 성공하면 반복문 탈출
-            except Exception:
-                continue  # 실패하면 다음 인코딩 시도
+        if target_file.endswith('.xlsx'):
+            # 확장자가 .xlsx 인 경우 엑셀 전용 읽기 모드 작동
+            df_raw = pd.read_excel(target_file, header=None)
+        else:
+            # 확장자가 .csv 인 경우 (기존 로직 유지)
+            encodings_to_try = ['utf-8-sig', 'utf-8', 'cp949', 'euc-kr']
+            for enc in encodings_to_try:
+                try:
+                    df_raw = pd.read_csv(target_file, header=None, names=range(100), encoding=enc)
+                    break 
+                except Exception:
+                    continue 
                 
-        if df_raw is None:
-            st.error(f"⚠️ '{target_file}' 파일의 인코딩을 읽을 수 없습니다.")
+        if df_raw is None or df_raw.empty:
+            st.error(f"⚠️ '{target_file}' 파일을 제대로 읽지 못했습니다. 파일명이나 인코딩을 확인해주세요.")
             return
 
         # 2. 데이터가 어디에 숨어있든 행(Row)을 통째로 뒤져서 키워드 찾기
@@ -529,7 +536,7 @@ def render_equipment_data_page():
         jam_row = df_raw[df_raw.apply(lambda r: r.astype(str).str.contains('#1_Jam Count', case=False).any(), axis=1)]
 
         if output_row.empty or jam_row.empty:
-            st.error("⚠️ 데이터 파일 안에서 '#1_Output' 또는 '#1_Jam Count' 텍스트를 찾을 수 없습니다.")
+            st.error(f"⚠️ '{target_file}' 파일 안에서 '#1_Output' 또는 '#1_Jam Count' 텍스트를 찾을 수 없습니다.")
             return
 
         # 3. 찾은 행을 파이썬 리스트(목록)로 변환
@@ -595,9 +602,10 @@ def render_equipment_data_page():
 
         st.plotly_chart(fig, use_container_width=True)
 
+    except FileNotFoundError:
+        st.error(f"⚠️ '{target_file}' 파일을 찾을 수 없습니다. 깃허브에 파일이 있는지, 이름이 똑같은지 확인해 주세요.")
     except Exception as e:
         st.error(f"⚠️ 데이터를 처리하는 중 오류가 발생했습니다: {e}")
-
 # ==========================================
 # 5. 메인 실행 (Main App) - 탭 구조로 변경됨!
 # ==========================================
@@ -640,6 +648,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
