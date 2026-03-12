@@ -482,30 +482,31 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 데이터 위치 고정 및 표 레이아웃 최종 종결본)
+# 4. 화면 UI 보따리 (★ 탭 3: 데이터 정밀 타격 & 레이아웃 최종 종결본)
 # ==========================================
 def render_equipment_data_page():
-    # 표의 경계선을 아주 진하게 만들고 칸 너비를 강제 고정하는 CSS
+    # 표의 경계선을 엑셀처럼 아주 명확하게 만드는 CSS 스타일
     st.markdown("""
         <style>
-            .custom-table {
-                width: 100%; border-collapse: collapse; border: 2px solid black;
-                font-size: 13px; color: black; background-color: white;
+            .excel-table {
+                width: 100%; border-collapse: collapse; border: 2px solid #000000;
+                font-size: 12px; color: #000000; background-color: #ffffff;
             }
-            .custom-table th, .custom-table td {
-                border: 1px solid black !important; padding: 5px; text-align: center;
+            .excel-table th, .excel-table td {
+                border: 1px solid #000000 !important; padding: 4px 6px; text-align: center;
+                word-break: break-all;
             }
-            .custom-table th { background-color: #e9ecef; font-weight: bold; }
-            .col-date { width: 70px; }
-            .col-code { width: 80px; }
-            .col-ppj { width: 60px; }
-            .col-time { width: 70px; }
-            .col-loc { width: 100px; }
-            .col-text { text-align: left !important; }
+            .excel-table th { background-color: #d9e1f2; font-weight: bold; }
+            .w-date { width: 65px; }
+            .w-code { width: 60px; }
+            .w-ppj { width: 50px; }
+            .w-time { width: 60px; }
+            .w-loc { width: 90px; }
+            .t-left { text-align: left !important; }
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='main-title'>📊 장비 가동 데이터 통합 분석</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>📊 장비 가동 데이터 (Unit / Jam / PPJ 통합 분석)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
@@ -521,49 +522,47 @@ def render_equipment_data_page():
         xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
         df_raw = None
         for sheet_name, sheet_data in xls.items():
-            combined_text = " ".join(sheet_data.astype(str).values.flatten()).lower()
-            if 'total unit' in combined_text:
+            if sheet_data.astype(str).apply(lambda r: r.str.contains('Total Unit', case=False).any(), axis=1).any():
                 df_raw = sheet_data; break
         
         if df_raw is None:
-            st.error("⚠️ 데이터를 포함한 시트를 찾을 수 없습니다."); return
+            st.error("⚠️ 가동 데이터가 포함된 시트를 찾을 수 없습니다."); return
 
-        # [상단 요약 데이터 추출 및 3축 그래프]
+        # [1. 상단 요약 데이터 및 3축 그래프]
         def get_summary_row(keywords):
             for _, row in df_raw.iterrows():
-                row_str = " ".join(row.astype(str)).lower().replace(" ", "")
+                row_str = "".join(row.astype(str)).lower().replace(" ", "")
                 if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률']):
                     vals = row.tolist()
                     for i, v in enumerate(vals):
-                        if str(v).replace('.', '').replace(',', '').strip().isdigit():
-                            return (vals[i : i + 31] + [0]*31)[:31]
+                        if str(v).replace('.', '').isdigit(): return (vals[i : i + 31] + [0]*31)[:31]
             return [0]*31
 
-        t_units = get_summary_row(['total unit', 'totalunit'])
-        j_counts = get_summary_row(['jam count', 'jamcount'])
+        t_units = get_summary_row(['totalunit'])
+        j_counts = get_summary_row(['jamcount'])
         p_values = get_summary_row(['ppj'])
 
         chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': t_units, 'Jam': j_counts, 'PPJ': p_values})
         for c in ['Unit', 'Jam', 'PPJ']:
             chart_df[c] = pd.to_numeric(chart_df[c].astype(str).str.replace(',', '').replace(['nan', '비가동', '미가동', ''], '0'), errors='coerce').fillna(0)
 
-        # 그래프: 투입량(Unit), Jam건수, PPJ 효율 표시
+        # 3축 그래프 설정 (Plotly 최신 문법)
         fig = go.Figure()
-        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='Unit(투입)', marker_color='#5B9BD5', yaxis='y1'))
-        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='Jam(건)', mode='lines+markers', line=dict(color='#ED7D31', width=2), yaxis='y2'))
-        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['PPJ'], name='PPJ(효율)', mode='lines+markers', line=dict(color='#70AD47', width=2, dash='dot'), yaxis='y3'))
+        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입량(Unit)', marker_color='#5B9BD5', yaxis='y1'))
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2), yaxis='y2'))
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['PPJ'], name='효율(PPJ)', mode='lines+markers', line=dict(color='#70AD47', width=2, dash='dot'), yaxis='y3'))
 
         fig.update_layout(
             height=400, xaxis=dict(tickangle=-45),
             yaxis=dict(title=dict(text="Unit", font=dict(color="#5B9BD5")), tickfont=dict(color="#5B9BD5")),
             yaxis2=dict(title=dict(text="Jam", font=dict(color="#ED7D31")), tickfont=dict(color="#ED7D31"), overlaying="y", side="right"),
-            yaxis3=dict(title=dict(text="PPJ", font=dict(color="#70AD47")), tickfont=dict(color="#70AD47"), overlaying="y", side="right", anchor="free", position=0.95),
+            yaxis3=dict(title=dict(text="PPJ", font=dict(color="#70AD47")), tickfont=dict(color="#70AD47"), overlaying="y", side="right", anchor="free", position=0.92),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            margin=dict(l=50, r=100, t=50, b=50), hovermode="x unified"
+            margin=dict(l=50, r=120, t=50, b=50), hovermode="x unified"
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # [하단 상세 내역: HTML 방식으로 표 강제 고정]
+        # [2. 하단 상세 내역 표 정밀 가공]
         st.subheader(f"📋 {month_str} 에러 상세 리스트")
         h_idx = -1
         for i, row in df_raw.iterrows():
@@ -571,62 +570,68 @@ def render_equipment_data_page():
                 h_idx = i; h_row = row.tolist(); break
 
         if h_idx != -1:
-            # 컬럼 위치 찾기 (찾지 못할 경우를 대비해 None으로 초기화)
-            col_map = {'Date': None, 'Code': None, 'Msg': None, 'Act': None, 'Time': None, 'Loc': None, 'PPJ': None}
+            # 컬럼 위치를 텍스트 매칭으로 정확히 찾음
+            c_map = {'Date': 0, 'Code': 0, 'Msg': 0, 'Act': 0, 'Time': 0, 'Loc': 0, 'PPJ': 0}
             for i, v in enumerate(h_row):
                 v_l = str(v).lower().strip()
-                if 'date' in v_l: col_map['Date'] = i
-                elif 'error code' in v_l: col_map['Code'] = i
-                elif 'error massage' in v_l: col_map['Msg'] = i
-                elif 'finding/action' in v_l: col_map['Act'] = i
-                elif 'err. time' in v_l: col_map['Time'] = i
-                elif 'err. point' in v_l: col_map['Loc'] = i
-                elif 'ppj' in v_l: col_map['PPJ'] = i
+                if 'date' in v_l: c_map['Date'] = i
+                elif 'error code' in v_l: c_map['Code'] = i
+                elif 'error massage' in v_l: c_map['Msg'] = i
+                elif 'finding/action' in v_l: c_map['Act'] = i
+                elif 'err. time' in v_l: c_map['Time'] = i
+                elif 'err. point' in v_l: c_map['Loc'] = i
+                elif 'ppj' in v_l: c_map['PPJ'] = i
 
             data_p = df_raw.iloc[h_idx + 1:].copy()
             html_rows = ""
             prev_date = ""
+            prev_ppj = "0"
 
             for _, r in data_p.iterrows():
-                # 에러 코드가 없으면 건너뜀
-                code = str(r[col_map['Code']]).strip() if col_map['Code'] is not None else ""
+                code = str(r[c_map['Code']]).strip()
                 if code in ['nan', 'None', '']: continue
                 
-                # 날짜 처리 (ffill 효과)
-                curr_date = str(r[col_map['Date']]).split(' ')[0] if col_map['Date'] is not None and str(r[col_map['Date']]) != 'nan' else prev_date
-                if curr_date == 'nan': curr_date = prev_date
+                # 날짜 ffill (위쪽 날짜 가져오기)
+                raw_dt = str(r[c_map['Date']]).strip()
+                if raw_dt != 'nan' and raw_dt != '':
+                    curr_date = raw_dt.split(' ')[0] # 시간 제거
+                else:
+                    curr_date = prev_date
                 prev_date = curr_date
 
-                # PPJ 처리 (날짜와 섞이지 않도록 인덱스 체크 강화)
-                ppj_val = str(r[col_map['PPJ']]).split('.')[0] if col_map['PPJ'] is not None else "0"
-                if ppj_val == 'nan' or ppj_val == 'None': ppj_val = "0"
+                # PPJ ffill (위쪽 PPJ 가져오기 및 소수점 제거)
+                raw_ppj = str(r[c_map['PPJ']]).strip()
+                if raw_ppj != 'nan' and raw_ppj != '':
+                    curr_ppj = raw_ppj.split('.')[0]
+                else:
+                    curr_ppj = prev_ppj
+                prev_ppj = curr_ppj
 
                 html_rows += f"""
                     <tr>
-                        <td class='col-date'>{curr_date}</td>
-                        <td class='col-code'>{code}</td>
-                        <td class='col-ppj'>{ppj_val}</td>
-                        <td class='col-text'>{str(r[col_map['Msg']])}</td>
-                        <td class='col-text'>{str(r[col_map['Act']])}</td>
-                        <td class='col-time'>{str(r[col_map['Time']])}</td>
-                        <td class='col-loc'>{str(r[col_map['Loc']])}</td>
+                        <td class='w-date'>{curr_date}</td>
+                        <td class='w-code'>{code}</td>
+                        <td class='w-ppj'>{curr_ppj}</td>
+                        <td class='t-left'>{str(r[c_map['Msg']])}</td>
+                        <td class='t-left'>{str(r[c_map['Act']])}</td>
+                        <td class='w-time'>{str(r[c_map['Time']])}</td>
+                        <td class='w-loc'>{str(r[c_map['Loc']])}</td>
                     </tr>
                 """
 
-            # 최종 HTML 표 출력
             st.markdown(f"""
-                <table class='custom-table'>
+                <table class='excel-table'>
                     <thead>
                         <tr>
-                            <th class='col-date'>날짜</th><th class='col-code'>에러코드</th>
-                            <th class='col-ppj'>PPJ</th><th>에러내용</th><th>조치내용</th>
-                            <th class='col-time'>시간</th><th class='col-loc'>위치</th>
+                            <th class='w-date'>날짜</th><th class='w-code'>에러코드</th>
+                            <th class='w-ppj'>PPJ</th><th>에러내용</th><th>조치내용</th>
+                            <th class='w-time'>시간</th><th class='w-loc'>위치</th>
                         </tr>
                     </thead>
                     <tbody>{html_rows}</tbody>
                 </table>
             """, unsafe_allow_html=True)
-        else: st.info("상세 내역을 찾을 수 없습니다.")
+        else: st.info("상세 내역 헤더를 찾을 수 없습니다.")
 
     except Exception as e: st.error(f"⚠️ 오류 발생: {e}")
         
@@ -672,6 +677,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
