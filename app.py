@@ -492,9 +492,23 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 탭 3: 장비 가동 데이터 (보조축 & 테두리 적용)
+# 5. 화면 UI 보따리 (★ 탭 3: 장비 가동 데이터 전용)
 # ==========================================
 def render_equipment_data_page():
+    st.markdown("""
+        <style>
+            .final-report-table {
+                width: 100%; border-collapse: collapse; border: 2px solid #000000 !important;
+                font-size: 12px; color: #000000; background-color: #ffffff;
+            }
+            .final-report-table th, .final-report-table td {
+                border: 1px solid #000000 !important; padding: 6px 8px; text-align: center !important;
+            }
+            .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; }
+            .t-left { text-align: left !important; }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
@@ -535,18 +549,28 @@ def render_equipment_data_page():
         for c in ['Unit', 'Jam', 'PPJ']:
             chart_df[c] = pd.to_numeric(chart_df[c].astype(str).str.replace(',', '').replace(['nan','비가동','미가동','None',''], '0'), errors='coerce').fillna(0)
 
-        # 📊 그래프 (상단: 보조축 적용, 하단: PPJ 분리)
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
-                            subplot_titles=("투입량(Unit) 및 에러(Jam) 건수", "생산 효율(PPJ)"),
+        # ★ 월 누적 PPJ 계산 추가
+        chart_df['Cum_Unit'] = chart_df['Unit'].cumsum()
+        chart_df['Cum_Jam'] = chart_df['Jam'].cumsum()
+        chart_df['Cum_PPJ'] = chart_df.apply(lambda row: round(row['Cum_Unit'] / row['Cum_Jam'], 1) if row['Cum_Jam'] > 0 else 0, axis=1)
+
+        # 📊 그래프: 상단(Unit/Jam) 하단(일별 PPJ Bar + 누적 PPJ Dot Line)
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.12,
+                            subplot_titles=("투입량(Unit) 및 에러(Jam) 건수", "생산 효율(PPJ) 추이"),
                             specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
         
+        # 위쪽 그래프
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
         fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
-        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['PPJ'], name='효율(PPJ)', mode='lines+markers', line=dict(color='#70AD47', width=3)), row=2, col=1)
         
-        fig.update_layout(height=600, margin=dict(l=50, r=50, t=50, b=50), hovermode="x unified")
+        # 아래쪽 그래프 (일별 PPJ = 막대, 누적 PPJ = 점선)
+        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.7), row=2, col=1)
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Cum_PPJ'], name='누적 PPJ', mode='lines+markers', line=dict(color='#385D22', width=3, dash='dot')), row=2, col=1)
+        
+        fig.update_layout(height=650, margin=dict(l=50, r=50, t=50, b=50), hovermode="x unified", showlegend=True)
         fig.update_yaxes(title_text="투입량 (EA)", secondary_y=False, row=1, col=1)
         fig.update_yaxes(title_text="Jam (건)", secondary_y=True, row=1, col=1)
+        fig.update_yaxes(title_text="PPJ", row=2, col=1)
         st.plotly_chart(fig, use_container_width=True)
 
         # 📋 하단 에러 상세 리스트 출력
@@ -574,7 +598,11 @@ def render_equipment_data_page():
             for _, r in data_slice.iterrows():
                 code_v = str(r[m['C']]).strip()
                 msg_v = str(r[m['M']]).strip()
-                if code_v in ['nan', 'None', ''] and msg_v in ['nan', 'None', '']: continue
+                
+                # ★ 하단 빈칸 쓰레기 데이터 원천 차단
+                if (code_v.lower() in ['nan', 'none', '', '0'] or pd.isna(r[m['C']])) and \
+                   (msg_v.lower() in ['nan', 'none', '', '0'] or pd.isna(r[m['M']])):
+                    continue
                 
                 dt = r[m['D']]
                 if pd.isna(dt) or str(dt).strip() == 'nan': dt = None
@@ -585,12 +613,16 @@ def render_equipment_data_page():
                 ppj_val = str(r[m['P']]).split('.')[0] if not pd.isna(r[m['P']]) and str(r[m['P']]) != 'nan' else None
 
                 t_val = str(r[m['T']]).split('.')[0] if ':' in str(r[m['T']]) else str(r[m['T']])
-                a_val = str(r[m['A']]) if str(r[m['A']]) != 'nan' else ""
-                l_val = str(r[m['L']]) if str(r[m['L']]) != 'nan' else ""
+                if t_val.lower() == 'nan': t_val = ""
+                
+                a_val = str(r[m['A']]) if str(r[m['A']]).lower() != 'nan' else ""
+                l_val = str(r[m['L']]) if str(r[m['L']]).lower() != 'nan' else ""
+                if code_v.lower() == 'nan': code_v = ""
 
                 cleaned_list.append({
                     "Date": dt, "Code": code_v, "PPJ": ppj_val,
-                    "Msg": msg_v, "Act": a_val, "Time": t_val, "Loc": l_val
+                    "Msg": msg_v if msg_v.lower() != 'nan' else "", 
+                    "Act": a_val, "Time": t_val, "Loc": l_val
                 })
 
             if cleaned_list:
@@ -647,3 +679,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
