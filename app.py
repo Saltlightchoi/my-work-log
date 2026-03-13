@@ -492,7 +492,7 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 4. 화면 UI 보따리 (★ 탭 3: 데이터 매핑 버그(0 출력) 완벽 해결본)
+# 5. 화면 UI 보따리 (★ 탭 3: 데이터 매핑 한계 돌파 최종본)
 # ==========================================
 def render_equipment_data_page():
     import re
@@ -564,6 +564,7 @@ def render_equipment_data_page():
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
         fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
         
+        # 📌 점선 제거, 빨간색 굵은 실선 적용 완료
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.8), row=2, col=1)
         fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Cum_PPJ'], name='월 누적 PPJ (실선)', mode='lines+markers', line=dict(color='#FF0000', width=4)), row=2, col=1)
         
@@ -577,74 +578,85 @@ def render_equipment_data_page():
         h_idx = -1
         for i, row in df_raw.iterrows():
             row_str = "".join(row.astype(str)).lower()
-            if 'error code' in row_str or 'errorcode' in row_str:
-                h_idx = i; h_row = row.tolist(); break
+            if 'error code' in row_str or 'errorcode' in row_str or '에러코드' in row_str:
+                h_idx = i; break
 
         if h_idx != -1:
-            # ★ 핵심 해결: 엉뚱한 열을 찾지 않도록 모호한 한글 키워드 제거, 자물쇠(is None) 장착
-            m = {'D': None, 'C': None, 'M': None, 'A': None, 'T': None, 'L': None, 'P': None}
-            for i, v in enumerate(h_row):
-                v_str = str(v).lower().replace(' ', '').replace('\n', '')
-                if m['D'] is None and 'date' in v_str: m['D'] = i
-                elif m['C'] is None and 'errorcode' in v_str: m['C'] = i
-                elif m['M'] is None and ('massage' in v_str or 'message' in v_str): m['M'] = i
-                elif m['A'] is None and ('finding' in v_str or 'action' in v_str): m['A'] = i
-                elif m['T'] is None and 'time' in v_str: m['T'] = i
-                elif m['L'] is None and 'point' in v_str: m['L'] = i
-                elif m['P'] is None and 'ppj' in v_str: m['P'] = i
+            m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
+            
+            # ★ 궁극의 해결책 1: 멀티 라인 헤더 탐색 (위아래 3줄을 뭉쳐서 검색)
+            super_headers = []
+            for col_idx in range(len(df_raw.columns)):
+                col_strs = []
+                for offset in [-1, 0, 1]:
+                    if 0 <= h_idx + offset < len(df_raw):
+                        val = str(df_raw.iloc[h_idx + offset, col_idx]).lower().replace(' ', '').replace('\n', '')
+                        if val not in ['nan', 'none', 'null', '']: col_strs.append(val)
+                super_headers.append("".join(col_strs))
+            
+            for i, v_str in enumerate(super_headers):
+                if m['D'] == -1 and ('date' in v_str or '일자' in v_str): m['D'] = i
+                elif m['C'] == -1 and ('errorcode' in v_str or '에러코드' in v_str): m['C'] = i
+                elif m['M'] == -1 and ('massage' in v_str or 'message' in v_str or '에러내용' in v_str): m['M'] = i
+                elif m['A'] == -1 and ('finding' in v_str or 'action' in v_str or '조치' in v_str): m['A'] = i
+                elif m['T'] == -1 and ('time' in v_str or '시간' in v_str): m['T'] = i
+                elif m['L'] == -1 and ('point' in v_str or '위치' in v_str): m['L'] = i
+                elif m['P'] == -1 and ('ppj' in v_str or '효율' in v_str): m['P'] = i
+
+            # ★ 궁극의 해결책 2: 인코딩이 깨져서 PPJ를 아예 못 찾았을 경우
+            # 에러내용(M)의 바로 왼쪽 칸이 100% 확률로 PPJ 칸임 (숨겨진 열 무시)
+            if m['P'] == -1 and m['M'] != -1:
+                m['P'] = m['M'] - 1
 
             data_slice = df_raw.iloc[h_idx + 1:].copy()
             cleaned_list = []
             
+            # 쓰레기 데이터 검증 함수
             def is_meaningful(val):
                 if pd.isna(val): return False
                 cleaned = re.sub(r'[^a-zA-Z0-9가-힣]', '', str(val))
                 return len(cleaned) > 0
 
+            def get_val(r, idx):
+                return r.iloc[idx] if idx != -1 and idx < len(r) else None
+
             for _, r in data_slice.iterrows():
-                has_code = is_meaningful(r[m['C']]) if m['C'] is not None else False
-                has_msg = is_meaningful(r[m['M']]) if m['M'] is not None else False
+                raw_c = get_val(r, m['C'])
+                raw_m = get_val(r, m['M'])
                 
-                if not has_code and not has_msg:
-                    continue
+                has_code = is_meaningful(raw_c)
+                has_msg = is_meaningful(raw_m)
                 
-                # ★ 코드 데이터가 실수(float)로 읽혀 .0 이 붙는 현상 제거
-                code_orig = str(r[m['C']]).strip() if m['C'] is not None else ""
+                # 코드와 내용 둘 다 빈칸이거나 기호뿐이면 완벽 무시
+                if not has_code and not has_msg: continue
+                
+                code_orig = str(raw_c).strip() if has_code else ""
                 if code_orig.endswith('.0'): code_orig = code_orig[:-2]
-                
-                msg_orig = str(r[m['M']]).strip() if m['M'] is not None else ""
+                msg_orig = str(raw_m).strip() if has_msg else ""
                 if msg_orig.lower() in ['nan', 'none']: msg_orig = ""
 
+                raw_d = get_val(r, m['D'])
                 dt = None
-                if m['D'] is not None:
-                    raw_d = r[m['D']]
-                    if is_meaningful(raw_d):
-                        if str(raw_d).replace('.','').isdigit():
-                            dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                        else:
-                            dt = str(raw_d).split(' ')[0]
+                if is_meaningful(raw_d):
+                    if str(raw_d).replace('.','').isdigit():
+                        dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
+                    else: dt = str(raw_d).split(' ')[0]
 
+                raw_p = get_val(r, m['P'])
                 ppj_val = None
-                if m['P'] is not None and m['P'] < len(r):
-                    raw_p = str(r[m['P']]).strip()
-                    if is_meaningful(raw_p) and raw_p.lower() not in ['nan', 'none']:
-                        ppj_val = raw_p.split('.')[0]
+                if is_meaningful(raw_p) and str(raw_p).lower() not in ['nan', 'none']:
+                    ppj_val = str(raw_p).split('.')[0]
 
+                raw_t = get_val(r, m['T'])
                 t_val = ""
-                if m['T'] is not None and m['T'] < len(r):
-                    raw_t = str(r[m['T']]).strip()
-                    if is_meaningful(raw_t) and raw_t.lower() not in ['nan', 'none']: 
-                        t_val = raw_t.split('.')[0] if ':' in raw_t else raw_t
+                if is_meaningful(raw_t) and str(raw_t).lower() not in ['nan', 'none']:
+                    t_val = str(raw_t).split('.')[0] if ':' in str(raw_t) else str(raw_t)
                 
-                a_val = ""
-                if m['A'] is not None and m['A'] < len(r):
-                    raw_a = str(r[m['A']]).strip()
-                    if is_meaningful(raw_a) and raw_a.lower() not in ['nan', 'none']: a_val = raw_a
+                raw_a = get_val(r, m['A'])
+                a_val = str(raw_a).strip() if is_meaningful(raw_a) and str(raw_a).lower() not in ['nan', 'none'] else ""
 
-                l_val = ""
-                if m['L'] is not None and m['L'] < len(r):
-                    raw_l = str(r[m['L']]).strip()
-                    if is_meaningful(raw_l) and raw_l.lower() not in ['nan', 'none']: l_val = raw_l
+                raw_l = get_val(r, m['L'])
+                l_val = str(raw_l).strip() if is_meaningful(raw_l) and str(raw_l).lower() not in ['nan', 'none'] else ""
 
                 cleaned_list.append({
                     "Date": dt, "Code": code_orig, "PPJ": ppj_val,
@@ -706,6 +718,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
