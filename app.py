@@ -28,6 +28,9 @@ st.markdown("""
         }
         .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; }
         .t-left { text-align: left !important; }
+        
+        /* 사이드바 메뉴 버튼 디자인 */
+        div[data-testid="stSidebar"] button { width: 100% !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -111,7 +114,7 @@ def get_row_color(row):
     return [''] * len(row)
 
 # ==========================================
-# 3. 메뉴 1: 팀 업무일지 (사이드바 통제 완벽 적용)
+# 3. 화면 UI - 1페이지: 팀 업무일지
 # ==========================================
 def render_work_log_page(db_log):
     df_log, sha_log = db_log.load()
@@ -119,9 +122,10 @@ def render_work_log_page(db_log):
         df_log['날짜'] = pd.to_datetime(df_log['날짜']).dt.date.astype(str)
         df_log = df_log.sort_values(by='날짜', ascending=False).reset_index(drop=True)
 
-    # 이 메뉴에서만 작동하는 사이드바
+    # ★ 업무일지 페이지에서만 사이드바 입력 폼 노출 (다른 탭에선 안보임)
     st.sidebar.markdown("---")
-    mode = st.sidebar.selectbox("📋 일지 작업", ["➕ 작성", "✏️ 수정", "❌ 삭제"])
+    st.sidebar.markdown("### 📝 일지 작성/수정/삭제")
+    mode = st.sidebar.selectbox("기능 선택", ["➕ 작성", "✏️ 수정", "❌ 삭제"])
     
     if mode == "➕ 작성":
         with st.sidebar.form("add_log", clear_on_submit=True):
@@ -147,7 +151,7 @@ def render_work_log_page(db_log):
     elif mode == "❌ 삭제" and not df_log.empty:
         idx = st.sidebar.selectbox("삭제 대상 선택", df_log.index, format_func=lambda x: f"{df_log.loc[x, '날짜']} | {df_log.loc[x, '업무내용'][:10]}")
         st.sidebar.warning(f"내용: {df_log.loc[idx, '업무내용'][:50]}...")
-        if st.sidebar.button("🗑️ 최종 삭제 (복구 불가)"):
+        if st.sidebar.button("🗑️ 최종 삭제 (복구 불가)", type="primary"):
             db_log.save(df_log.drop(idx), sha_log, "Delete Log")
             st.rerun()
 
@@ -165,7 +169,7 @@ def render_work_log_page(db_log):
     st.dataframe(disp, use_container_width=True, hide_index=True, column_config={"업무내용": st.column_config.TextColumn("업무내용", width="large")})
 
 # ==========================================
-# 4. 메뉴 2: CS 작업체크시트
+# 4. 화면 UI - 2페이지: CS 작업체크시트
 # ==========================================
 def render_cs_flow_page(db_flow):
     df_flow, sha_flow = db_flow.load()
@@ -332,30 +336,40 @@ def render_cs_flow_page(db_flow):
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 메뉴 3: 장비 가동 데이터 (장비/호기명 조합 파일명 적용)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
+    # ★ 파일명 규칙 상세 안내 가이드
+    st.info("""
+    **💡 엑셀 파일명 작성 가이드 (반드시 지켜주세요)**
+    정확한 데이터를 불러오기 위해 깃허브에 업로드하는 엑셀 파일명을 아래 규칙에 맞게 설정해야 합니다.
+    * **작성 규칙:** `장비명_호기 - 영문월 2026.xlsx`
+    * **예시 1:** 장비 **4010H**, 호기 **2호기**, 월 **4월** 선택 시 ➡️ `4010H_2호기 - April 2026.xlsx`
+    * **예시 2:** 장비 **SLH1**, 호기 **15호기**, 월 **12월** 선택 시 ➡️ `SLH1_15호기 - December 2026.xlsx`
+    * *(단, 기존에 쓰시던 1호기 1~3월 데이터는 예전 이름 `SLH1 - March 2026.xlsx` 로도 호환되게 처리했습니다.)*
+    """)
+
     col1, col2, col3 = st.columns(3)
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
-    with col2: unit = st.selectbox("호기 선택", ["1호기", "2호기", "3호기", "4호기", "5호기"], key="eq_data_unit")
+    # ★ 1호기 ~ 15호기 확장 완료
+    with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="eq_data_unit")
+    # ★ 1월 ~ 12월 확장 완료
     with col3: month_str = st.selectbox("조회할 월 선택", [f"{i}월" for i in range(1, 13)], key="eq_data_month")
 
-    # ★ 핵심 2: 선택한 장비, 호기, 월을 조합하여 엑셀 파일명을 똑똑하게 만들어냅니다.
-    month_dict = {"1월": "January", "2월": "February", "3월": "March", "4월": "April", "5월": "May", "6월": "June", 
-                  "7월": "July", "8월": "August", "9월": "September", "10월": "October", "11월": "November", "12월": "December"}
+    # 영문 월 변환 딕셔너리
+    month_dict = {f"{i}월": eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
     eng_month = month_dict.get(month_str, "January")
 
-    # 기존에 테스트하시던 SLH1 1호기는 기존 파일명 규칙을 유지하고, 나머지는 새로운 규칙을 따릅니다.
+    # 파일명 매핑 로직 적용
     if equipment == "SLH1" and unit == "1호기" and month_str in ["1월", "2월", "3월"]:
-        target_file = f"SLH1 - {eng_month} 2026.xlsx"
+        target_file = f"SLH1 - {eng_month} 2026.xlsx" # 기존 파일명 예외 처리
     else:
-        # 새로운 규칙 예시: "4010H_2호기 - April 2026.xlsx"
         target_file = f"{equipment}_{unit} - {eng_month} 2026.xlsx"
 
-    st.info(f"📂 현재 조회 요청 파일: **{target_file}** (해당 파일이 깃허브에 업로드 되어 있어야 데이터가 나옵니다)")
+    st.markdown(f"**📂 현재 불러올 엑셀 파일명:** `{target_file}`")
 
     try:
         xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
@@ -493,11 +507,12 @@ def render_equipment_data_page():
             else: st.info("상세 데이터가 없습니다.")
         else: st.info("데이터 헤더를 찾을 수 없습니다.")
 
-    except FileNotFoundError: st.error(f"⚠️ 깃허브 저장소에 **{target_file}** 파일이 없습니다. 장비/호기/월에 맞는 파일을 업로드해주세요.")
+    except FileNotFoundError:
+        st.error(f"⚠️ 깃허브에 **{target_file}** 파일이 없습니다. 안내된 규칙에 맞게 파일을 업로드해주세요.")
     except Exception as e: st.error(f"⚠️ 시스템 오류: {e}")
 
 # ==========================================
-# 6. 메인 실행 (로그인 및 ★ 페이지 네비게이션)
+# 6. 메인 실행 (로그인 및 버튼 네비게이션)
 # ==========================================
 def main():
     try:
@@ -512,6 +527,10 @@ def main():
     if 'logged_in' not in st.session_state: 
         st.session_state.update({'logged_in': False, 'user_name': ""})
     
+    # ★ 현재 어떤 페이지를 보고 있는지 저장 (기본값: 업무일지)
+    if 'current_page' not in st.session_state:
+        st.session_state['current_page'] = "업무일지"
+
     if not st.session_state['logged_in']:
         with st.form("login_form"):
             name = st.text_input("성함을 입력하세요")
@@ -519,22 +538,33 @@ def main():
                 st.session_state.update({'logged_in': True, 'user_name': name})
                 st.rerun()
     else:
-        # 사이드바 상단
+        # --- 사이드바 고정 영역 (로그아웃 및 메뉴 이동 버튼) ---
         st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
         if st.sidebar.button("🚪 로그아웃", use_container_width=True): 
             st.session_state['logged_in'] = False
             st.rerun()
             
         st.sidebar.markdown("---")
+        st.sidebar.markdown("### 📂 메뉴 이동")
         
-        # ★ 핵심 1: 화면 위쪽 탭(Tabs)을 사이드바 메뉴(Radio)로 완전히 이동시켰습니다!
-        menu = st.sidebar.radio("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터"])
-        
-        if menu == "📝 업무일지":
+        # ★ 예전 방식: 사이드바 버튼을 통한 메뉴 이동
+        if st.sidebar.button("📝 팀 업무일지", use_container_width=True):
+            st.session_state['current_page'] = "업무일지"
+            st.rerun()
+        if st.sidebar.button("✅ CS 작업체크시트", use_container_width=True):
+            st.session_state['current_page'] = "CS작업체크시트"
+            st.rerun()
+        if st.sidebar.button("📊 장비가동데이터", use_container_width=True):
+            st.session_state['current_page'] = "장비가동데이터"
+            st.rerun()
+
+        # --- 메인 화면 렌더링 ---
+        # 선택된 페이지의 함수만 실행 (사이드바 작성 기능은 '업무일지' 함수 안에만 있어 다른 메뉴에선 가려짐)
+        if st.session_state['current_page'] == "업무일지":
             render_work_log_page(db_log)
-        elif menu == "✅ CS 작업체크시트":
+        elif st.session_state['current_page'] == "CS작업체크시트":
             render_cs_flow_page(db_flow)
-        elif menu == "📊 장비가동데이터":
+        elif st.session_state['current_page'] == "장비가동데이터":
             render_equipment_data_page()
 
 if __name__ == "__main__":
