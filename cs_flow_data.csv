@@ -27,27 +27,28 @@ SLH1 #6호기,Ray-Out 이후,5,"I/O Check
  -> 전장 수정 후 수정되었는지 동작,LED 확인",✅ 완료,최종 Check 후 수정 완료. X372 수정 대기중.,,최염광 (26-03-10)
 SLH1 #6호기,Ray-Out 이후,6,공압 Leak Check,✅ 완료,,,이철희 (26-03-06)
 SLH1 #6호기,Ray-Out 이후,7,Cylinder Take Time,✅ 완료,"전/후면부 완료, Motor 위치 Intorlock Cylinder 제외 완료. Speed 조정은 진행",,최염광 (26-03-13)
-SLH1 #6호기,기구물 Setting,1,"Stacker Conveyor Belt Inverter 값 설정
+SLH1 #6호기,기구물 Setting,1,Hand 제작 전 Up/Down Cylinder Damper All Open(Air 강하게 사용시 튕김&버벅거림 발생),🚨 보류,,,최염광 (26-03-13)
+SLH1 #6호기,기구물 Setting,2,"Stacker Conveyor Belt Inverter 값 설정
 ->운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)
 -> P3 60  P4 : 60(고속), P5 : 30(중속), P6 : 10(저속)
--> P7 : 5 (가속),  P8 : 0 (감속)",✅ 완료,,,최염광 (26-03-06)
-SLH1 #6호기,기구물 Setting,2,"Reject Stacker Front/Rear Base 높이 조정
+-> P7 : 5 (가속),  P8 : 0 (감속)",✅ 완료,,,최염광 (26-03-13)
+SLH1 #6호기,기구물 Setting,3,"Reject Stacker Front/Rear Base 높이 조정
  -> Rear Base Cylinder Rod 최대로 내린뒤, front를 무두 볼트 사용하여 Setting",⬜ 대기,,,
-SLH1 #6호기,기구물 Setting,3,Set-Plate Support Lock/Unlock Cylinder Rod SETTING,✅ 완료,,,최염광 (26-03-10)
-SLH1 #6호기,기구물 Setting,4,LD/ULD Middle Gripper UP Cylinder Rod (37mm) SETTING,✅ 완료,,,최염광 (26-03-05)
-SLH1 #6호기,기구물 Setting,5,"LD/ULD Flow Presicer Up Rod (60mm) Setting 
- -> T-Tray <-> Frame 간 공차 없게 조정",✅ 완료,,,최염광 (26-03-05)
-SLH1 #6호기,기구물 Setting,6,InPut/OutPut Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,✅ 완료,,,최염광 (26-03-06)
-SLH1 #6호기,기구물 Setting,7,"L/D, UL/D Middle Rail Up/Down 높이,평탄,직진도 SETTING (T-TRAY 사용)
+SLH1 #6호기,기구물 Setting,4,Set-Plate Support Lock/Unlock Cylinder Rod SETTING,✅ 완료,,,최염광 (26-03-13)
+SLH1 #6호기,기구물 Setting,5,LD/ULD Middle Gripper UP Cylinder Rod (37mm) SETTING,✅ 완료,,,최염광 (26-03-13)
+SLH1 #6호기,기구물 Setting,6,"LD/ULD Flow Presicer Up Rod (60mm) Setting 
+ -> T-Tray <-> Frame 간 공차 없게 조정",✅ 완료,,,최염광 (26-03-13)
+SLH1 #6호기,기구물 Setting,7,InPut/OutPut Bottom Feeder UP Cylinder Rod(16.5mm) SETTING,✅ 완료,,,최염광 (26-03-13)
+SLH1 #6호기,기구물 Setting,8,"L/D, UL/D Middle Rail Up/Down 높이,평탄,직진도 SETTING (T-TRAY 사용)
  -> T-Tray 사용,UP/DOWN 상태에서 T-Tray가 흘려 내려가지 않게 SETTING
  -> Stopper 사용하여 UP/DOWN 높이 레벨 조정 (Up :48.5mm, Down :  42.5mm)
- -> UP 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽Rail 위치 조정 필요",✅ 완료,,,최염광 (26-03-11)
-SLH1 #6호기,기구물 Setting,8,"배출 Fan 장착 및 전원 Connect 연결
- -> I/O 번호 확인, OS에서 FAN Check 확인",✅ 완료,,,최염광 (26-03-11)
-SLH1 #6호기,기구물 Setting,9,Hand Vac/Blow Air Line CDA Main to Hand Regulator Direct Connect Setting,⬜ 대기,,,
-SLH1 #6호기,기구물 Setting,10,LD/ULD Gripper Up/Down Air Line 스피드콘 장착,✅ 완료,,,최염광 (26-03-05)
-SLH1 #6호기,기구물 Setting,11,LD/EMPTY Stacker Align Guide 1번 JIG 장착 상태 Setting,⬜ 대기,,,
-SLH1 #6호기,기구물 Setting,12,"LD/ULD Hand Deviation Sensor Setting
+ -> UP 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽Rail 위치 조정 필요",✅ 완료,,,최염광 (26-03-13)
+SLH1 #6호기,기구물 Setting,9,"배출 Fan 장착 및 전원 Connect 연결
+ -> I/O 번호 확인, OS에서 FAN Check 확인",✅ 완료,,,최염광 (26-03-13)
+SLH1 #6호기,기구물 Setting,10,Hand Vac/Blow Air Line CDA Main to Hand Regulator Direct Connect Setting,⬜ 대기,,,
+SLH1 #6호기,기구물 Setting,11,LD/ULD Gripper Up/Down Air Line 스피드콘 장착,✅ 완료,,,최염광 (26-03-13)
+SLH1 #6호기,기구물 Setting,12,LD/EMPTY Stacker Align Guide 1번 JIG 장착 상태 Setting,⬜ 대기,,,
+SLH1 #6호기,기구물 Setting,13,"LD/ULD Hand Deviation Sensor Setting
 - LD Hand T-Tray Place Pos' -5.0mm 적용 후 Setting
 - ULD Hand Fix Buffer Place 후 -12.00mm 적용 후 Setting
   -> ULD Hand Z축 Motor Touqe 값 확인 후 Setting 필요.",⬜ 대기,,,
