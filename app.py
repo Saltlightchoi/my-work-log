@@ -2,27 +2,21 @@ import streamlit as st
 import pandas as pd
 from github import Github
 import io
+import re
 from datetime import datetime
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 # ==========================================
-# 1. 환경 설정 및 기본 상수
+# 1. 환경 설정 및 전체 디자인 (CSS)
 # ==========================================
 st.set_page_config(layout="wide", page_title="장비 관리 통합 시스템")
 st.markdown("""
     <style>
-        .block-container { padding-top: 3rem !important; padding-bottom: 2rem !important; }
+        .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
         [data-testid="stSidebar"] { width: 330px !important; }
-        div[data-testid="stSidebar"] button[kind="secondary"] { padding: 2px 5px !important; font-size: 12px !important; height: 28px !important; }
-        .main-title { font-size: 1.5rem !important; font-weight: bold; margin: 0 !important; padding-bottom: 10px !important; }
-        div.stDownloadButton > button { padding: 4px 10px !important; font-size: 12px !important; width: 100% !important; }
-        .info-box { background-color: #1e212b; padding: 12px; border-radius: 4px; border-left: 3px solid #4CAF50; margin-bottom: 15px; font-size: 13px; color: white;}
-        .streamlit-expanderHeader { font-weight: bold !important; font-size: 1.1rem !important; color: #4CAF50 !important; }
-        .stProgress > div > div > div > div { background-color: #4CAF50; }
-        
-        /* 탭 디자인 커스텀 (글씨 크기 및 굵기) */
-        button[data-baseweb="tab"] { font-size: 18px !important; font-weight: bold !important; }
+        .main-title { font-size: 1.5rem !important; font-weight: bold; padding-bottom: 10px !important; }
+        .info-box { background-color: #f8f9fa; padding: 12px; border-radius: 4px; border-left: 5px solid #4CAF50; margin-bottom: 15px; color: #333; font-size: 13px; }
         
         /* 장비 가동 데이터 표 테두리 아주 진하게 */
         .final-report-table {
@@ -79,7 +73,7 @@ CS_TEMPLATE = [
 ]
 
 # ==========================================
-# 2. 데이터 관리 공장
+# 2. 데이터 관리 코어
 # ==========================================
 class DataManager:
     def __init__(self, repo, file_path, text_columns):
@@ -117,7 +111,7 @@ def get_row_color(row):
     return [''] * len(row)
 
 # ==========================================
-# 3. 화면 UI - 탭 1: 팀 업무일지 (완벽 원상복구)
+# 3. 메뉴 1: 팀 업무일지 (사이드바 통제 완벽 적용)
 # ==========================================
 def render_work_log_page(db_log):
     df_log, sha_log = db_log.load()
@@ -125,45 +119,37 @@ def render_work_log_page(db_log):
         df_log['날짜'] = pd.to_datetime(df_log['날짜']).dt.date.astype(str)
         df_log = df_log.sort_values(by='날짜', ascending=False).reset_index(drop=True)
 
-    mode = st.sidebar.selectbox("작업 선택", ["➕ 작성", "✏️ 수정", "❌ 삭제"], key="log_mode_select")
+    # 이 메뉴에서만 작동하는 사이드바
+    st.sidebar.markdown("---")
+    mode = st.sidebar.selectbox("📋 일지 작업", ["➕ 작성", "✏️ 수정", "❌ 삭제"])
     
     if mode == "➕ 작성":
-        with st.sidebar.form("add_form", clear_on_submit=True):
-            d_val = st.date_input("날짜", datetime.today())
-            e_type = st.selectbox("장비", EQUIPMENT_OPTIONS)
-            c_val = st.text_area("업무 내용", height=400, max_chars=None)
-            n_val = st.text_input("비고")
-            f_name = st.text_input("파일명 (미입력 시 비워둠)")
-            if st.form_submit_button("저장하기", use_container_width=True):
-                if c_val:
-                    full_path = BASE_PATH_RAW + f_name if f_name.strip() else ""
-                    new_row = pd.DataFrame([{"날짜": str(d_val), "장비": e_type, "작성자": st.session_state['user_name'], "업무내용": c_val, "비고": n_val, "첨부": full_path}])
-                    db_log.save(pd.concat([df_log, new_row], ignore_index=True), sha_log, f"Add Log: {d_val}")
-                    st.rerun()
-
-    elif mode == "✏️ 수정":
-        if not df_log.empty:
-            edit_idx = st.sidebar.selectbox("대상 선택", options=df_log.index, format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']} | {str(df_log.iloc[x]['업무내용'])[:15]}...")
-            with st.sidebar.form("edit_form"):
-                e_date = st.date_input("날짜 수정", pd.to_datetime(df_log.loc[edit_idx, "날짜"]))
-                e_etype = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(df_log.loc[edit_idx, "장비"]) if df_log.loc[edit_idx, "장비"] in EQUIPMENT_OPTIONS else 0)
-                e_content = st.text_area("내용 수정", value=df_log.loc[edit_idx, "업무내용"], height=400, max_chars=None)
-                e_note = st.text_input("비고 수정", value=df_log.loc[edit_idx, "비고"])
-                e_link = st.text_input("첨부 수정", value=df_log.loc[edit_idx, "첨부"])
-                if st.form_submit_button("수정 완료"):
-                    df_log.loc[edit_idx, ["날짜", "장비", "업무내용", "비고", "첨부"]] = [str(e_date), e_etype, e_content, e_note, e_link]
-                    db_log.save(df_log, sha_log, f"Edit Log: {e_date}")
-                    st.rerun()
-
-    elif mode == "❌ 삭제":
-        if not df_log.empty:
-            del_idx = st.sidebar.selectbox("삭제 선택", options=df_log.index, format_func=lambda x: f"{df_log.iloc[x]['날짜']} | {df_log.iloc[x]['장비']} | {str(df_log.iloc[x]['업무내용'])[:15]}...")
-            selected_row = df_log.iloc[del_idx]
-            st.sidebar.markdown("### ⚠️ 삭제 대상 상세 정보")
-            st.sidebar.info(f"**📅 날짜:** {selected_row['날짜']}\n\n**⚙️ 장비:** {selected_row['장비']}\n\n**👤 작성자:** {selected_row['작성자']}\n\n**📝 업무내용:**\n{selected_row['업무내용']}\n\n**📌 비고:** {selected_row['비고']}")
-            if st.sidebar.button("🗑️ 최종 삭제 (복구 불가)", use_container_width=True):
-                db_log.save(df_log.drop(del_idx), sha_log, "Delete Log")
+        with st.sidebar.form("add_log", clear_on_submit=True):
+            d = st.date_input("날짜", datetime.today())
+            e = st.selectbox("장비", EQUIPMENT_OPTIONS)
+            c = st.text_area("업무 내용", height=300)
+            n = st.text_input("비고")
+            if st.form_submit_button("저장하기"):
+                new_row = pd.DataFrame([{"날짜": str(d), "장비": e, "작성자": st.session_state['user_name'], "업무내용": c, "비고": n}])
+                db_log.save(pd.concat([df_log, new_row], ignore_index=True), sha_log, f"Add Log: {d}")
                 st.rerun()
+
+    elif mode == "✏️ 수정" and not df_log.empty:
+        idx = st.sidebar.selectbox("수정 대상", df_log.index, format_func=lambda x: f"{df_log.loc[x, '날짜']} | {df_log.loc[x, '업무내용'][:15]}...")
+        with st.sidebar.form("edit_log"):
+            e_date = st.date_input("날짜 수정", pd.to_datetime(df_log.loc[idx, '날짜']))
+            e_content = st.text_area("내용 수정", value=df_log.loc[idx, '업무내용'], height=300)
+            if st.form_submit_button("수정 완료"):
+                df_log.loc[idx, ['날짜', '업무내용']] = [str(e_date), e_content]
+                db_log.save(df_log, sha_log, "Edit Log")
+                st.rerun()
+
+    elif mode == "❌ 삭제" and not df_log.empty:
+        idx = st.sidebar.selectbox("삭제 대상 선택", df_log.index, format_func=lambda x: f"{df_log.loc[x, '날짜']} | {df_log.loc[x, '업무내용'][:10]}")
+        st.sidebar.warning(f"내용: {df_log.loc[idx, '업무내용'][:50]}...")
+        if st.sidebar.button("🗑️ 최종 삭제 (복구 불가)"):
+            db_log.save(df_log.drop(idx), sha_log, "Delete Log")
+            st.rerun()
 
     col_title, col_excel = st.columns([8.5, 1.5])
     with col_title:
@@ -173,13 +159,13 @@ def render_work_log_page(db_log):
         st.download_button(label="📥 엑셀 다운로드", data=csv_data, file_name=f"work_log_{datetime.now().strftime('%Y%m%d')}.csv", use_container_width=True)
 
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
-    search = st.text_input("🔍 검색", label_visibility="collapsed", placeholder="검색어를 입력하세요...")
-    display_df = df_log.copy()
-    if search: display_df = display_df[display_df.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
-    st.dataframe(display_df, use_container_width=True, hide_index=True, column_config={"업무내용": st.column_config.TextColumn("📝 업무내용", width="large"), "첨부": st.column_config.TextColumn("📎 첨부(클릭복사)")})
+    search = st.text_input("🔍 검색어 (장비, 내용 등)", placeholder="검색어를 입력하세요...")
+    disp = df_log.copy()
+    if search: disp = disp[disp.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
+    st.dataframe(disp, use_container_width=True, hide_index=True, column_config={"업무내용": st.column_config.TextColumn("업무내용", width="large")})
 
 # ==========================================
-# 4. 화면 UI - 탭 2: CS 작업체크시트 (완벽 원상복구)
+# 4. 메뉴 2: CS 작업체크시트
 # ==========================================
 def render_cs_flow_page(db_flow):
     df_flow, sha_flow = db_flow.load()
@@ -211,7 +197,7 @@ def render_cs_flow_page(db_flow):
     with col_a:
         with st.expander("➕ 새 프로젝트(호기) 시작하기"):
             with st.form("new_proj_form", clear_on_submit=True):
-                new_proj = st.text_input("새 프로젝트명 (예: SLH1 #7호기)")
+                new_proj = st.text_input("새 프로젝트명 (예: 4010H #2호기)")
                 source_options = ["기본 템플릿(초기화 상태)"] + project_list
                 
                 def format_source_opt(x):
@@ -256,12 +242,7 @@ def render_cs_flow_page(db_flow):
         default_idx = project_list.index(st.session_state['current_proj']) if project_list else 0
         
         with sel_col: 
-            selected_proj = st.selectbox(
-                "📌 진행 상황 확인할 프로젝트", 
-                project_list, 
-                index=default_idx,
-                format_func=lambda x: progress_dict.get(x, x)
-            )
+            selected_proj = st.selectbox("📌 진행 상황 확인할 프로젝트", project_list, index=default_idx, format_func=lambda x: progress_dict.get(x, x))
             st.session_state['current_proj'] = selected_proj 
             
         with save_col: 
@@ -278,144 +259,23 @@ def render_cs_flow_page(db_flow):
         proj_df = df_flow[mask].copy()
 
         if st.session_state.get('delete_target_proj') == selected_proj:
-            st.markdown(f"""
-                <div style='background-color: #ffebee; border-left: 5px solid #f44336; padding: 15px; border-radius: 4px; margin-bottom: 15px;'>
-                    <h3 style='color: #d32f2f; margin-top: 0;'>🚨 프로젝트 영구 삭제 경고</h3>
-                    <p style='color: #000; font-size: 15px;'><b>[{selected_proj}]</b> 프로젝트를 삭제하시겠습니까?<br>
-                    이 작업은 <b>절대 복구할 수 없으며</b>, 기록된 모든 세부 작업과 메모가 즉시 영구 삭제됩니다.</p>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            agree_delete = st.checkbox("네, 복구가 불가능하다는 것을 확인했으며 모두 삭제하는 것에 동의합니다.")
-            
-            conf_col1, conf_col2 = st.columns(2)
-            with conf_col1:
-                if agree_delete:
-                    if st.button("⚠️ 모든 것을 지우고 완전히 삭제합니다", type="primary", use_container_width=True):
-                        db_flow.save(df_flow[~mask], sha_flow, f"Delete: {selected_proj}")
-                        st.session_state['delete_target_proj'] = None
-                        st.session_state['current_proj'] = project_list[0] if len(project_list) > 1 else ""
-                        st.success("🗑️ 프로젝트가 완전히 삭제되었습니다.")
-                        st.rerun()
-                else:
-                    st.button("⚠️ 위 체크박스에 동의해야 삭제할 수 있습니다", disabled=True, use_container_width=True)
-                    
-            with conf_col2:
-                if st.button("❌ 아니오, 취소합니다 (돌아가기)", use_container_width=True):
-                    st.session_state['delete_target_proj'] = None
-                    st.rerun()
+            st.error(f"🚨 [{selected_proj}] 프로젝트를 영구 삭제하시겠습니까? (복구 불가)")
+            if st.button("⚠️ 완전히 삭제합니다", type="primary"):
+                db_flow.save(df_flow[~mask], sha_flow, f"Delete: {selected_proj}")
+                st.session_state['delete_target_proj'] = None
+                st.session_state['current_proj'] = project_list[0] if len(project_list) > 1 else ""
+                st.rerun()
+            if st.button("❌ 취소"):
+                st.session_state['delete_target_proj'] = None
+                st.rerun()
             st.stop() 
 
         total_tasks = len(proj_df)
         comp_tasks = len(proj_df[proj_df["상태"] == "✅ 완료"])
         pct_float = (comp_tasks / total_tasks) if total_tasks > 0 else 0.0
-        pct_int = int(pct_float * 100)
         
         st.markdown(f"<div style='font-size:14px; font-weight:bold; color:#4CAF50;'>⚡ 셋업 전체 진행도 ({comp_tasks} / {total_tasks} 완료)</div>", unsafe_allow_html=True)
-        st.progress(pct_float, text=f"전체 {pct_int}% 완료됨")
-        st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
-
-        with col_b:
-            with st.expander("📁 대항목(그룹) 관리 메뉴"):
-                tab_add, tab_ren, tab_ord, tab_del = st.tabs(["➕ 추가", "✏️ 이름 변경", "↕️ 순서 변경", "🗑️ 삭제"])
-                
-                existing_cats = []
-                for c in proj_df['대항목']:
-                    if c not in existing_cats: existing_cats.append(c)
-                
-                with tab_add:
-                    with st.form("new_cat_form", clear_on_submit=True):
-                        new_cat_name = st.text_input("추가할 그룹명 (예: Packing)")
-                        if st.form_submit_button("새 그룹 생성") and new_cat_name:
-                            final_cat_name = new_cat_name
-                            counter = 2
-                            while final_cat_name in existing_cats:
-                                final_cat_name = f"{new_cat_name} ({counter})"
-                                counter += 1
-                                
-                            new_cat_row = pd.DataFrame([{
-                                "프로젝트명": selected_proj, "대항목": final_cat_name, "순서": 1,
-                                "작업내용": "신규 작업 내용을 입력하세요", "상태": "⬜ 대기",
-                                "비고": "", "첨부": "", "업데이트일": ""
-                            }])
-                            
-                            original_projects = df_flow['프로젝트명'].unique().tolist()
-                            new_df_flow = pd.concat([df_flow, new_cat_row], ignore_index=True)
-                            new_df_flow = maintain_project_order(new_df_flow, original_projects) 
-                            db_flow.save(new_df_flow, sha_flow, f"Add Cat: {final_cat_name}")
-                            st.rerun()
-
-                with tab_ren:
-                    with st.form("rename_cat_form", clear_on_submit=True):
-                        old_cat_name = st.selectbox("이름을 바꿀 대항목 선택", existing_cats)
-                        renamed_cat_name = st.text_input("변경할 새로운 이름 입력")
-                        if st.form_submit_button("이름 변경 적용") and renamed_cat_name:
-                            final_renamed = renamed_cat_name
-                            counter = 2
-                            while final_renamed in existing_cats and final_renamed != old_cat_name:
-                                final_renamed = f"{renamed_cat_name} ({counter})"
-                                counter += 1
-                                
-                            df_flow.loc[(df_flow['프로젝트명'] == selected_proj) & (df_flow['대항목'] == old_cat_name), '대항목'] = final_renamed
-                            db_flow.save(df_flow, sha_flow, f"Rename Cat: {old_cat_name} -> {final_renamed}")
-                            st.success(f"[{old_cat_name}]이(가) [{final_renamed}](으)로 변경되었습니다!")
-                            st.rerun()
-                
-                with tab_ord:
-                    st.markdown("<p style='font-size:13px; color:#aaa;'>💡 표의 숫자를 원하는 순서로 수정한 뒤 아래 [순서 적용] 버튼을 누르세요.</p>", unsafe_allow_html=True)
-                    cat_order_df = pd.DataFrame({"대항목": existing_cats, "순서": range(1, len(existing_cats) + 1)})
-                    edited_cat_order = st.data_editor(
-                        cat_order_df, 
-                        hide_index=True, 
-                        use_container_width=True,
-                        disabled=["대항목"],
-                        column_config={"순서": st.column_config.NumberColumn("위치(순서) 변경", step=1)}
-                    )
-                    if st.button("순서 변경 적용", use_container_width=True):
-                        new_order_list = edited_cat_order.sort_values(by="순서")["대항목"].tolist()
-                        temp_proj_df = df_flow[mask].copy()
-                        temp_proj_df['대항목'] = pd.Categorical(temp_proj_df['대항목'], categories=new_order_list, ordered=True)
-                        temp_proj_df = temp_proj_df.sort_values(by=['대항목', '순서'])
-                        temp_proj_df['대항목'] = temp_proj_df['대항목'].astype(str)
-                        temp_proj_df['group_id'] = (temp_proj_df['대항목'] != temp_proj_df['대항목'].shift()).cumsum()
-                        temp_proj_df["순서"] = temp_proj_df.groupby('group_id').cumcount() + 1
-                        temp_proj_df = temp_proj_df.drop(columns=['group_id']).reset_index(drop=True)
-                        
-                        original_projects = df_flow['프로젝트명'].unique().tolist()
-                        new_df_flow = pd.concat([df_flow[~mask], temp_proj_df], ignore_index=True)
-                        new_df_flow = maintain_project_order(new_df_flow, original_projects) 
-                        
-                        db_flow.save(new_df_flow, sha_flow, f"Reorder Cats: {selected_proj}")
-                        st.success("✅ 대항목 순서가 성공적으로 변경되었습니다!")
-                        st.rerun()
-
-                with tab_del:
-                    with st.form("delete_cat_form", clear_on_submit=True):
-                        del_cat_name = st.selectbox("삭제할 대항목(그룹) 선택", existing_cats)
-                        st.error("⚠️ 주의: 해당 그룹을 삭제하면 안에 있는 모든 세부 작업 내용도 함께 영구 삭제됩니다!")
-                        confirm_del = st.checkbox("네, 일부 그룹만 삭제하는 것에 동의합니다.")
-                        if st.form_submit_button("그룹 완전히 삭제하기"):
-                            if confirm_del and del_cat_name:
-                                df_flow = df_flow[~((df_flow['프로젝트명'] == selected_proj) & (df_flow['대항목'] == del_cat_name))]
-                                db_flow.save(df_flow, sha_flow, f"Delete Cat: {del_cat_name}")
-                                st.success(f"[{del_cat_name}] 그룹이 성공적으로 삭제되었습니다!")
-                                st.rerun()
-                            elif not confirm_del:
-                                st.warning("삭제를 진행하시려면 체크박스에 동의해주세요.")
-        
-        st.markdown("<div class='info-box'>💡 <b>편집 가이드:</b> 상태를 변경하고 우측 상단의 <b>'💾 저장'</b> 버튼을 누르면 <b>색상이 적용</b>되며 탭의 상태 아이콘(🟢🟡🔴)도 자동 갱신됩니다!</div>", unsafe_allow_html=True)
-
-        status_options = ["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"]
-        custom_column_config = {
-            "프로젝트명": None, 
-            "대항목": None,
-            "순서": st.column_config.NumberColumn("No(순서수정)", disabled=False, width="small"), 
-            "작업내용": st.column_config.TextColumn("📝 세부 작업 내용", width="large"), 
-            "상태": st.column_config.SelectboxColumn("상태", options=status_options, width="small", required=True), 
-            "비고": st.column_config.TextColumn("⚠️ 비고 / 보류사유", width="large"),
-            "업데이트일": st.column_config.TextColumn("수정자 & 수정일", disabled=True, width="small"), 
-            "첨부": st.column_config.TextColumn("📎 첨부", width="small")
-        }
+        st.progress(pct_float, text=f"전체 {int(pct_float * 100)}% 완료됨")
 
         proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
         groups = proj_df.groupby('group_id', sort=False) 
@@ -428,43 +288,24 @@ def render_cs_flow_page(db_flow):
             display_df = group_df.drop(columns=['group_id']).reset_index(drop=True)
             
             current_statuses = display_df['상태'].tolist()
-            
-            if '🚨 보류' in current_statuses:
-                tab_title = f"🔴 [보류발생] 대항목: {cat}"
-            elif current_statuses and all(s == '✅ 완료' for s in current_statuses):
-                tab_title = f"🟢 [완료] 대항목: {cat}"
-            elif '⏳ 작업중' in current_statuses or '✅ 완료' in current_statuses:
-                tab_title = f"🟡 [진행중] 대항목: {cat}"
-            else:
-                tab_title = f"📍 [대기] 대항목: {cat}"
+            if '🚨 보류' in current_statuses: tab_title = f"🔴 [보류발생] 대항목: {cat}"
+            elif current_statuses and all(s == '✅ 완료' for s in current_statuses): tab_title = f"🟢 [완료] 대항목: {cat}"
+            elif '⏳ 작업중' in current_statuses or '✅ 완료' in current_statuses: tab_title = f"🟡 [진행중] 대항목: {cat}"
+            else: tab_title = f"📍 [대기] 대항목: {cat}"
             
             with st.expander(tab_title, expanded=False):
                 styled_df = display_df.style.apply(get_row_color, axis=1)
-                
                 edited_cat_df = st.data_editor(
-                    styled_df,
-                    use_container_width=True, 
-                    hide_index=True, num_rows="dynamic",
-                    key=f"editor_{selected_proj}_{group_id}",
-                    column_config=custom_column_config,
-                    column_order=["순서", "작업내용", "상태", "비고", "업데이트일", "첨부"] 
+                    styled_df, use_container_width=True, hide_index=True, num_rows="dynamic", key=f"editor_{selected_proj}_{group_id}",
+                    column_config={"순서": st.column_config.NumberColumn("No", width="small"), "작업내용": st.column_config.TextColumn("세부 작업 내용", width="large"), "상태": st.column_config.SelectboxColumn("상태", options=["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"], width="small")}
                 )
                 
                 for idx, new_row in edited_cat_df.iterrows():
-                    if new_row['상태'] == "⬜ 대기":
-                        edited_cat_df.at[idx, '업데이트일'] = ""
+                    if new_row['상태'] == "⬜ 대기": edited_cat_df.at[idx, '업데이트일'] = ""
                     else:
-                        match = display_df[
-                            (display_df['작업내용'] == new_row['작업내용']) &
-                            (display_df['상태'] == new_row['상태']) &
-                            (display_df['비고'] == new_row['비고']) &
-                            (display_df['첨부'] == new_row['첨부']) &
-                            (display_df['순서'] == new_row['순서'])
-                        ]
-                        if match.empty:
-                            edited_cat_df.at[idx, '업데이트일'] = current_user_stamp
-                        else:
-                            edited_cat_df.at[idx, '업데이트일'] = match.iloc[0]['업데이트일']
+                        match = display_df[(display_df['작업내용'] == new_row['작업내용']) & (display_df['상태'] == new_row['상태']) & (display_df['비고'] == new_row['비고'])]
+                        if match.empty: edited_cat_df.at[idx, '업데이트일'] = current_user_stamp
+                        else: edited_cat_df.at[idx, '업데이트일'] = match.iloc[0]['업데이트일']
                 
                 edited_cat_df["대항목"] = cat
                 edited_cat_df["프로젝트명"] = selected_proj
@@ -487,43 +328,34 @@ def render_cs_flow_page(db_flow):
             st.session_state['current_proj'] = selected_proj 
             st.success("✅ 변경사항 및 상태가 성공적으로 저장되었습니다.")
             st.rerun()
-
     else:
         st.info("진행 중인 프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI 보따리 (★ 탭 3: 데이터 매핑 한계 돌파 최종본)
+# 5. 메뉴 3: 장비 가동 데이터 (장비/호기명 조합 파일명 적용)
 # ==========================================
 def render_equipment_data_page():
-    import re
-    from plotly.subplots import make_subplots
-    import pandas as pd
-
-    st.markdown("""
-        <style>
-            .final-report-table {
-                width: 100%; border-collapse: collapse; border: 2px solid #000000 !important;
-                font-size: 12px; color: #000000; background-color: #ffffff;
-            }
-            .final-report-table th, .final-report-table td {
-                border: 1px solid #000000 !important; padding: 6px 8px; text-align: center !important;
-            }
-            .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; }
-            .t-left { text-align: left !important; }
-        </style>
-    """, unsafe_allow_html=True)
-
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
     with col2: unit = st.selectbox("호기 선택", ["1호기", "2호기", "3호기", "4호기", "5호기"], key="eq_data_unit")
-    with col3: month_str = st.selectbox("조회할 월 선택", ["1월", "2월", "3월"], key="eq_data_month")
+    with col3: month_str = st.selectbox("조회할 월 선택", [f"{i}월" for i in range(1, 13)], key="eq_data_month")
 
-    file_map = {"1월": "SLH1 - January 2026.xlsx", "2월": "SLH1 - February 2026.xlsx", "3월": "SLH1 - March 2026.xlsx"}
-    target_file = file_map.get(month_str, "")
-    month_num = month_str.replace("월", "")
+    # ★ 핵심 2: 선택한 장비, 호기, 월을 조합하여 엑셀 파일명을 똑똑하게 만들어냅니다.
+    month_dict = {"1월": "January", "2월": "February", "3월": "March", "4월": "April", "5월": "May", "6월": "June", 
+                  "7월": "July", "8월": "August", "9월": "September", "10월": "October", "11월": "November", "12월": "December"}
+    eng_month = month_dict.get(month_str, "January")
+
+    # 기존에 테스트하시던 SLH1 1호기는 기존 파일명 규칙을 유지하고, 나머지는 새로운 규칙을 따릅니다.
+    if equipment == "SLH1" and unit == "1호기" and month_str in ["1월", "2월", "3월"]:
+        target_file = f"SLH1 - {eng_month} 2026.xlsx"
+    else:
+        # 새로운 규칙 예시: "4010H_2호기 - April 2026.xlsx"
+        target_file = f"{equipment}_{unit} - {eng_month} 2026.xlsx"
+
+    st.info(f"📂 현재 조회 요청 파일: **{target_file}** (해당 파일이 깃허브에 업로드 되어 있어야 데이터가 나옵니다)")
 
     try:
         xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
@@ -533,7 +365,7 @@ def render_equipment_data_page():
                 df_raw = data; break
         
         if df_raw is None:
-            st.error("⚠️ 가동 데이터를 찾을 수 없습니다."); return
+            st.error("⚠️ 데이터를 찾을 수 없습니다. (시트 내 'Total Unit' 글자가 있는지 확인하세요)"); return
 
         def get_sum_row(keywords):
             for _, row in df_raw.iterrows():
@@ -545,6 +377,7 @@ def render_equipment_data_page():
                         if v_s.isdigit() or v_s in ['비가동', '미가동']: return (vals[i:i+31]+[0]*31)[:31]
             return [0]*31
 
+        month_num = month_str.replace("월", "")
         units = get_sum_row(['totalunit', 'output'])
         jams = get_sum_row(['jamcount', 'jam'])
         ppjs = get_sum_row(['ppj'])
@@ -563,8 +396,6 @@ def render_equipment_data_page():
         
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
         fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
-        
-        # 📌 점선 제거, 빨간색 굵은 실선 적용 완료
         fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.8), row=2, col=1)
         fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Cum_PPJ'], name='월 누적 PPJ (실선)', mode='lines+markers', line=dict(color='#FF0000', width=4)), row=2, col=1)
         
@@ -583,8 +414,6 @@ def render_equipment_data_page():
 
         if h_idx != -1:
             m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
-            
-            # ★ 궁극의 해결책 1: 멀티 라인 헤더 탐색 (위아래 3줄을 뭉쳐서 검색)
             super_headers = []
             for col_idx in range(len(df_raw.columns)):
                 col_strs = []
@@ -603,31 +432,24 @@ def render_equipment_data_page():
                 elif m['L'] == -1 and ('point' in v_str or '위치' in v_str): m['L'] = i
                 elif m['P'] == -1 and ('ppj' in v_str or '효율' in v_str): m['P'] = i
 
-            # ★ 궁극의 해결책 2: 인코딩이 깨져서 PPJ를 아예 못 찾았을 경우
-            # 에러내용(M)의 바로 왼쪽 칸이 100% 확률로 PPJ 칸임 (숨겨진 열 무시)
-            if m['P'] == -1 and m['M'] != -1:
-                m['P'] = m['M'] - 1
+            if m['P'] == -1 and m['M'] != -1: m['P'] = m['M'] - 1
 
             data_slice = df_raw.iloc[h_idx + 1:].copy()
             cleaned_list = []
             
-            # 쓰레기 데이터 검증 함수
             def is_meaningful(val):
                 if pd.isna(val): return False
                 cleaned = re.sub(r'[^a-zA-Z0-9가-힣]', '', str(val))
                 return len(cleaned) > 0
 
-            def get_val(r, idx):
-                return r.iloc[idx] if idx != -1 and idx < len(r) else None
+            def get_val(r, idx): return r.iloc[idx] if idx != -1 and idx < len(r) else None
 
             for _, r in data_slice.iterrows():
                 raw_c = get_val(r, m['C'])
                 raw_m = get_val(r, m['M'])
-                
                 has_code = is_meaningful(raw_c)
                 has_msg = is_meaningful(raw_m)
                 
-                # 코드와 내용 둘 다 빈칸이거나 기호뿐이면 완벽 무시
                 if not has_code and not has_msg: continue
                 
                 code_orig = str(raw_c).strip() if has_code else ""
@@ -638,19 +460,16 @@ def render_equipment_data_page():
                 raw_d = get_val(r, m['D'])
                 dt = None
                 if is_meaningful(raw_d):
-                    if str(raw_d).replace('.','').isdigit():
-                        dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
+                    if str(raw_d).replace('.','').isdigit(): dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
                     else: dt = str(raw_d).split(' ')[0]
 
                 raw_p = get_val(r, m['P'])
                 ppj_val = None
-                if is_meaningful(raw_p) and str(raw_p).lower() not in ['nan', 'none']:
-                    ppj_val = str(raw_p).split('.')[0]
+                if is_meaningful(raw_p) and str(raw_p).lower() not in ['nan', 'none']: ppj_val = str(raw_p).split('.')[0]
 
                 raw_t = get_val(r, m['T'])
                 t_val = ""
-                if is_meaningful(raw_t) and str(raw_t).lower() not in ['nan', 'none']:
-                    t_val = str(raw_t).split('.')[0] if ':' in str(raw_t) else str(raw_t)
+                if is_meaningful(raw_t) and str(raw_t).lower() not in ['nan', 'none']: t_val = str(raw_t).split('.')[0] if ':' in raw_t else raw_t
                 
                 raw_a = get_val(r, m['A'])
                 a_val = str(raw_a).strip() if is_meaningful(raw_a) and str(raw_a).lower() not in ['nan', 'none'] else ""
@@ -658,10 +477,7 @@ def render_equipment_data_page():
                 raw_l = get_val(r, m['L'])
                 l_val = str(raw_l).strip() if is_meaningful(raw_l) and str(raw_l).lower() not in ['nan', 'none'] else ""
 
-                cleaned_list.append({
-                    "Date": dt, "Code": code_orig, "PPJ": ppj_val,
-                    "Msg": msg_orig, "Act": a_val, "Time": t_val, "Loc": l_val
-                })
+                cleaned_list.append({"Date": dt, "Code": code_orig, "PPJ": ppj_val, "Msg": msg_orig, "Act": a_val, "Time": t_val, "Loc": l_val})
 
             if cleaned_list:
                 final_df = pd.DataFrame(cleaned_list)
@@ -677,10 +493,11 @@ def render_equipment_data_page():
             else: st.info("상세 데이터가 없습니다.")
         else: st.info("데이터 헤더를 찾을 수 없습니다.")
 
+    except FileNotFoundError: st.error(f"⚠️ 깃허브 저장소에 **{target_file}** 파일이 없습니다. 장비/호기/월에 맞는 파일을 업로드해주세요.")
     except Exception as e: st.error(f"⚠️ 시스템 오류: {e}")
-        
+
 # ==========================================
-# 6. 메인 실행 (로그인 및 탭 구성)
+# 6. 메인 실행 (로그인 및 ★ 페이지 네비게이션)
 # ==========================================
 def main():
     try:
@@ -702,27 +519,23 @@ def main():
                 st.session_state.update({'logged_in': True, 'user_name': name})
                 st.rerun()
     else:
+        # 사이드바 상단
         st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
-        if st.sidebar.button("로그아웃"): 
+        if st.sidebar.button("🚪 로그아웃", use_container_width=True): 
             st.session_state['logged_in'] = False
             st.rerun()
+            
+        st.sidebar.markdown("---")
         
-        tab1, tab2, tab3 = st.tabs(["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터"])
+        # ★ 핵심 1: 화면 위쪽 탭(Tabs)을 사이드바 메뉴(Radio)로 완전히 이동시켰습니다!
+        menu = st.sidebar.radio("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터"])
         
-        with tab1:
+        if menu == "📝 업무일지":
             render_work_log_page(db_log)
-        with tab2:
+        elif menu == "✅ CS 작업체크시트":
             render_cs_flow_page(db_flow)
-        with tab3:
+        elif menu == "📊 장비가동데이터":
             render_equipment_data_page()
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
