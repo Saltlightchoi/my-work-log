@@ -287,7 +287,7 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (기간 다중지정 및 범례 독립배치, 코드열 숨김)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (K 제거, 범례 투명화, 예외 삭제 완결판)
 # ==========================================
 def render_equipment_data_page(repo):
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
@@ -297,7 +297,7 @@ def render_equipment_data_page(repo):
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
     with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="eq_data_unit")
     
-    # ★ 기간 다중 지정: select_slider를 이용하여 시작 월과 종료 월 범위를 드래그로 선택
+    # 기간 다중 지정
     ym_options = [f"{y}년 {m}월" for y in [2025, 2026, 2027] for m in range(1, 13)]
     with col3: 
         start_ym, end_ym = st.select_slider("조회 기간 선택 (드래그하여 여러 달 지정 가능)", options=ym_options, value=("2026년 1월", "2026년 3월"))
@@ -313,16 +313,14 @@ def render_equipment_data_page(repo):
     all_cl = []
     missing_files = []
 
-    # 선택된 기간 내의 모든 파일들을 차례대로 다운받고 합칩니다.
+    # 선택된 기간 내의 모든 파일들을 차례대로 결합
     for ym_str in selected_yms:
         y_str = ym_str.split('년')[0]
         m_str = ym_str.split(' ')[1].replace('월', '')
         eng_month = month_dict.get(m_str, "January")
 
-        if equipment == "SLH1" and unit == "1호기" and ym_str in ["2026년 1월", "2026년 2월", "2026년 3월"]:
-            target_file = f"data/{equipment}/SLH1 - {eng_month} 2026.xlsx"
-        else:
-            target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} {y_str}.xlsx"
+        # ★ 2026년도 에러 원인이었던 예외 조건 코드 완전히 삭제 완료! (항상 아래 포맷으로 찾습니다)
+        target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} {y_str}.xlsx"
 
         try:
             file_content = repo.get_contents(target_file)
@@ -349,12 +347,10 @@ def render_equipment_data_page(repo):
 
             u_vals = get_sum_row(['totalunit', 'output']); j_vals = get_sum_row(['jamcount', 'jam']); p_vals = get_sum_row(['ppj'])
             
-            # X축 날짜 포맷 (연도를 짧게 붙여 구별 가능하게 함. 예: 26.1/5)
             cdf = pd.DataFrame({'날짜': [f"{y_str[-2:]}.{m_str}/{i}" for i in range(1, 32)], 'Unit': u_vals, 'Jam': j_vals, 'PPJ': p_vals})
             for c in ['Unit', 'Jam', 'PPJ']: cdf[c] = pd.to_numeric(cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
             all_cdf.append(cdf)
 
-            # ★ [에러 수정 포인트] 에러코드 헤더를 더 안전하게 찾도록 로직 강화!
             h_idx = -1
             for i, r in df_raw.iterrows():
                 rs = "".join(r.astype(str)).lower().replace(" ", "")
@@ -363,7 +359,7 @@ def render_equipment_data_page(repo):
                     break
             
             if h_idx == -1:
-                continue # 헤더를 찾지 못하면 이번 달 리스트는 건너뜀 (앱이 뻗지 않음)
+                continue 
 
             sh = ["".join([str(df_raw.iloc[h_idx+o, cidx]).lower().replace(" ", "") for o in [-1,0,1] if 0 <= h_idx+o < len(df_raw)]) for cidx in range(len(df_raw.columns))]
             m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
@@ -401,7 +397,6 @@ def render_equipment_data_page(repo):
                 raw_p = r.iloc[m['P']] if m['P'] != -1 else None
                 ppj_val = clean_val(raw_p).split('.')[0] if is_meaningful(raw_p) else ""
                 
-                # 코드는 내부적으로 정리만 하고 화면에 표시하지 않음 (피드백 반영)
                 time_val = clean_val(r.iloc[m['T']] if m['T'] != -1 else None)
                 if ':' not in time_val and '.' in time_val: time_val = time_val.split('.')[0]
 
@@ -428,28 +423,30 @@ def render_equipment_data_page(repo):
         st.error("데이터를 하나도 불러오지 못했습니다. 파일 위치나 파일명을 다시 확인해주세요.")
         return
 
-    # 모든 기간의 데이터를 하나로 결합
     final_cdf = pd.concat(all_cdf).reset_index(drop=True)
-    # 누적 PPJ도 선택한 전체 기간을 기준으로 다시 누적 계산
     final_cdf['Cum_PPJ'] = final_cdf.apply(lambda r: round(final_cdf.loc[:r.name, 'Unit'].sum() / final_cdf.loc[:r.name, 'Jam'].sum(), 1) if final_cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
 
-    # ★ 범례 위치 안전하게 수정: 다중 범례 옵션을 제거하고 단일 범례를 가로로 펼쳐 제목 우측 상단에 배치
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.15, 
                         subplot_titles=("Unit 및 Jam 건수", "생산 효율(PPJ)"), 
                         specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
     
-    # legendgroup을 이용해 깔끔하게 그룹화
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입', marker_color='#5B9BD5', legendgroup="1"), row=1, col=1, secondary_y=False)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legendgroup="1"), row=1, col=1, secondary_y=True)
+    # ★ hovertemplate='%{y:.0f}'를 추가하여 마우스 커서 올렸을 때 k 없이 40000 그대로 나오게 포맷 수정
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입', marker_color='#5B9BD5', legendgroup="1", hovertemplate="%{x}<br>투입: %{y:.0f}<extra></extra>"), row=1, col=1, secondary_y=False)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legendgroup="1", hovertemplate="%{x}<br>에러: %{y:.0f}<extra></extra>"), row=1, col=1, secondary_y=True)
     
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legendgroup="2"), row=2, col=1)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legendgroup="2"), row=2, col=1)
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legendgroup="2", hovertemplate="%{x}<br>일별 PPJ: %{y:.1f}<extra></extra>"), row=2, col=1)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legendgroup="2", hovertemplate="%{x}<br>누적 PPJ: %{y:.1f}<extra></extra>"), row=2, col=1)
     
+    # ★ tickformat=".0f"를 추가하여 Y축 라벨에 40k 대신 40000 이 출력되게 함
+    fig.update_yaxes(title_text="투입량 (EA)", secondary_y=False, row=1, col=1, tickformat=".0f")
+    fig.update_yaxes(title_text="Jam (건)", secondary_y=True, row=1, col=1, tickformat=".0f")
+    fig.update_yaxes(title_text="PPJ", row=2, col=1, tickformat=".1f")
+
     fig.update_layout(
         height=650, 
         margin=dict(l=50, r=50, t=60, b=50),
-        # 모든 범례를 가로(horizontal)로 길게 펴서 전체 그래프 우측 상단에 정렬되도록 수정 (버전 충돌 방지)
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1.0, bgcolor="rgba(255,255,255,0.8)"),
+        # ★ 범례(Legend) 배경색 투명하게 변경: bgcolor="rgba(0,0,0,0)" 적용 완료
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1.0, bgcolor="rgba(0,0,0,0)"),
         hovermode="x unified"
     )
     st.plotly_chart(fig, use_container_width=True)
@@ -460,7 +457,7 @@ def render_equipment_data_page(repo):
         fdf['Date'] = fdf['Date'].ffill()
         fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
         
-        # ★ '코드' 열 제거 완료
+        # 코드 열을 없애고 화면에 표시하지 않음
         html = "".join([f"<tr><td>{r['Date'] if not pd.isna(r['Date']) else ''}</td><td>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td>{r['Time']}</td><td>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
         st.markdown(f"<table class='final-report-table'><thead><tr><th style='width:90px;'>날짜</th><th style='width:60px;'>PPJ</th><th>에러내용</th><th>조치내용</th><th style='width:70px;'>시간</th><th style='width:90px;'>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
     else:
@@ -487,7 +484,6 @@ def main():
             if st.form_submit_button("입장") and name: 
                 st.session_state.update({'logged_in': True, 'user_name': name}); st.rerun()
     else:
-        # ★ 상단 미니 메뉴 스크롤 및 로그아웃 배치 (좌측 슬라이드를 열 필요 없음)
         top_col1, top_col2, top_col3 = st.columns([6, 3, 1])
         with top_col2:
             menu_selection = st.selectbox("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터"], label_visibility="collapsed")
@@ -496,7 +492,6 @@ def main():
                 st.session_state['logged_in'] = False
                 st.rerun()
 
-        # 사이드바는 환영 인사와 업무일지 툴에서만 열리도록 깔끔하게 분리
         st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
 
         if menu_selection == "📝 업무일지": render_work_log_page(db_log)
