@@ -122,7 +122,6 @@ def render_work_log_page(db_log):
         df_log['날짜'] = pd.to_datetime(df_log['날짜']).dt.date.astype(str)
         df_log = df_log.sort_values(by='날짜', ascending=False).reset_index(drop=True)
 
-    # ★ 업무일지 페이지에서만 사이드바 입력 폼 노출 (다른 탭에선 안보임)
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 📝 일지 작성/수정/삭제")
     mode = st.sidebar.selectbox("기능 선택", ["➕ 작성", "✏️ 수정", "❌ 삭제"])
@@ -173,7 +172,6 @@ def render_work_log_page(db_log):
 # ==========================================
 def render_cs_flow_page(db_flow):
     df_flow, sha_flow = db_flow.load()
-    
     st.markdown("<div class='main-title'>✅ CS 작업 체크 시트 (대항목 관리)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
@@ -191,7 +189,6 @@ def render_cs_flow_page(db_flow):
             total_items = len(p_df)
             completed_items = len(p_df[p_df["상태"] == "✅ 완료"])
             pct = int((completed_items / total_items) * 100) if total_items > 0 else 0
-            
             blocks = pct // 10
             bar = "🟩" * blocks + "⬜" * (10 - blocks)
             batt_icon = "🔋" if pct >= 20 else "🪫"
@@ -203,56 +200,26 @@ def render_cs_flow_page(db_flow):
             with st.form("new_proj_form", clear_on_submit=True):
                 new_proj = st.text_input("새 프로젝트명 (예: 4010H #2호기)")
                 source_options = ["기본 템플릿(초기화 상태)"] + project_list
-                
-                def format_source_opt(x):
-                    return progress_dict.get(x, x)
-                source_proj = st.selectbox("어떤 형식과 내용을 복사해서 생성할까요?", source_options, format_func=format_source_opt)
-
+                source_proj = st.selectbox("어떤 형식을 복사할까요?", source_options, format_func=lambda x: progress_dict.get(x, x))
                 if st.form_submit_button("프로젝트 생성하기") and new_proj and new_proj not in project_list:
-                    if source_proj == "기본 템플릿(초기화 상태)":
-                        new_df = pd.DataFrame(CS_TEMPLATE)
+                    if source_proj == "기본 템플릿(초기화 상태)": new_df = pd.DataFrame(CS_TEMPLATE)
                     else:
                         new_df = df_flow[df_flow["프로젝트명"] == source_proj].copy()
-                        new_df["상태"] = "⬜ 대기"
-                        new_df["비고"] = ""
-                        new_df["첨부"] = ""
-                        new_df["업데이트일"] = ""
-
+                        new_df[["상태", "비고", "첨부", "업데이트일"]] = ["⬜ 대기", "", "", ""]
                     new_df["프로젝트명"] = new_proj
-                    
-                    new_df['group_id'] = (new_df['대항목'] != new_df['대항목'].shift()).cumsum()
-                    unique_names = {}
-                    counts = {}
-                    for gid in new_df['group_id'].unique():
-                        cat = new_df.loc[new_df['group_id'] == gid, '대항목'].iloc[0]
-                        base_cat = cat.split(" (")[0] if " (" in cat else cat 
-                        
-                        if base_cat not in counts:
-                            counts[base_cat] = 1
-                            unique_names[gid] = base_cat
-                        else:
-                            counts[base_cat] += 1
-                            unique_names[gid] = f"{base_cat} ({counts[base_cat]})"
-                            
-                    new_df['대항목'] = new_df['group_id'].map(unique_names)
-                    new_df["순서"] = new_df.groupby('group_id').cumcount() + 1
-                    
-                    db_flow.save(pd.concat([df_flow, new_df.drop(columns=['group_id'])], ignore_index=True), sha_flow, f"Create: {new_proj}")
+                    db_flow.save(pd.concat([df_flow, new_df], ignore_index=True), sha_flow, f"Create: {new_proj}")
                     st.session_state['current_proj'] = new_proj
                     st.rerun()
 
     if project_list:
         sel_col, empty_col, save_col, del_col = st.columns([6, 2, 1, 1])
         default_idx = project_list.index(st.session_state['current_proj']) if project_list else 0
-        
         with sel_col: 
-            selected_proj = st.selectbox("📌 진행 상황 확인할 프로젝트", project_list, index=default_idx, format_func=lambda x: progress_dict.get(x, x))
+            selected_proj = st.selectbox("📌 프로젝트 선택", project_list, index=default_idx, format_func=lambda x: progress_dict.get(x, x))
             st.session_state['current_proj'] = selected_proj 
-            
         with save_col: 
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
             btn_save = st.button("💾 저장", use_container_width=True)
-            
         with del_col: 
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
             if st.button("🗑️ 삭제", use_container_width=True):
@@ -263,39 +230,32 @@ def render_cs_flow_page(db_flow):
         proj_df = df_flow[mask].copy()
 
         if st.session_state.get('delete_target_proj') == selected_proj:
-            st.error(f"🚨 [{selected_proj}] 프로젝트를 영구 삭제하시겠습니까? (복구 불가)")
-            if st.button("⚠️ 완전히 삭제합니다", type="primary"):
+            st.error(f"🚨 [{selected_proj}] 프로젝트를 영구 삭제하시겠습니까?")
+            if st.button("⚠️ 삭제 확정", type="primary"):
                 db_flow.save(df_flow[~mask], sha_flow, f"Delete: {selected_proj}")
                 st.session_state['delete_target_proj'] = None
                 st.session_state['current_proj'] = project_list[0] if len(project_list) > 1 else ""
                 st.rerun()
-            if st.button("❌ 취소"):
-                st.session_state['delete_target_proj'] = None
-                st.rerun()
+            if st.button("❌ 취소"): st.session_state['delete_target_proj'] = None; st.rerun()
             st.stop() 
 
-        total_tasks = len(proj_df)
-        comp_tasks = len(proj_df[proj_df["상태"] == "✅ 완료"])
+        total_tasks = len(proj_df); comp_tasks = len(proj_df[proj_df["상태"] == "✅ 완료"])
         pct_float = (comp_tasks / total_tasks) if total_tasks > 0 else 0.0
-        
-        st.markdown(f"<div style='font-size:14px; font-weight:bold; color:#4CAF50;'>⚡ 셋업 전체 진행도 ({comp_tasks} / {total_tasks} 완료)</div>", unsafe_allow_html=True)
-        st.progress(pct_float, text=f"전체 {int(pct_float * 100)}% 완료됨")
+        st.markdown(f"<div style='font-size:14px; font-weight:bold; color:#4CAF50;'>⚡ 진행도 ({comp_tasks} / {total_tasks})</div>", unsafe_allow_html=True)
+        st.progress(pct_float, text=f"{int(pct_float * 100)}% 완료")
 
         proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
         groups = proj_df.groupby('group_id', sort=False) 
-        
-        edited_dfs = []
-        current_user_stamp = f"{st.session_state['user_name']} ({datetime.today().strftime('%y-%m-%d')})"
+        edited_dfs = []; current_user_stamp = f"{st.session_state['user_name']} ({datetime.today().strftime('%y-%m-%d')})"
 
         for group_id, group_df in groups:
             cat = group_df['대항목'].iloc[0]
             display_df = group_df.drop(columns=['group_id']).reset_index(drop=True)
-            
-            current_statuses = display_df['상태'].tolist()
-            if '🚨 보류' in current_statuses: tab_title = f"🔴 [보류발생] 대항목: {cat}"
-            elif current_statuses and all(s == '✅ 완료' for s in current_statuses): tab_title = f"🟢 [완료] 대항목: {cat}"
-            elif '⏳ 작업중' in current_statuses or '✅ 완료' in current_statuses: tab_title = f"🟡 [진행중] 대항목: {cat}"
-            else: tab_title = f"📍 [대기] 대항목: {cat}"
+            curr_stats = display_df['상태'].tolist()
+            if '🚨 보류' in curr_stats: tab_title = f"🔴 [보류] {cat}"
+            elif curr_stats and all(s == '✅ 완료' for s in curr_stats): tab_title = f"🟢 [완료] {cat}"
+            elif any(s in ['⏳ 작업중', '✅ 완료'] for s in curr_stats): tab_title = f"🟡 [진행] {cat}"
+            else: tab_title = f"📍 [대기] {cat}"
             
             with st.expander(tab_title, expanded=False):
                 styled_df = display_df.style.apply(get_row_color, axis=1)
@@ -303,17 +263,13 @@ def render_cs_flow_page(db_flow):
                     styled_df, use_container_width=True, hide_index=True, num_rows="dynamic", key=f"editor_{selected_proj}_{group_id}",
                     column_config={"순서": st.column_config.NumberColumn("No", width="small"), "작업내용": st.column_config.TextColumn("세부 작업 내용", width="large"), "상태": st.column_config.SelectboxColumn("상태", options=["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"], width="small")}
                 )
-                
                 for idx, new_row in edited_cat_df.iterrows():
                     if new_row['상태'] == "⬜ 대기": edited_cat_df.at[idx, '업데이트일'] = ""
                     else:
                         match = display_df[(display_df['작업내용'] == new_row['작업내용']) & (display_df['상태'] == new_row['상태']) & (display_df['비고'] == new_row['비고'])]
                         if match.empty: edited_cat_df.at[idx, '업데이트일'] = current_user_stamp
                         else: edited_cat_df.at[idx, '업데이트일'] = match.iloc[0]['업데이트일']
-                
-                edited_cat_df["대항목"] = cat
-                edited_cat_df["프로젝트명"] = selected_proj
-                edited_cat_df["org_group_id"] = group_id 
+                edited_cat_df["대항목"] = cat; edited_cat_df["프로젝트명"] = selected_proj; edited_cat_df["org_group_id"] = group_id 
                 edited_dfs.append(edited_cat_df)
 
         if btn_save:
@@ -323,249 +279,132 @@ def render_cs_flow_page(db_flow):
                 updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
                 updated_proj_df["순서"] = updated_proj_df.groupby('group_id').cumcount() + 1
                 updated_proj_df = updated_proj_df.drop(columns=['group_id', 'org_group_id']).reset_index(drop=True)
-            
             original_projects = df_flow['프로젝트명'].unique().tolist()
             new_df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
-            new_df_flow = maintain_project_order(new_df_flow, original_projects) 
-            
-            db_flow.save(new_df_flow, sha_flow, f"Update: {selected_proj}")
-            st.session_state['current_proj'] = selected_proj 
-            st.success("✅ 변경사항 및 상태가 성공적으로 저장되었습니다.")
-            st.rerun()
-    else:
-        st.info("진행 중인 프로젝트가 없습니다.")
+            db_flow.save(maintain_project_order(new_df_flow, original_projects), sha_flow, f"Update: {selected_proj}")
+            st.success("✅ 저장되었습니다!"); st.rerun()
+    else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (★ 장비명 폴더 구조 인식 적용)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-    # ★ 파일명 규칙 상세 안내 가이드
     st.info("""
-    **💡 엑셀 파일명 작성 가이드 (반드시 지켜주세요)**
-    정확한 데이터를 불러오기 위해 깃허브에 업로드하는 엑셀 파일명을 아래 규칙에 맞게 설정해야 합니다.
-    * **작성 규칙:** `장비명_호기 - 영문월 2026.xlsx`
-    * **예시 1:** 장비 **4010H**, 호기 **2호기**, 월 **4월** 선택 시 ➡️ `4010H_2호기 - April 2026.xlsx`
-    * **예시 2:** 장비 **SLH1**, 호기 **15호기**, 월 **12월** 선택 시 ➡️ `SLH1_15호기 - December 2026.xlsx`
-    * *(단, 기존에 쓰시던 1호기 1~3월 데이터는 예전 이름 `SLH1 - March 2026.xlsx` 로도 호환되게 처리했습니다.)*
+    **📂 깃허브 파일 관리 요령 (폴더 구조화)**
+    파일 리스트가 지저분해지지 않도록 **`data/장비명/`** 폴더 안에 넣어주세요!
+    * **작성 규칙:** `data/장비명/장비명_호기 - 영문월 2026.xlsx`
+    * **예시:** `data/4010H/4010H_2호기 - April 2026.xlsx`
     """)
 
     col1, col2, col3 = st.columns(3)
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
-    # ★ 1호기 ~ 15호기 확장 완료
     with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="eq_data_unit")
-    # ★ 1월 ~ 12월 확장 완료
     with col3: month_str = st.selectbox("조회할 월 선택", [f"{i}월" for i in range(1, 13)], key="eq_data_month")
 
-    # 영문 월 변환 딕셔너리
     month_dict = {f"{i}월": eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
     eng_month = month_dict.get(month_str, "January")
 
-    # 파일명 매핑 로직 적용
+    # ★ 핵심 수정: 이제 data/ 폴더 아래 장비명 폴더(equipment)를 한 번 더 거쳐서 파일을 찾습니다.
     if equipment == "SLH1" and unit == "1호기" and month_str in ["1월", "2월", "3월"]:
-        target_file = f"SLH1 - {eng_month} 2026.xlsx" # 기존 파일명 예외 처리
+        target_file = f"data/{equipment}/SLH1 - {eng_month} 2026.xlsx"
     else:
-        target_file = f"{equipment}_{unit} - {eng_month} 2026.xlsx"
+        target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} 2026.xlsx"
 
-    st.markdown(f"**📂 현재 불러올 엑셀 파일명:** `{target_file}`")
+    st.markdown(f"**📂 현재 불러올 파일 경로:** `{target_file}`")
 
     try:
         xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
         df_raw = None
-        for name, data in xls.items():
+        for _, data in xls.items():
             if data.astype(str).apply(lambda r: r.str.contains('Unit|Output', case=False).any(), axis=1).any():
                 df_raw = data; break
-        
-        if df_raw is None:
-            st.error("⚠️ 데이터를 찾을 수 없습니다. (시트 내 'Total Unit' 글자가 있는지 확인하세요)"); return
+        if df_raw is None: st.error("⚠️ 데이터를 찾을 수 없습니다."); return
 
         def get_sum_row(keywords):
             for _, row in df_raw.iterrows():
-                row_str = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
-                if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률']):
+                rs = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
+                if any(k in rs for k in keywords) and not any(x in rs for x in ['%', '발생률']):
                     vals = row.tolist()
                     for i, v in enumerate(vals):
-                        v_s = str(v).replace('.','').replace(',','').strip()
-                        if v_s.isdigit() or v_s in ['비가동', '미가동']: return (vals[i:i+31]+[0]*31)[:31]
+                        if str(v).replace('.','').isdigit(): return (vals[i:i+31]+[0]*31)[:31]
             return [0]*31
 
         month_num = month_str.replace("월", "")
-        units = get_sum_row(['totalunit', 'output'])
-        jams = get_sum_row(['jamcount', 'jam'])
-        ppjs = get_sum_row(['ppj'])
+        u_vals = get_sum_row(['totalunit', 'output']); j_vals = get_sum_row(['jamcount', 'jam']); p_vals = get_sum_row(['ppj'])
+        cdf = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': u_vals, 'Jam': j_vals, 'PPJ': p_vals})
+        for c in ['Unit', 'Jam', 'PPJ']: cdf[c] = pd.to_numeric(cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
 
-        chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': units, 'Jam': jams, 'PPJ': ppjs})
-        for c in ['Unit', 'Jam', 'PPJ']:
-            chart_df[c] = pd.to_numeric(chart_df[c].astype(str).str.replace(',', '').replace(['nan','비가동','미가동','None',''], '0'), errors='coerce').fillna(0)
+        cdf['Cum_PPJ'] = cdf.apply(lambda r: round(cdf.loc[:r.name, 'Unit'].sum() / cdf.loc[:r.name, 'Jam'].sum(), 1) if cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
 
-        chart_df['Cum_Unit'] = chart_df['Unit'].cumsum()
-        chart_df['Cum_Jam'] = chart_df['Jam'].cumsum()
-        chart_df['Cum_PPJ'] = chart_df.apply(lambda row: round(row['Cum_Unit'] / row['Cum_Jam'], 1) if row['Cum_Jam'] > 0 else 0, axis=1)
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1, subplot_titles=("Unit 및 Jam 건수", "생산 효율(PPJ)"), specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
+        fig.add_trace(go.Bar(x=cdf['날짜'], y=cdf['Unit'], name='투입', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
+        fig.add_trace(go.Scatter(x=cdf['날짜'], y=cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31')), row=1, col=1, secondary_y=True)
+        fig.add_trace(go.Bar(x=cdf['날짜'], y=cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E'), row=2, col=1)
+        fig.add_trace(go.Scatter(x=cdf['날짜'], y=cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4)), row=2, col=1)
+        fig.update_layout(height=600, margin=dict(l=50, r=50, t=50, b=50)); st.plotly_chart(fig, use_container_width=True)
 
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.12,
-                            subplot_titles=("투입량(Unit) 및 에러(Jam) 건수", "생산 효율(PPJ) 추이"),
-                            specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
+        st.subheader(f"📋 에러 상세 분석 리스트")
+        h_idx = next(i for i, r in df_raw.iterrows() if 'error code' in "".join(r.astype(str)).lower())
+        h_row = df_raw.iloc[h_idx].tolist(); m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
+        sh = []
+        for cidx in range(len(df_raw.columns)):
+            cs = "".join([str(df_raw.iloc[h_idx+o, cidx]).lower() for o in [-1,0,1] if 0 <= h_idx+o < len(df_raw)])
+            sh.append(cs)
+        for i, vs in enumerate(sh):
+            if m['D']==-1 and 'date' in vs: m['D']=i
+            elif m['C']==-1 and 'errorcode' in vs: m['C']=i
+            elif m['M']==-1 and 'massage' in vs: m['M']=i
+            elif m['A']==-1 and 'finding' in vs: m['A']=i
+            elif m['T']==-1 and 'time' in vs: m['T']=i
+            elif m['L']==-1 and 'point' in vs: m['L']=i
+            elif m['P']==-1 and 'ppj' in vs: m['P']=i
+        if m['P']==-1 and m['M']!=-1: m['P']=m['M']-1
         
-        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
-        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
-        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.8), row=2, col=1)
-        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Cum_PPJ'], name='월 누적 PPJ (실선)', mode='lines+markers', line=dict(color='#FF0000', width=4)), row=2, col=1)
+        cl = []
+        for _, r in df_raw.iloc[h_idx+1:].iterrows():
+            def mv(v): return len(re.sub(r'[^a-zA-Z0-9가-힣]', '', str(v))) > 0
+            if not mv(r.iloc[m['C']]) and not mv(r.iloc[m['M']]): continue
+            dt = pd.to_datetime(float(r.iloc[m['D']]), unit='D', origin='1899-12-30').strftime('%Y-%m-%d') if str(r.iloc[m['D']]).replace('.','').isdigit() else str(r.iloc[m['D']]).split(' ')[0]
+            cl.append({"Date": dt, "Code": str(r.iloc[m['C']]).replace('.0',''), "PPJ": str(r.iloc[m['P']]).split('.')[0], "Msg": str(r.iloc[m['M']]), "Act": str(r.iloc[m['A']]), "Time": str(r.iloc[m['T']]), "Loc": str(r.iloc[m['L']])})
         
-        fig.update_layout(height=650, margin=dict(l=50, r=50, t=50, b=50), hovermode="x unified", showlegend=True)
-        fig.update_yaxes(title_text="투입량 (EA)", secondary_y=False, row=1, col=1)
-        fig.update_yaxes(title_text="Jam (건)", secondary_y=True, row=1, col=1)
-        fig.update_yaxes(title_text="PPJ", row=2, col=1)
-        st.plotly_chart(fig, use_container_width=True)
-
-        st.subheader(f"📋 {month_str} 에러 상세 리스트")
-        h_idx = -1
-        for i, row in df_raw.iterrows():
-            row_str = "".join(row.astype(str)).lower()
-            if 'error code' in row_str or 'errorcode' in row_str or '에러코드' in row_str:
-                h_idx = i; break
-
-        if h_idx != -1:
-            m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
-            super_headers = []
-            for col_idx in range(len(df_raw.columns)):
-                col_strs = []
-                for offset in [-1, 0, 1]:
-                    if 0 <= h_idx + offset < len(df_raw):
-                        val = str(df_raw.iloc[h_idx + offset, col_idx]).lower().replace(' ', '').replace('\n', '')
-                        if val not in ['nan', 'none', 'null', '']: col_strs.append(val)
-                super_headers.append("".join(col_strs))
-            
-            for i, v_str in enumerate(super_headers):
-                if m['D'] == -1 and ('date' in v_str or '일자' in v_str): m['D'] = i
-                elif m['C'] == -1 and ('errorcode' in v_str or '에러코드' in v_str): m['C'] = i
-                elif m['M'] == -1 and ('massage' in v_str or 'message' in v_str or '에러내용' in v_str): m['M'] = i
-                elif m['A'] == -1 and ('finding' in v_str or 'action' in v_str or '조치' in v_str): m['A'] = i
-                elif m['T'] == -1 and ('time' in v_str or '시간' in v_str): m['T'] = i
-                elif m['L'] == -1 and ('point' in v_str or '위치' in v_str): m['L'] = i
-                elif m['P'] == -1 and ('ppj' in v_str or '효율' in v_str): m['P'] = i
-
-            if m['P'] == -1 and m['M'] != -1: m['P'] = m['M'] - 1
-
-            data_slice = df_raw.iloc[h_idx + 1:].copy()
-            cleaned_list = []
-            
-            def is_meaningful(val):
-                if pd.isna(val): return False
-                cleaned = re.sub(r'[^a-zA-Z0-9가-힣]', '', str(val))
-                return len(cleaned) > 0
-
-            def get_val(r, idx): return r.iloc[idx] if idx != -1 and idx < len(r) else None
-
-            for _, r in data_slice.iterrows():
-                raw_c = get_val(r, m['C'])
-                raw_m = get_val(r, m['M'])
-                has_code = is_meaningful(raw_c)
-                has_msg = is_meaningful(raw_m)
-                
-                if not has_code and not has_msg: continue
-                
-                code_orig = str(raw_c).strip() if has_code else ""
-                if code_orig.endswith('.0'): code_orig = code_orig[:-2]
-                msg_orig = str(raw_m).strip() if has_msg else ""
-                if msg_orig.lower() in ['nan', 'none']: msg_orig = ""
-
-                raw_d = get_val(r, m['D'])
-                dt = None
-                if is_meaningful(raw_d):
-                    if str(raw_d).replace('.','').isdigit(): dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                    else: dt = str(raw_d).split(' ')[0]
-
-                raw_p = get_val(r, m['P'])
-                ppj_val = None
-                if is_meaningful(raw_p) and str(raw_p).lower() not in ['nan', 'none']: ppj_val = str(raw_p).split('.')[0]
-
-                raw_t = get_val(r, m['T'])
-                t_val = ""
-                if is_meaningful(raw_t) and str(raw_t).lower() not in ['nan', 'none']: t_val = str(raw_t).split('.')[0] if ':' in raw_t else raw_t
-                
-                raw_a = get_val(r, m['A'])
-                a_val = str(raw_a).strip() if is_meaningful(raw_a) and str(raw_a).lower() not in ['nan', 'none'] else ""
-
-                raw_l = get_val(r, m['L'])
-                l_val = str(raw_l).strip() if is_meaningful(raw_l) and str(raw_l).lower() not in ['nan', 'none'] else ""
-
-                cleaned_list.append({"Date": dt, "Code": code_orig, "PPJ": ppj_val, "Msg": msg_orig, "Act": a_val, "Time": t_val, "Loc": l_val})
-
-            if cleaned_list:
-                final_df = pd.DataFrame(cleaned_list)
-                final_df['Date'] = final_df['Date'].replace(['', 'nan', 'None'], pd.NA).ffill()
-                final_df['PPJ'] = final_df['PPJ'].replace(['', 'nan', 'None'], pd.NA).ffill().fillna("0")
-                
-                rows_html = ""
-                for _, row in final_df.iterrows():
-                    date_td = f"{row['Date']}" if not pd.isna(row['Date']) else ""
-                    rows_html += f"<tr><td style='width:75px;'>{date_td}</td><td style='width:60px;'>{row['Code']}</td><td style='width:60px;'>{row['PPJ']}</td><td class='t-left'>{row['Msg']}</td><td class='t-left'>{row['Act']}</td><td style='width:65px;'>{row['Time']}</td><td style='width:90px;'>{row['Loc']}</td></tr>"
-                
-                st.markdown(f"<table class='final-report-table'><thead><tr><th style='width:75px;'>날짜</th><th style='width:60px;'>코드</th><th style='width:60px;'>PPJ</th><th>에러내용</th><th>조치내용</th><th style='width:65px;'>시간</th><th style='width:90px;'>위치</th></tr></thead><tbody>{rows_html}</tbody></table>", unsafe_allow_html=True)
-            else: st.info("상세 데이터가 없습니다.")
-        else: st.info("데이터 헤더를 찾을 수 없습니다.")
-
-    except FileNotFoundError:
-        st.error(f"⚠️ 깃허브에 **{target_file}** 파일이 없습니다. 안내된 규칙에 맞게 파일을 업로드해주세요.")
-    except Exception as e: st.error(f"⚠️ 시스템 오류: {e}")
+        if cl:
+            fdf = pd.DataFrame(cl); fdf['Date'] = fdf['Date'].ffill(); fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
+            html = "".join([f"<tr><td>{r['Date']}</td><td>{r['Code']}</td><td>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td>{r['Time']}</td><td>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
+            st.markdown(f"<table class='final-report-table'><thead><tr><th>날짜</th><th>코드</th><th>PPJ</th><th>내용</th><th>조치</th><th>시간</th><th>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
+    except Exception as e: st.error(f"파일을 찾는 중이거나 오류가 발생했습니다: {target_file}")
 
 # ==========================================
-# 6. 메인 실행 (로그인 및 버튼 네비게이션)
+# 6. 메인 실행 (네비게이션 버튼 고정)
 # ==========================================
 def main():
     try:
-        g = Github(st.secrets["GITHUB_TOKEN"])
-        repo = g.get_repo(st.secrets["REPO_NAME"])
+        g = Github(st.secrets["GITHUB_TOKEN"]); repo = g.get_repo(st.secrets["REPO_NAME"])
         db_log = DataManager(repo, st.secrets["FILE_PATH"], ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"])
         db_flow = DataManager(repo, "cs_flow_data.csv", ["프로젝트명", "대항목", "작업내용", "상태", "비고", "첨부", "업데이트일"])
-    except Exception as e:
-        st.error(f"⚠️ 깃허브 연결 설정 오류: {e}")
-        return
+    except: return
 
-    if 'logged_in' not in st.session_state: 
-        st.session_state.update({'logged_in': False, 'user_name': ""})
-    
-    # ★ 현재 어떤 페이지를 보고 있는지 저장 (기본값: 업무일지)
-    if 'current_page' not in st.session_state:
-        st.session_state['current_page'] = "업무일지"
+    if 'logged_in' not in st.session_state: st.session_state.update({'logged_in': False, 'user_name': ""})
+    if 'current_page' not in st.session_state: st.session_state['current_page'] = "업무일지"
 
     if not st.session_state['logged_in']:
-        with st.form("login_form"):
-            name = st.text_input("성함을 입력하세요")
-            if st.form_submit_button("입장하기") and name:
-                st.session_state.update({'logged_in': True, 'user_name': name})
-                st.rerun()
+        with st.form("login"):
+            name = st.text_input("성함"); 
+            if st.form_submit_button("입장") and name: 
+                st.session_state.update({'logged_in': True, 'user_name': name}); st.rerun()
     else:
-        # --- 사이드바 고정 영역 (로그아웃 및 메뉴 이동 버튼) ---
-        st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
-        if st.sidebar.button("🚪 로그아웃", use_container_width=True): 
-            st.session_state['logged_in'] = False
-            st.rerun()
-            
+        st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님")
+        if st.sidebar.button("🚪 로그아웃"): st.session_state['logged_in'] = False; st.rerun()
         st.sidebar.markdown("---")
         st.sidebar.markdown("### 📂 메뉴 이동")
-        
-        # ★ 예전 방식: 사이드바 버튼을 통한 메뉴 이동
-        if st.sidebar.button("📝 팀 업무일지", use_container_width=True):
-            st.session_state['current_page'] = "업무일지"
-            st.rerun()
-        if st.sidebar.button("✅ CS 작업체크시트", use_container_width=True):
-            st.session_state['current_page'] = "CS작업체크시트"
-            st.rerun()
-        if st.sidebar.button("📊 장비가동데이터", use_container_width=True):
-            st.session_state['current_page'] = "장비가동데이터"
-            st.rerun()
+        if st.sidebar.button("📝 업무일지"): st.session_state['current_page'] = "업무일지"; st.rerun()
+        if st.sidebar.button("✅ CS 작업체크시트"): st.session_state['current_page'] = "CS 작업체크시트"; st.rerun()
+        if st.sidebar.button("📊 장비가동데이터"): st.session_state['current_page'] = "장비가동데이터"; st.rerun()
 
-        # --- 메인 화면 렌더링 ---
-        # 선택된 페이지의 함수만 실행 (사이드바 작성 기능은 '업무일지' 함수 안에만 있어 다른 메뉴에선 가려짐)
-        if st.session_state['current_page'] == "업무일지":
-            render_work_log_page(db_log)
-        elif st.session_state['current_page'] == "CS작업체크시트":
-            render_cs_flow_page(db_flow)
-        elif st.session_state['current_page'] == "장비가동데이터":
-            render_equipment_data_page()
+        if st.session_state['current_page'] == "업무일지": render_work_log_page(db_log)
+        elif st.session_state['current_page'] == "CS 작업체크시트": render_cs_flow_page(db_flow)
+        elif st.session_state['current_page'] == "장비가동데이터": render_equipment_data_page()
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()
