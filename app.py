@@ -354,18 +354,27 @@ def render_equipment_data_page(repo):
             for c in ['Unit', 'Jam', 'PPJ']: cdf[c] = pd.to_numeric(cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
             all_cdf.append(cdf)
 
-            # 상세 에러 내역 합치기
-            h_idx = next(i for i, r in df_raw.iterrows() if 'error code' in "".join(r.astype(str)).lower())
-            sh = ["".join([str(df_raw.iloc[h_idx+o, cidx]).lower() for o in [-1,0,1] if 0 <= h_idx+o < len(df_raw)]) for cidx in range(len(df_raw.columns))]
+            # ★ [에러 수정 포인트] 에러코드 헤더를 더 안전하게 찾도록 로직 강화!
+            h_idx = -1
+            for i, r in df_raw.iterrows():
+                rs = "".join(r.astype(str)).lower().replace(" ", "")
+                if 'errorcode' in rs or '에러코드' in rs or '코드' in rs:
+                    h_idx = i
+                    break
+            
+            if h_idx == -1:
+                continue # 헤더를 찾지 못하면 이번 달 리스트는 건너뜀 (앱이 뻗지 않음)
+
+            sh = ["".join([str(df_raw.iloc[h_idx+o, cidx]).lower().replace(" ", "") for o in [-1,0,1] if 0 <= h_idx+o < len(df_raw)]) for cidx in range(len(df_raw.columns))]
             m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
             for i, vs in enumerate(sh):
-                if m['D']==-1 and 'date' in vs: m['D']=i
-                elif m['C']==-1 and 'errorcode' in vs: m['C']=i
-                elif m['M']==-1 and 'massage' in vs: m['M']=i
-                elif m['A']==-1 and 'finding' in vs: m['A']=i
-                elif m['T']==-1 and 'time' in vs: m['T']=i
-                elif m['L']==-1 and 'point' in vs: m['L']=i
-                elif m['P']==-1 and 'ppj' in vs: m['P']=i
+                if m['D']==-1 and ('date' in vs or '일자' in vs or '날짜' in vs): m['D']=i
+                elif m['C']==-1 and ('errorcode' in vs or '에러코드' in vs or '코드' in vs): m['C']=i
+                elif m['M']==-1 and ('massage' in vs or 'message' in vs or '내용' in vs): m['M']=i
+                elif m['A']==-1 and ('finding' in vs or 'action' in vs or '조치' in vs): m['A']=i
+                elif m['T']==-1 and ('time' in vs or '시간' in vs): m['T']=i
+                elif m['L']==-1 and ('point' in vs or '위치' in vs): m['L']=i
+                elif m['P']==-1 and ('ppj' in vs or '효율' in vs): m['P']=i
             if m['P']==-1 and m['M']!=-1: m['P']=m['M']-1
             
             def is_meaningful(val):
@@ -379,7 +388,8 @@ def render_equipment_data_page(repo):
                 return "" if pd.isna(val) or vs.lower() in ['nan', 'none', 'null', 'nat', '0.0'] else vs
 
             for _, r in df_raw.iloc[h_idx+1:].iterrows():
-                raw_c, raw_m = r.iloc[m['C']] if m['C'] != -1 else None, r.iloc[m['M']] if m['M'] != -1 else None
+                raw_c = r.iloc[m['C']] if m['C'] != -1 else None
+                raw_m = r.iloc[m['M']] if m['M'] != -1 else None
                 if not is_meaningful(raw_c) and not is_meaningful(raw_m): continue
                     
                 raw_d = r.iloc[m['D']] if m['D'] != -1 else None
@@ -405,7 +415,11 @@ def render_equipment_data_page(repo):
                 })
 
         except Exception as e:
-            missing_files.append(target_file)
+            if "404" in str(e):
+                missing_files.append(target_file)
+            else:
+                st.error(f"⚠️ {target_file} 파일 읽기 중 오류 발생 (건너뜁니다): {e}")
+            continue
 
     if missing_files:
         st.warning(f"⚠️ 선택하신 기간 중 깃허브에 존재하지 않아 불러오지 못한 파일이 있습니다:\n" + "\n".join([f"- {f}" for f in missing_files]))
@@ -419,24 +433,23 @@ def render_equipment_data_page(repo):
     # 누적 PPJ도 선택한 전체 기간을 기준으로 다시 누적 계산
     final_cdf['Cum_PPJ'] = final_cdf.apply(lambda r: round(final_cdf.loc[:r.name, 'Unit'].sum() / final_cdf.loc[:r.name, 'Jam'].sum(), 1) if final_cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
 
-    # ★ 범례 위치 독립 수정: 제목 옆으로 정렬
+    # ★ 범례 위치 안전하게 수정: 다중 범례 옵션을 제거하고 단일 범례를 가로로 펼쳐 제목 우측 상단에 배치
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.15, 
                         subplot_titles=("Unit 및 Jam 건수", "생산 효율(PPJ)"), 
                         specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
     
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입', marker_color='#5B9BD5', legend="legend"), row=1, col=1, secondary_y=False)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legend="legend"), row=1, col=1, secondary_y=True)
+    # legendgroup을 이용해 깔끔하게 그룹화
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입', marker_color='#5B9BD5', legendgroup="1"), row=1, col=1, secondary_y=False)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legendgroup="1"), row=1, col=1, secondary_y=True)
     
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legend="legend2"), row=2, col=1)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legend="legend2"), row=2, col=1)
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legendgroup="2"), row=2, col=1)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legendgroup="2"), row=2, col=1)
     
     fig.update_layout(
         height=650, 
-        margin=dict(l=50, r=50, t=80, b=50),
-        # 첫 번째(위) 그래프 제목 우측에 붙는 범례
-        legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="right", x=1.0, bgcolor="rgba(255,255,255,0.7)"),
-        # 두 번째(아래) 그래프 제목 우측에 붙는 범례
-        legend2=dict(orientation="h", yanchor="bottom", y=0.48, xanchor="right", x=1.0, bgcolor="rgba(255,255,255,0.7)"),
+        margin=dict(l=50, r=50, t=60, b=50),
+        # 모든 범례를 가로(horizontal)로 길게 펴서 전체 그래프 우측 상단에 정렬되도록 수정 (버전 충돌 방지)
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1.0, bgcolor="rgba(255,255,255,0.8)"),
         hovermode="x unified"
     )
     st.plotly_chart(fig, use_container_width=True)
