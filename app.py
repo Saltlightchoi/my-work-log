@@ -286,7 +286,7 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (★ 장비명 폴더 구조 인식 적용)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (★ 방해되던 예외 삭제, 완벽한 규칙 적용)
 # ==========================================
 def render_equipment_data_page():
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
@@ -296,7 +296,7 @@ def render_equipment_data_page():
     **📂 깃허브 파일 관리 요령 (폴더 구조화)**
     파일 리스트가 지저분해지지 않도록 **`data/장비명/`** 폴더 안에 넣어주세요!
     * **작성 규칙:** `data/장비명/장비명_호기 - 영문월 2026.xlsx`
-    * **예시:** `data/4010H/4010H_2호기 - April 2026.xlsx`
+    * **예시:** `data/SLH1/SLH1_1호기 - March 2026.xlsx`
     """)
 
     col1, col2, col3 = st.columns(3)
@@ -307,11 +307,9 @@ def render_equipment_data_page():
     month_dict = {f"{i}월": eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
     eng_month = month_dict.get(month_str, "January")
 
-    # ★ 핵심 수정: 이제 data/ 폴더 아래 장비명 폴더(equipment)를 한 번 더 거쳐서 파일을 찾습니다.
-    if equipment == "SLH1" and unit == "1호기" and month_str in ["1월", "2월", "3월"]:
-        target_file = f"data/{equipment}/SLH1 - {eng_month} 2026.xlsx"
-    else:
-        target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} 2026.xlsx"
+    # ★ 핵심 수정: 불필요한 예외 코드를 완전히 제거했습니다!
+    # 이제 무조건 "장비명_호기 - 영문월 2026.xlsx" 포맷으로만 찾습니다.
+    target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} 2026.xlsx"
 
     st.markdown(f"**📂 현재 불러올 파일 경로:** `{target_file}`")
 
