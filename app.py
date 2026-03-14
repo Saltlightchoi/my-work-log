@@ -13,10 +13,10 @@ from plotly.subplots import make_subplots
 st.set_page_config(layout="wide", page_title="장비 관리 통합 시스템")
 st.markdown("""
     <style>
-        /* 상단 글씨가 잘리지 않도록 padding-top 여백을 2rem에서 3.5rem으로 늘렸습니다. */
+        /* 상단 글씨가 잘리지 않도록 상단 여백을 대폭 늘림 */
         .block-container { padding-top: 3.5rem !important; padding-bottom: 2rem !important; }
         [data-testid="stSidebar"] { width: 330px !important; }
-        .main-title { font-size: 1.5rem !important; font-weight: bold; padding-bottom: 10px !important; }
+        .main-title { font-size: 1.5rem !important; font-weight: bold; padding-bottom: 10px !important; margin-top: -10px; }
         .info-box { background-color: #f8f9fa; padding: 12px; border-radius: 4px; border-left: 5px solid #4CAF50; margin-bottom: 15px; color: #333; font-size: 13px; }
         
         /* 장비 가동 데이터 표 테두리 아주 진하게 */
@@ -30,7 +30,7 @@ st.markdown("""
         .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; }
         .t-left { text-align: left !important; }
         
-        /* 사이드바 메뉴 버튼 디자인 */
+        /* 사이드바 및 버튼 디자인 */
         div[data-testid="stSidebar"] button { width: 100% !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
@@ -287,186 +287,175 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (연월 통합 선택 & 독립된 범례 적용)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (기간 다중지정 및 범례 독립배치, 코드열 숨김)
 # ==========================================
 def render_equipment_data_page(repo):
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-    st.info("""
-    **📂 깃허브 파일 관리 요령 (폴더 구조화)**
-    파일 리스트가 지저분해지지 않도록 **`data/장비명/`** 폴더 안에 넣어주세요!
-    * **작성 규칙:** `data/장비명/장비명_호기 - 영문월 연도.xlsx`
-    * **예시:** `data/SLH1/SLH1_1호기 - March 2026.xlsx`
-    """)
-
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns([1, 1, 2]) # 기간 슬라이더가 길기 때문에 칸 비율 조정
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
     with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="eq_data_unit")
     
-    # ★ 연도와 월을 한 번에 선택할 수 있도록 옵션 생성 (2025~2027년)
+    # ★ 기간 다중 지정: select_slider를 이용하여 시작 월과 종료 월 범위를 드래그로 선택
     ym_options = [f"{y}년 {m}월" for y in [2025, 2026, 2027] for m in range(1, 13)]
-    # 기본값 설정: 리스트의 12번째 인덱스 (2026년 1월)
-    with col3: ym_str = st.selectbox("조회할 연월 선택", ym_options, index=12, key="eq_data_month")
+    with col3: 
+        start_ym, end_ym = st.select_slider("조회 기간 선택 (드래그하여 여러 달 지정 가능)", options=ym_options, value=("2026년 1월", "2026년 3월"))
 
-    # 선택된 "2026년 1월" 문자열에서 연도와 월을 분리하여 파일명 규칙에 맞게 조립
-    y_str = ym_str.split('년')[0]
-    m_str = ym_str.split(' ')[1].replace('월', '')
+    start_idx = ym_options.index(start_ym)
+    end_idx = ym_options.index(end_ym)
+    if start_idx > end_idx: start_idx, end_idx = end_idx, start_idx
+    selected_yms = ym_options[start_idx : end_idx+1]
 
     month_dict = {str(i): eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
-    eng_month = month_dict.get(m_str, "January")
+    
+    all_cdf = []
+    all_cl = []
+    missing_files = []
 
-    target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} {y_str}.xlsx"
+    # 선택된 기간 내의 모든 파일들을 차례대로 다운받고 합칩니다.
+    for ym_str in selected_yms:
+        y_str = ym_str.split('년')[0]
+        m_str = ym_str.split(' ')[1].replace('월', '')
+        eng_month = month_dict.get(m_str, "January")
 
-    st.markdown(f"**📂 현재 불러올 파일 경로:** `{target_file}`")
+        if equipment == "SLH1" and unit == "1호기" and ym_str in ["2026년 1월", "2026년 2월", "2026년 3월"]:
+            target_file = f"data/{equipment}/SLH1 - {eng_month} 2026.xlsx"
+        else:
+            target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} {y_str}.xlsx"
 
-    try:
-        file_content = repo.get_contents(target_file)
-        excel_data = io.BytesIO(file_content.decoded_content)
-        xls = pd.read_excel(excel_data, sheet_name=None, header=None, engine='openpyxl')
-        
-        df_raw = None
-        for _, data in xls.items():
-            if data.astype(str).apply(lambda r: r.str.contains('Unit|Output', case=False).any(), axis=1).any():
-                df_raw = data; break
-        
-        if df_raw is None: 
-            st.error("⚠️ 데이터를 찾을 수 없습니다. 시트 안에 'Total Unit'이나 'Output' 글자가 있는지 엑셀을 확인해주세요."); return
-
-        def get_sum_row(keywords):
-            for _, row in df_raw.iterrows():
-                rs = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
-                if any(k in rs for k in keywords) and not any(x in rs for x in ['%', '발생률']):
-                    vals = row.tolist()
-                    for i, v in enumerate(vals):
-                        if str(v).replace('.','').isdigit(): return (vals[i:i+31]+[0]*31)[:31]
-            return [0]*31
-
-        month_num = m_str
-        u_vals = get_sum_row(['totalunit', 'output']); j_vals = get_sum_row(['jamcount', 'jam']); p_vals = get_sum_row(['ppj'])
-        cdf = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': u_vals, 'Jam': j_vals, 'PPJ': p_vals})
-        for c in ['Unit', 'Jam', 'PPJ']: cdf[c] = pd.to_numeric(cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
-
-        cdf['Cum_PPJ'] = cdf.apply(lambda r: round(cdf.loc[:r.name, 'Unit'].sum() / cdf.loc[:r.name, 'Jam'].sum(), 1) if cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
-
-        # ★ 상/하단 범례(Legend) 분리 및 독립 배치 설정
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.15, 
-                            subplot_titles=("Unit 및 Jam 건수", "생산 효율(PPJ)"), 
-                            specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
-        
-        # 첫 번째 그래프(상단) 그룹 (legend="legend" 지정)
-        fig.add_trace(go.Bar(x=cdf['날짜'], y=cdf['Unit'], name='투입', marker_color='#5B9BD5', legend="legend"), row=1, col=1, secondary_y=False)
-        fig.add_trace(go.Scatter(x=cdf['날짜'], y=cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legend="legend"), row=1, col=1, secondary_y=True)
-        
-        # 두 번째 그래프(하단) 그룹 (legend="legend2" 지정)
-        fig.add_trace(go.Bar(x=cdf['날짜'], y=cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legend="legend2"), row=2, col=1)
-        fig.add_trace(go.Scatter(x=cdf['날짜'], y=cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legend="legend2"), row=2, col=1)
-        
-        # Layout 업데이트: 두 개의 범례를 각각 첫 번째, 두 번째 그래프 우측에 완벽 정렬
-        fig.update_layout(
-            height=650, 
-            margin=dict(l=50, r=120, t=80, b=50), # 우측(r) 여백을 넓혀 범례 공간 확보
-            legend=dict(
-                y=1.0, x=1.02, 
-                yanchor="top", xanchor="left",
-                bgcolor="rgba(255,255,255,0.7)"
-            ),
-            legend2=dict(
-                y=0.45, x=1.02, 
-                yanchor="top", xanchor="left",
-                bgcolor="rgba(255,255,255,0.7)"
-            ),
-            hovermode="x unified"
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-        st.subheader(f"📋 {ym_str} 에러 상세 분석 리스트")
-        h_idx = next(i for i, r in df_raw.iterrows() if 'error code' in "".join(r.astype(str)).lower())
-        h_row = df_raw.iloc[h_idx].tolist(); m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
-        sh = []
-        for cidx in range(len(df_raw.columns)):
-            cs = "".join([str(df_raw.iloc[h_idx+o, cidx]).lower() for o in [-1,0,1] if 0 <= h_idx+o < len(df_raw)])
-            sh.append(cs)
-        for i, vs in enumerate(sh):
-            if m['D']==-1 and 'date' in vs: m['D']=i
-            elif m['C']==-1 and 'errorcode' in vs: m['C']=i
-            elif m['M']==-1 and 'massage' in vs: m['M']=i
-            elif m['A']==-1 and 'finding' in vs: m['A']=i
-            elif m['T']==-1 and 'time' in vs: m['T']=i
-            elif m['L']==-1 and 'point' in vs: m['L']=i
-            elif m['P']==-1 and 'ppj' in vs: m['P']=i
-        if m['P']==-1 and m['M']!=-1: m['P']=m['M']-1
-        
-        cl = []
-        
-        def is_meaningful(val):
-            if pd.isna(val): return False
-            vs = str(val).strip().lower()
-            if vs in ['nan', 'none', 'null', 'nat', '', '0', '0.0']: return False
-            cleaned = re.sub(r'[^a-zA-Z0-9가-힣]', '', vs)
-            return len(cleaned) > 0
-
-        def clean_val(val):
-            if pd.isna(val): return ""
-            vs = str(val).strip()
-            if vs.lower() in ['nan', 'none', 'null', 'nat', '0.0']: return ""
-            return vs
-
-        for _, r in df_raw.iloc[h_idx+1:].iterrows():
-            raw_c = r.iloc[m['C']] if m['C'] != -1 else None
-            raw_m = r.iloc[m['M']] if m['M'] != -1 else None
+        try:
+            file_content = repo.get_contents(target_file)
+            excel_data = io.BytesIO(file_content.decoded_content)
+            xls = pd.read_excel(excel_data, sheet_name=None, header=None, engine='openpyxl')
             
-            if not is_meaningful(raw_c) and not is_meaningful(raw_m): 
+            df_raw = None
+            for _, data in xls.items():
+                if data.astype(str).apply(lambda r: r.str.contains('Unit|Output', case=False).any(), axis=1).any():
+                    df_raw = data; break
+            
+            if df_raw is None: 
+                missing_files.append(target_file)
                 continue
+
+            def get_sum_row(keywords):
+                for _, row in df_raw.iterrows():
+                    rs = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
+                    if any(k in rs for k in keywords) and not any(x in rs for x in ['%', '발생률']):
+                        vals = row.tolist()
+                        for i, v in enumerate(vals):
+                            if str(v).replace('.','').isdigit(): return (vals[i:i+31]+[0]*31)[:31]
+                return [0]*31
+
+            u_vals = get_sum_row(['totalunit', 'output']); j_vals = get_sum_row(['jamcount', 'jam']); p_vals = get_sum_row(['ppj'])
+            
+            # X축 날짜 포맷 (연도를 짧게 붙여 구별 가능하게 함. 예: 26.1/5)
+            cdf = pd.DataFrame({'날짜': [f"{y_str[-2:]}.{m_str}/{i}" for i in range(1, 32)], 'Unit': u_vals, 'Jam': j_vals, 'PPJ': p_vals})
+            for c in ['Unit', 'Jam', 'PPJ']: cdf[c] = pd.to_numeric(cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
+            all_cdf.append(cdf)
+
+            # 상세 에러 내역 합치기
+            h_idx = next(i for i, r in df_raw.iterrows() if 'error code' in "".join(r.astype(str)).lower())
+            sh = ["".join([str(df_raw.iloc[h_idx+o, cidx]).lower() for o in [-1,0,1] if 0 <= h_idx+o < len(df_raw)]) for cidx in range(len(df_raw.columns))]
+            m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
+            for i, vs in enumerate(sh):
+                if m['D']==-1 and 'date' in vs: m['D']=i
+                elif m['C']==-1 and 'errorcode' in vs: m['C']=i
+                elif m['M']==-1 and 'massage' in vs: m['M']=i
+                elif m['A']==-1 and 'finding' in vs: m['A']=i
+                elif m['T']==-1 and 'time' in vs: m['T']=i
+                elif m['L']==-1 and 'point' in vs: m['L']=i
+                elif m['P']==-1 and 'ppj' in vs: m['P']=i
+            if m['P']==-1 and m['M']!=-1: m['P']=m['M']-1
+            
+            def is_meaningful(val):
+                if pd.isna(val): return False
+                vs = str(val).strip().lower()
+                if vs in ['nan', 'none', 'null', 'nat', '', '0', '0.0']: return False
+                return len(re.sub(r'[^a-zA-Z0-9가-힣]', '', vs)) > 0
+
+            def clean_val(val):
+                vs = str(val).strip()
+                return "" if pd.isna(val) or vs.lower() in ['nan', 'none', 'null', 'nat', '0.0'] else vs
+
+            for _, r in df_raw.iloc[h_idx+1:].iterrows():
+                raw_c, raw_m = r.iloc[m['C']] if m['C'] != -1 else None, r.iloc[m['M']] if m['M'] != -1 else None
+                if not is_meaningful(raw_c) and not is_meaningful(raw_m): continue
+                    
+                raw_d = r.iloc[m['D']] if m['D'] != -1 else None
+                dt = ""
+                if is_meaningful(raw_d):
+                    try: dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d') if str(raw_d).replace('.','').isdigit() else str(raw_d).split(' ')[0]
+                    except: dt = str(raw_d)
                 
-            raw_d = r.iloc[m['D']] if m['D'] != -1 else None
-            dt = ""
-            if is_meaningful(raw_d):
-                try:
-                    if str(raw_d).replace('.','').isdigit(): 
-                        dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                    else: 
-                        dt = str(raw_d).split(' ')[0]
-                except:
-                    dt = str(raw_d)
-            
-            raw_p = r.iloc[m['P']] if m['P'] != -1 else None
-            ppj_val = clean_val(raw_p).split('.')[0] if is_meaningful(raw_p) else ""
-            
-            code_val = clean_val(raw_c)
-            if code_val.endswith('.0'): code_val = code_val[:-2]
+                raw_p = r.iloc[m['P']] if m['P'] != -1 else None
+                ppj_val = clean_val(raw_p).split('.')[0] if is_meaningful(raw_p) else ""
+                
+                # 코드는 내부적으로 정리만 하고 화면에 표시하지 않음 (피드백 반영)
+                time_val = clean_val(r.iloc[m['T']] if m['T'] != -1 else None)
+                if ':' not in time_val and '.' in time_val: time_val = time_val.split('.')[0]
 
-            time_val = clean_val(r.iloc[m['T']] if m['T'] != -1 else None)
-            if ':' not in time_val and '.' in time_val: time_val = time_val.split('.')[0]
+                all_cl.append({
+                    "Date": dt if dt else pd.NA, 
+                    "PPJ": ppj_val if ppj_val else pd.NA, 
+                    "Msg": clean_val(raw_m), 
+                    "Act": clean_val(r.iloc[m['A']] if m['A'] != -1 else None), 
+                    "Time": time_val, 
+                    "Loc": clean_val(r.iloc[m['L']] if m['L'] != -1 else None)
+                })
 
-            cl.append({
-                "Date": dt if dt else pd.NA, 
-                "Code": code_val, 
-                "PPJ": ppj_val if ppj_val else pd.NA, 
-                "Msg": clean_val(raw_m), 
-                "Act": clean_val(r.iloc[m['A']] if m['A'] != -1 else None), 
-                "Time": time_val, 
-                "Loc": clean_val(r.iloc[m['L']] if m['L'] != -1 else None)
-            })
+        except Exception as e:
+            missing_files.append(target_file)
+
+    if missing_files:
+        st.warning(f"⚠️ 선택하신 기간 중 깃허브에 존재하지 않아 불러오지 못한 파일이 있습니다:\n" + "\n".join([f"- {f}" for f in missing_files]))
+
+    if not all_cdf:
+        st.error("데이터를 하나도 불러오지 못했습니다. 파일 위치나 파일명을 다시 확인해주세요.")
+        return
+
+    # 모든 기간의 데이터를 하나로 결합
+    final_cdf = pd.concat(all_cdf).reset_index(drop=True)
+    # 누적 PPJ도 선택한 전체 기간을 기준으로 다시 누적 계산
+    final_cdf['Cum_PPJ'] = final_cdf.apply(lambda r: round(final_cdf.loc[:r.name, 'Unit'].sum() / final_cdf.loc[:r.name, 'Jam'].sum(), 1) if final_cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
+
+    # ★ 범례 위치 독립 수정: 제목 옆으로 정렬
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.15, 
+                        subplot_titles=("Unit 및 Jam 건수", "생산 효율(PPJ)"), 
+                        specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
+    
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입', marker_color='#5B9BD5', legend="legend"), row=1, col=1, secondary_y=False)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legend="legend"), row=1, col=1, secondary_y=True)
+    
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legend="legend2"), row=2, col=1)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legend="legend2"), row=2, col=1)
+    
+    fig.update_layout(
+        height=650, 
+        margin=dict(l=50, r=50, t=80, b=50),
+        # 첫 번째(위) 그래프 제목 우측에 붙는 범례
+        legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="right", x=1.0, bgcolor="rgba(255,255,255,0.7)"),
+        # 두 번째(아래) 그래프 제목 우측에 붙는 범례
+        legend2=dict(orientation="h", yanchor="bottom", y=0.48, xanchor="right", x=1.0, bgcolor="rgba(255,255,255,0.7)"),
+        hovermode="x unified"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader(f"📋 에러 상세 분석 통합 리스트")
+    if all_cl:
+        fdf = pd.DataFrame(all_cl)
+        fdf['Date'] = fdf['Date'].ffill()
+        fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
         
-        if cl:
-            fdf = pd.DataFrame(cl)
-            fdf['Date'] = fdf['Date'].ffill()
-            fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
-            
-            html = "".join([f"<tr><td>{r['Date'] if not pd.isna(r['Date']) else ''}</td><td>{r['Code']}</td><td>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td>{r['Time']}</td><td>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
-            st.markdown(f"<table class='final-report-table'><thead><tr><th>날짜</th><th>코드</th><th>PPJ</th><th>내용</th><th>조치</th><th>시간</th><th>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
-        else:
-            st.info("상세 에러 내역이 없습니다.")
+        # ★ '코드' 열 제거 완료
+        html = "".join([f"<tr><td>{r['Date'] if not pd.isna(r['Date']) else ''}</td><td>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td>{r['Time']}</td><td>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
+        st.markdown(f"<table class='final-report-table'><thead><tr><th style='width:90px;'>날짜</th><th style='width:60px;'>PPJ</th><th>에러내용</th><th>조치내용</th><th style='width:70px;'>시간</th><th style='width:90px;'>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
+    else:
+        st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
-    except Exception as e:
-        if "404" in str(e):
-            st.error(f"⚠️ 깃허브에 파일이 없습니다. 파일명이나 폴더 위치를 다시 확인해주세요: {target_file}")
-        else:
-            st.error(f"⚠️ 파일을 읽는 중 오류가 발생했습니다: {e}")
 
 # ==========================================
-# 6. 메인 실행 (네비게이션 버튼 고정)
+# 6. 메인 실행 (★ 네비게이션 드롭다운 상단 배치 적용)
 # ==========================================
 def main():
     try:
@@ -478,7 +467,6 @@ def main():
         return
 
     if 'logged_in' not in st.session_state: st.session_state.update({'logged_in': False, 'user_name': ""})
-    if 'current_page' not in st.session_state: st.session_state['current_page'] = "업무일지"
 
     if not st.session_state['logged_in']:
         with st.form("login"):
@@ -486,16 +474,20 @@ def main():
             if st.form_submit_button("입장") and name: 
                 st.session_state.update({'logged_in': True, 'user_name': name}); st.rerun()
     else:
-        st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님")
-        if st.sidebar.button("🚪 로그아웃"): st.session_state['logged_in'] = False; st.rerun()
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("### 📂 메뉴 이동")
-        if st.sidebar.button("📝 업무일지"): st.session_state['current_page'] = "업무일지"; st.rerun()
-        if st.sidebar.button("✅ CS 작업체크시트"): st.session_state['current_page'] = "CS 작업체크시트"; st.rerun()
-        if st.sidebar.button("📊 장비가동데이터"): st.session_state['current_page'] = "장비가동데이터"; st.rerun()
+        # ★ 상단 미니 메뉴 스크롤 및 로그아웃 배치 (좌측 슬라이드를 열 필요 없음)
+        top_col1, top_col2, top_col3 = st.columns([6, 3, 1])
+        with top_col2:
+            menu_selection = st.selectbox("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터"], label_visibility="collapsed")
+        with top_col3:
+            if st.button("🚪 로그아웃", use_container_width=True): 
+                st.session_state['logged_in'] = False
+                st.rerun()
 
-        if st.session_state['current_page'] == "업무일지": render_work_log_page(db_log)
-        elif st.session_state['current_page'] == "CS 작업체크시트": render_cs_flow_page(db_flow)
-        elif st.session_state['current_page'] == "장비가동데이터": render_equipment_data_page(repo)
+        # 사이드바는 환영 인사와 업무일지 툴에서만 열리도록 깔끔하게 분리
+        st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
+
+        if menu_selection == "📝 업무일지": render_work_log_page(db_log)
+        elif menu_selection == "✅ CS 작업체크시트": render_cs_flow_page(db_flow)
+        elif menu_selection == "📊 장비가동데이터": render_equipment_data_page(repo)
 
 if __name__ == "__main__": main()
