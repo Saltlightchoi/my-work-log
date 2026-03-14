@@ -3,7 +3,8 @@ import pandas as pd
 from github import Github
 import io
 import re
-from datetime import datetime
+import calendar
+from datetime import datetime, date
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -169,11 +170,11 @@ def render_work_log_page(db_log):
     st.dataframe(disp, use_container_width=True, hide_index=True, column_config={"업무내용": st.column_config.TextColumn("업무내용", width="large")})
 
 # ==========================================
-# 4. 화면 UI - 2페이지: CS 작업체크시트
+# 4. 화면 UI - 2페이지: CS 작업체크시트 (대항목 관리 부활)
 # ==========================================
 def render_cs_flow_page(db_flow):
     df_flow, sha_flow = db_flow.load()
-    st.markdown("<div class='main-title'>✅ CS 작업 체크 시트 (대항목 관리)</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>✅ CS 작업 체크 시트</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
     project_list = df_flow["프로젝트명"].unique().tolist() if not df_flow.empty else []
@@ -220,7 +221,7 @@ def render_cs_flow_page(db_flow):
             st.session_state['current_proj'] = selected_proj 
         with save_col: 
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-            btn_save = st.button("💾 저장", use_container_width=True)
+            btn_save = st.button("💾 변경 저장", use_container_width=True)
         with del_col: 
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
             if st.button("🗑️ 삭제", use_container_width=True):
@@ -239,6 +240,58 @@ def render_cs_flow_page(db_flow):
                 st.rerun()
             if st.button("❌ 취소"): st.session_state['delete_target_proj'] = None; st.rerun()
             st.stop() 
+
+        # ★ 대항목 관리 UI 부활 (추가/수정/삭제/순서변경)
+        cats = proj_df['대항목'].unique().tolist()
+        with st.expander("⚙️ 프로젝트 대항목 관리 (추가/수정/삭제/순서변경)"):
+            c1, c2, c3, c4 = st.tabs(["➕ 대항목 추가", "✏️ 이름 수정", "❌ 대항목 삭제", "↕️ 순서 변경"])
+            
+            with c1:
+                with st.form("add_cat_form", clear_on_submit=True):
+                    new_c = st.text_input("새 대항목 이름")
+                    if st.form_submit_button("추가하기"):
+                        if new_c and new_c not in cats:
+                            new_row = pd.DataFrame([{"프로젝트명": selected_proj, "대항목": new_c, "순서": 1, "작업내용": "새 작업 내용 입력", "상태": "⬜ 대기", "비고": "", "첨부": "", "업데이트일": ""}])
+                            db_flow.save(pd.concat([df_flow, new_row], ignore_index=True), sha_flow, f"Add Cat: {new_c}")
+                            st.success(f"'{new_c}' 항목이 추가되었습니다.")
+                            st.rerun()
+
+            with c2:
+                with st.form("edit_cat_form", clear_on_submit=True):
+                    target_c = st.selectbox("수정할 대항목 선택", cats)
+                    rename_c = st.text_input("새로운 이름 입력")
+                    if st.form_submit_button("이름 변경"):
+                        if rename_c and rename_c not in cats:
+                            df_flow.loc[(df_flow["프로젝트명"] == selected_proj) & (df_flow["대항목"] == target_c), "대항목"] = rename_c
+                            db_flow.save(df_flow, sha_flow, f"Rename Cat: {target_c}")
+                            st.success("이름이 변경되었습니다.")
+                            st.rerun()
+
+            with c3:
+                with st.form("del_cat_form"):
+                    del_c = st.selectbox("삭제할 대항목 선택", cats)
+                    st.warning("⚠️ 해당 대항목과 안에 포함된 모든 세부 작업이 영구 삭제됩니다.")
+                    if st.form_submit_button("삭제 실행"):
+                        df_flow = df_flow[~((df_flow["프로젝트명"] == selected_proj) & (df_flow["대항목"] == del_c))]
+                        db_flow.save(df_flow, sha_flow, f"Delete Cat: {del_c}")
+                        st.success("삭제되었습니다.")
+                        st.rerun()
+
+            with c4:
+                st.write("표 안의 **'새 순서'** 숫자를 클릭하여 순서를 변경하고 적용 버튼을 누르세요.")
+                order_df = pd.DataFrame({"대항목": cats, "새 순서": range(1, len(cats)+1)})
+                edited_order = st.data_editor(order_df, hide_index=True, use_container_width=True)
+                if st.button("변경된 순서 적용하기"):
+                    edited_order = edited_order.sort_values("새 순서")
+                    ordered_cats = edited_order["대항목"].tolist()
+                    proj_df['__cat_order__'] = pd.Categorical(proj_df['대항목'], categories=ordered_cats, ordered=True)
+                    sorted_proj_df = proj_df.sort_values(['__cat_order__', '순서']).drop(columns=['__cat_order__'])
+                    
+                    new_df_flow = df_flow[df_flow["프로젝트명"] != selected_proj]
+                    new_df_flow = pd.concat([new_df_flow, sorted_proj_df], ignore_index=True)
+                    db_flow.save(new_df_flow, sha_flow, "Reorder Cats")
+                    st.success("순서가 적용되었습니다.")
+                    st.rerun()
 
         total_tasks = len(proj_df); comp_tasks = len(proj_df[proj_df["상태"] == "✅ 완료"])
         pct_float = (comp_tasks / total_tasks) if total_tasks > 0 else 0.0
@@ -287,40 +340,38 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (K 제거, 범례 투명화, 예외 삭제 완결판)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (달력 기간 지정, 숫자 포맷, 범례 위치 적용)
 # ==========================================
 def render_equipment_data_page(repo):
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 1, 2]) # 기간 슬라이더가 길기 때문에 칸 비율 조정
+    col1, col2, col3 = st.columns([1, 1, 2])
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
     with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="eq_data_unit")
     
-    # 기간 다중 지정
-    ym_options = [f"{y}년 {m}월" for y in [2025, 2026, 2027] for m in range(1, 13)]
+    # ★ 기간 지정: 캘린더 날짜 클릭 방식으로 완전 변경 (정확한 날짜 필터링)
+    today = datetime.today().date()
     with col3: 
-        start_ym, end_ym = st.select_slider("조회 기간 선택 (드래그하여 여러 달 지정 가능)", options=ym_options, value=("2026년 1월", "2026년 3월"))
+        date_range = st.date_input("📅 조회 기간 선택 (시작일과 종료일을 클릭하세요)", [today.replace(day=1), today])
 
-    start_idx = ym_options.index(start_ym)
-    end_idx = ym_options.index(end_ym)
-    if start_idx > end_idx: start_idx, end_idx = end_idx, start_idx
-    selected_yms = ym_options[start_idx : end_idx+1]
+    if len(date_range) == 2:
+        s_date, e_date = date_range
+    else:
+        s_date = e_date = date_range[0]
 
-    month_dict = {str(i): eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
+    # 선택한 날짜에 해당하는 모든 '년/월' 폴더를 계산하여 조회
+    periods = pd.period_range(s_date.replace(day=1), e_date, freq='M')
+    ym_list = [(p.year, p.month) for p in periods]
+    month_dict = {i: eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
     
     all_cdf = []
     all_cl = []
     missing_files = []
 
-    # 선택된 기간 내의 모든 파일들을 차례대로 결합
-    for ym_str in selected_yms:
-        y_str = ym_str.split('년')[0]
-        m_str = ym_str.split(' ')[1].replace('월', '')
-        eng_month = month_dict.get(m_str, "January")
-
-        # ★ 2026년도 에러 원인이었던 예외 조건 코드 완전히 삭제 완료! (항상 아래 포맷으로 찾습니다)
-        target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} {y_str}.xlsx"
+    for y, m in ym_list:
+        eng_month = month_dict.get(m, "January")
+        target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} {y}.xlsx"
 
         try:
             file_content = repo.get_contents(target_file)
@@ -345,10 +396,20 @@ def render_equipment_data_page(repo):
                             if str(v).replace('.','').isdigit(): return (vals[i:i+31]+[0]*31)[:31]
                 return [0]*31
 
-            u_vals = get_sum_row(['totalunit', 'output']); j_vals = get_sum_row(['jamcount', 'jam']); p_vals = get_sum_row(['ppj'])
+            u_vals = get_sum_row(['totalunit', 'output'])
+            j_vals = get_sum_row(['jamcount', 'jam'])
+            p_vals = get_sum_row(['ppj'])
             
-            cdf = pd.DataFrame({'날짜': [f"{y_str[-2:]}.{m_str}/{i}" for i in range(1, 32)], 'Unit': u_vals, 'Jam': j_vals, 'PPJ': p_vals})
-            for c in ['Unit', 'Jam', 'PPJ']: cdf[c] = pd.to_numeric(cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
+            _, last_day = calendar.monthrange(y, m)
+            month_dates = [date(y, m, d) for d in range(1, last_day + 1)]
+            
+            cdf = pd.DataFrame({
+                'DateObj': month_dates,
+                '날짜': [f"{str(y)[-2:]}.{m}/{d}" for d in range(1, last_day + 1)],
+                'Unit': u_vals[:last_day],
+                'Jam': j_vals[:last_day],
+                'PPJ': p_vals[:last_day]
+            })
             all_cdf.append(cdf)
 
             h_idx = -1
@@ -362,16 +423,16 @@ def render_equipment_data_page(repo):
                 continue 
 
             sh = ["".join([str(df_raw.iloc[h_idx+o, cidx]).lower().replace(" ", "") for o in [-1,0,1] if 0 <= h_idx+o < len(df_raw)]) for cidx in range(len(df_raw.columns))]
-            m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
+            m_col = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
             for i, vs in enumerate(sh):
-                if m['D']==-1 and ('date' in vs or '일자' in vs or '날짜' in vs): m['D']=i
-                elif m['C']==-1 and ('errorcode' in vs or '에러코드' in vs or '코드' in vs): m['C']=i
-                elif m['M']==-1 and ('massage' in vs or 'message' in vs or '내용' in vs): m['M']=i
-                elif m['A']==-1 and ('finding' in vs or 'action' in vs or '조치' in vs): m['A']=i
-                elif m['T']==-1 and ('time' in vs or '시간' in vs): m['T']=i
-                elif m['L']==-1 and ('point' in vs or '위치' in vs): m['L']=i
-                elif m['P']==-1 and ('ppj' in vs or '효율' in vs): m['P']=i
-            if m['P']==-1 and m['M']!=-1: m['P']=m['M']-1
+                if m_col['D']==-1 and ('date' in vs or '일자' in vs or '날짜' in vs): m_col['D']=i
+                elif m_col['C']==-1 and ('errorcode' in vs or '에러코드' in vs or '코드' in vs): m_col['C']=i
+                elif m_col['M']==-1 and ('massage' in vs or 'message' in vs or '내용' in vs): m_col['M']=i
+                elif m_col['A']==-1 and ('finding' in vs or 'action' in vs or '조치' in vs): m_col['A']=i
+                elif m_col['T']==-1 and ('time' in vs or '시간' in vs): m_col['T']=i
+                elif m_col['L']==-1 and ('point' in vs or '위치' in vs): m_col['L']=i
+                elif m_col['P']==-1 and ('ppj' in vs or '효율' in vs): m_col['P']=i
+            if m_col['P']==-1 and m_col['M']!=-1: m_col['P']=m_col['M']-1
             
             def is_meaningful(val):
                 if pd.isna(val): return False
@@ -384,80 +445,100 @@ def render_equipment_data_page(repo):
                 return "" if pd.isna(val) or vs.lower() in ['nan', 'none', 'null', 'nat', '0.0'] else vs
 
             for _, r in df_raw.iloc[h_idx+1:].iterrows():
-                raw_c = r.iloc[m['C']] if m['C'] != -1 else None
-                raw_m = r.iloc[m['M']] if m['M'] != -1 else None
+                raw_c = r.iloc[m_col['C']] if m_col['C'] != -1 else None
+                raw_m = r.iloc[m_col['M']] if m_col['M'] != -1 else None
                 if not is_meaningful(raw_c) and not is_meaningful(raw_m): continue
                     
-                raw_d = r.iloc[m['D']] if m['D'] != -1 else None
-                dt = ""
+                raw_d = r.iloc[m_col['D']] if m_col['D'] != -1 else None
+                dt_obj = None
                 if is_meaningful(raw_d):
-                    try: dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d') if str(raw_d).replace('.','').isdigit() else str(raw_d).split(' ')[0]
-                    except: dt = str(raw_d)
+                    try: 
+                        if str(raw_d).replace('.','').isdigit(): 
+                            dt_obj = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').date()
+                        else: 
+                            dt_obj = pd.to_datetime(str(raw_d).split(' ')[0].replace('.', '-')).date()
+                    except: pass
                 
-                raw_p = r.iloc[m['P']] if m['P'] != -1 else None
+                # ★ 선택된 날짜 기간(s_date ~ e_date) 안에 있는 에러만 리스트에 넣음
+                if dt_obj is None or not (s_date <= dt_obj <= e_date):
+                    continue
+
+                raw_p = r.iloc[m_col['P']] if m_col['P'] != -1 else None
                 ppj_val = clean_val(raw_p).split('.')[0] if is_meaningful(raw_p) else ""
                 
-                time_val = clean_val(r.iloc[m['T']] if m['T'] != -1 else None)
+                time_val = clean_val(r.iloc[m_col['T']] if m_col['T'] != -1 else None)
                 if ':' not in time_val and '.' in time_val: time_val = time_val.split('.')[0]
 
+                # 에러코드는 이제 화면에 보이지 않도록 딕셔너리에서 아예 뺐습니다.
                 all_cl.append({
-                    "Date": dt if dt else pd.NA, 
+                    "Date": dt_obj.strftime('%Y-%m-%d'), 
                     "PPJ": ppj_val if ppj_val else pd.NA, 
                     "Msg": clean_val(raw_m), 
-                    "Act": clean_val(r.iloc[m['A']] if m['A'] != -1 else None), 
+                    "Act": clean_val(r.iloc[m_col['A']] if m_col['A'] != -1 else None), 
                     "Time": time_val, 
-                    "Loc": clean_val(r.iloc[m['L']] if m['L'] != -1 else None)
+                    "Loc": clean_val(r.iloc[m_col['L']] if m_col['L'] != -1 else None)
                 })
 
         except Exception as e:
             if "404" in str(e):
                 missing_files.append(target_file)
-            else:
-                st.error(f"⚠️ {target_file} 파일 읽기 중 오류 발생 (건너뜁니다): {e}")
             continue
 
     if missing_files:
-        st.warning(f"⚠️ 선택하신 기간 중 깃허브에 존재하지 않아 불러오지 못한 파일이 있습니다:\n" + "\n".join([f"- {f}" for f in missing_files]))
+        st.warning(f"⚠️ 선택하신 기간 중 깃허브에 존재하지 않는 파일이 있습니다:\n" + "\n".join([f"- {f}" for f in missing_files]))
 
     if not all_cdf:
-        st.error("데이터를 하나도 불러오지 못했습니다. 파일 위치나 파일명을 다시 확인해주세요.")
+        st.error("데이터를 찾지 못했습니다. 깃허브에 해당 월의 파일이 있는지, 또는 선택한 날짜에 데이터가 있는지 확인해주세요.")
         return
 
     final_cdf = pd.concat(all_cdf).reset_index(drop=True)
+    
+    # ★ 선택한 날짜 범위로만 그래프 데이터도 필터링
+    mask = (final_cdf['DateObj'] >= s_date) & (final_cdf['DateObj'] <= e_date)
+    final_cdf = final_cdf[mask].reset_index(drop=True)
+    
+    if final_cdf.empty:
+        st.warning("선택하신 조회 기간에 기록된 가동 데이터가 없습니다.")
+        return
+
+    for c in ['Unit', 'Jam', 'PPJ']: 
+        final_cdf[c] = pd.to_numeric(final_cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
+    
     final_cdf['Cum_PPJ'] = final_cdf.apply(lambda r: round(final_cdf.loc[:r.name, 'Unit'].sum() / final_cdf.loc[:r.name, 'Jam'].sum(), 1) if final_cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
 
+    # ★ 범례 위치 및 숫자 포맷 변경 
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.15, 
                         subplot_titles=("Unit 및 Jam 건수", "생산 효율(PPJ)"), 
                         specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
     
-    # ★ hovertemplate='%{y:.0f}'를 추가하여 마우스 커서 올렸을 때 k 없이 40000 그대로 나오게 포맷 수정
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입', marker_color='#5B9BD5', legendgroup="1", hovertemplate="%{x}<br>투입: %{y:.0f}<extra></extra>"), row=1, col=1, secondary_y=False)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legendgroup="1", hovertemplate="%{x}<br>에러: %{y:.0f}<extra></extra>"), row=1, col=1, secondary_y=True)
+    # hovertemplate에 %{y:,.0f} 를 주어 마우스 오버 시 40,000 형태로 표시되게 함
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입', marker_color='#5B9BD5', legendgroup="1", hovertemplate="%{x}<br>투입: %{y:,.0f}<extra></extra>"), row=1, col=1, secondary_y=False)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legendgroup="1", hovertemplate="%{x}<br>에러: %{y:,.0f}<extra></extra>"), row=1, col=1, secondary_y=True)
     
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legendgroup="2", hovertemplate="%{x}<br>일별 PPJ: %{y:.1f}<extra></extra>"), row=2, col=1)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legendgroup="2", hovertemplate="%{x}<br>누적 PPJ: %{y:.1f}<extra></extra>"), row=2, col=1)
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legendgroup="2", hovertemplate="%{x}<br>일별 PPJ: %{y:,.1f}<extra></extra>"), row=2, col=1)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legendgroup="2", hovertemplate="%{x}<br>누적 PPJ: %{y:,.1f}<extra></extra>"), row=2, col=1)
     
-    # ★ tickformat=".0f"를 추가하여 Y축 라벨에 40k 대신 40000 이 출력되게 함
-    fig.update_yaxes(title_text="투입량 (EA)", secondary_y=False, row=1, col=1, tickformat=".0f")
-    fig.update_yaxes(title_text="Jam (건)", secondary_y=True, row=1, col=1, tickformat=".0f")
+    # ★ exponentformat="none" 으로 Y축의 K(킬로), M(밀리언) 강제 요약 기능 제거 
+    fig.update_yaxes(title_text="투입량 (EA)", secondary_y=False, row=1, col=1, tickformat="d", exponentformat="none")
+    fig.update_yaxes(title_text="Jam (건)", secondary_y=True, row=1, col=1, tickformat="d", exponentformat="none")
     fig.update_yaxes(title_text="PPJ", row=2, col=1, tickformat=".1f")
 
     fig.update_layout(
         height=650, 
         margin=dict(l=50, r=50, t=60, b=50),
-        # ★ 범례(Legend) 배경색 투명하게 변경: bgcolor="rgba(0,0,0,0)" 적용 완료
+        # ★ 범례 배경색 투명화(rgba(0,0,0,0)) 및 제목 우측으로 나란히 배치
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1.0, bgcolor="rgba(0,0,0,0)"),
         hovermode="x unified"
     )
     st.plotly_chart(fig, use_container_width=True)
 
+    # ★ 에러코드 행(열) 삭제됨
     st.subheader(f"📋 에러 상세 분석 통합 리스트")
     if all_cl:
         fdf = pd.DataFrame(all_cl)
         fdf['Date'] = fdf['Date'].ffill()
         fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
         
-        # 코드 열을 없애고 화면에 표시하지 않음
         html = "".join([f"<tr><td>{r['Date'] if not pd.isna(r['Date']) else ''}</td><td>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td>{r['Time']}</td><td>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
         st.markdown(f"<table class='final-report-table'><thead><tr><th style='width:90px;'>날짜</th><th style='width:60px;'>PPJ</th><th>에러내용</th><th>조치내용</th><th style='width:70px;'>시간</th><th style='width:90px;'>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
     else:
@@ -465,7 +546,7 @@ def render_equipment_data_page(repo):
 
 
 # ==========================================
-# 6. 메인 실행 (★ 네비게이션 드롭다운 상단 배치 적용)
+# 6. 메인 실행 (로그인 및 상단 우측 미니 스크롤 버튼 적용)
 # ==========================================
 def main():
     try:
@@ -484,6 +565,7 @@ def main():
             if st.form_submit_button("입장") and name: 
                 st.session_state.update({'logged_in': True, 'user_name': name}); st.rerun()
     else:
+        # ★ 매번 사이드바를 열 필요 없도록 우측 상단에 드롭다운 메뉴와 로그아웃 버튼 배치
         top_col1, top_col2, top_col3 = st.columns([6, 3, 1])
         with top_col2:
             menu_selection = st.selectbox("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터"], label_visibility="collapsed")
@@ -492,6 +574,7 @@ def main():
                 st.session_state['logged_in'] = False
                 st.rerun()
 
+        # 사이드바는 환영 인사와 업무일지 툴에서만 열리도록 유지
         st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
 
         if menu_selection == "📝 업무일지": render_work_log_page(db_log)
