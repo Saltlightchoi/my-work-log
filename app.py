@@ -13,7 +13,8 @@ from plotly.subplots import make_subplots
 st.set_page_config(layout="wide", page_title="장비 관리 통합 시스템")
 st.markdown("""
     <style>
-        .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+        /* 상단 글씨가 잘리지 않도록 padding-top 여백을 2rem에서 3.5rem으로 늘렸습니다. */
+        .block-container { padding-top: 3.5rem !important; padding-bottom: 2rem !important; }
         [data-testid="stSidebar"] { width: 330px !important; }
         .main-title { font-size: 1.5rem !important; font-weight: bold; padding-bottom: 10px !important; }
         .info-box { background-color: #f8f9fa; padding: 12px; border-radius: 4px; border-left: 5px solid #4CAF50; margin-bottom: 15px; color: #333; font-size: 13px; }
@@ -286,7 +287,7 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (★ 'nan' 빈칸 완벽 제거 패치)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (연월 통합 선택 & 독립된 범례 적용)
 # ==========================================
 def render_equipment_data_page(repo):
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
@@ -295,19 +296,27 @@ def render_equipment_data_page(repo):
     st.info("""
     **📂 깃허브 파일 관리 요령 (폴더 구조화)**
     파일 리스트가 지저분해지지 않도록 **`data/장비명/`** 폴더 안에 넣어주세요!
-    * **작성 규칙:** `data/장비명/장비명_호기 - 영문월 2026.xlsx`
+    * **작성 규칙:** `data/장비명/장비명_호기 - 영문월 연도.xlsx`
     * **예시:** `data/SLH1/SLH1_1호기 - March 2026.xlsx`
     """)
 
     col1, col2, col3 = st.columns(3)
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
     with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="eq_data_unit")
-    with col3: month_str = st.selectbox("조회할 월 선택", [f"{i}월" for i in range(1, 13)], key="eq_data_month")
+    
+    # ★ 연도와 월을 한 번에 선택할 수 있도록 옵션 생성 (2025~2027년)
+    ym_options = [f"{y}년 {m}월" for y in [2025, 2026, 2027] for m in range(1, 13)]
+    # 기본값 설정: 리스트의 12번째 인덱스 (2026년 1월)
+    with col3: ym_str = st.selectbox("조회할 연월 선택", ym_options, index=12, key="eq_data_month")
 
-    month_dict = {f"{i}월": eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
-    eng_month = month_dict.get(month_str, "January")
+    # 선택된 "2026년 1월" 문자열에서 연도와 월을 분리하여 파일명 규칙에 맞게 조립
+    y_str = ym_str.split('년')[0]
+    m_str = ym_str.split(' ')[1].replace('월', '')
 
-    target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} 2026.xlsx"
+    month_dict = {str(i): eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
+    eng_month = month_dict.get(m_str, "January")
+
+    target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} {y_str}.xlsx"
 
     st.markdown(f"**📂 현재 불러올 파일 경로:** `{target_file}`")
 
@@ -333,21 +342,45 @@ def render_equipment_data_page(repo):
                         if str(v).replace('.','').isdigit(): return (vals[i:i+31]+[0]*31)[:31]
             return [0]*31
 
-        month_num = month_str.replace("월", "")
+        month_num = m_str
         u_vals = get_sum_row(['totalunit', 'output']); j_vals = get_sum_row(['jamcount', 'jam']); p_vals = get_sum_row(['ppj'])
         cdf = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': u_vals, 'Jam': j_vals, 'PPJ': p_vals})
         for c in ['Unit', 'Jam', 'PPJ']: cdf[c] = pd.to_numeric(cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
 
         cdf['Cum_PPJ'] = cdf.apply(lambda r: round(cdf.loc[:r.name, 'Unit'].sum() / cdf.loc[:r.name, 'Jam'].sum(), 1) if cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
 
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1, subplot_titles=("Unit 및 Jam 건수", "생산 효율(PPJ)"), specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
-        fig.add_trace(go.Bar(x=cdf['날짜'], y=cdf['Unit'], name='투입', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
-        fig.add_trace(go.Scatter(x=cdf['날짜'], y=cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31')), row=1, col=1, secondary_y=True)
-        fig.add_trace(go.Bar(x=cdf['날짜'], y=cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E'), row=2, col=1)
-        fig.add_trace(go.Scatter(x=cdf['날짜'], y=cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4)), row=2, col=1)
-        fig.update_layout(height=600, margin=dict(l=50, r=50, t=50, b=50)); st.plotly_chart(fig, use_container_width=True)
+        # ★ 상/하단 범례(Legend) 분리 및 독립 배치 설정
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.15, 
+                            subplot_titles=("Unit 및 Jam 건수", "생산 효율(PPJ)"), 
+                            specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
+        
+        # 첫 번째 그래프(상단) 그룹 (legend="legend" 지정)
+        fig.add_trace(go.Bar(x=cdf['날짜'], y=cdf['Unit'], name='투입', marker_color='#5B9BD5', legend="legend"), row=1, col=1, secondary_y=False)
+        fig.add_trace(go.Scatter(x=cdf['날짜'], y=cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legend="legend"), row=1, col=1, secondary_y=True)
+        
+        # 두 번째 그래프(하단) 그룹 (legend="legend2" 지정)
+        fig.add_trace(go.Bar(x=cdf['날짜'], y=cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legend="legend2"), row=2, col=1)
+        fig.add_trace(go.Scatter(x=cdf['날짜'], y=cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legend="legend2"), row=2, col=1)
+        
+        # Layout 업데이트: 두 개의 범례를 각각 첫 번째, 두 번째 그래프 우측에 완벽 정렬
+        fig.update_layout(
+            height=650, 
+            margin=dict(l=50, r=120, t=80, b=50), # 우측(r) 여백을 넓혀 범례 공간 확보
+            legend=dict(
+                y=1.0, x=1.02, 
+                yanchor="top", xanchor="left",
+                bgcolor="rgba(255,255,255,0.7)"
+            ),
+            legend2=dict(
+                y=0.45, x=1.02, 
+                yanchor="top", xanchor="left",
+                bgcolor="rgba(255,255,255,0.7)"
+            ),
+            hovermode="x unified"
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-        st.subheader(f"📋 에러 상세 분석 리스트")
+        st.subheader(f"📋 {ym_str} 에러 상세 분석 리스트")
         h_idx = next(i for i, r in df_raw.iterrows() if 'error code' in "".join(r.astype(str)).lower())
         h_row = df_raw.iloc[h_idx].tolist(); m = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
         sh = []
@@ -366,13 +399,10 @@ def render_equipment_data_page(repo):
         
         cl = []
         
-        # ★ 핵심 패치: 파이썬의 고질병 'nan' 가짜 문자열을 완벽하게 걸러내는 필터 도입
         def is_meaningful(val):
             if pd.isna(val): return False
             vs = str(val).strip().lower()
             if vs in ['nan', 'none', 'null', 'nat', '', '0', '0.0']: return False
-            
-            # 영어, 한글, 숫자가 하나라도 있어야 진짜 글자로 인정 (단, nan은 위에서 먼저 차단)
             cleaned = re.sub(r'[^a-zA-Z0-9가-힣]', '', vs)
             return len(cleaned) > 0
 
@@ -386,7 +416,6 @@ def render_equipment_data_page(repo):
             raw_c = r.iloc[m['C']] if m['C'] != -1 else None
             raw_m = r.iloc[m['M']] if m['M'] != -1 else None
             
-            # ★ 코드와 내용 중 하나라도 진짜 의미있는 글자가 있어야 통과시킴
             if not is_meaningful(raw_c) and not is_meaningful(raw_m): 
                 continue
                 
@@ -422,7 +451,6 @@ def render_equipment_data_page(repo):
         
         if cl:
             fdf = pd.DataFrame(cl)
-            # 비어있는 날짜와 PPJ는 윗줄을 복사해서 내려채움
             fdf['Date'] = fdf['Date'].ffill()
             fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
             
