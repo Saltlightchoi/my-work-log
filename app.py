@@ -286,9 +286,9 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (★ 방해되던 예외 삭제, 완벽한 규칙 적용)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (★ 'nan' 빈칸 완벽 제거 패치)
 # ==========================================
-def render_equipment_data_page():
+def render_equipment_data_page(repo):
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
@@ -307,19 +307,22 @@ def render_equipment_data_page():
     month_dict = {f"{i}월": eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
     eng_month = month_dict.get(month_str, "January")
 
-    # ★ 핵심 수정: 불필요한 예외 코드를 완전히 제거했습니다!
-    # 이제 무조건 "장비명_호기 - 영문월 2026.xlsx" 포맷으로만 찾습니다.
     target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} 2026.xlsx"
 
     st.markdown(f"**📂 현재 불러올 파일 경로:** `{target_file}`")
 
     try:
-        xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
+        file_content = repo.get_contents(target_file)
+        excel_data = io.BytesIO(file_content.decoded_content)
+        xls = pd.read_excel(excel_data, sheet_name=None, header=None, engine='openpyxl')
+        
         df_raw = None
         for _, data in xls.items():
             if data.astype(str).apply(lambda r: r.str.contains('Unit|Output', case=False).any(), axis=1).any():
                 df_raw = data; break
-        if df_raw is None: st.error("⚠️ 데이터를 찾을 수 없습니다."); return
+        
+        if df_raw is None: 
+            st.error("⚠️ 데이터를 찾을 수 없습니다. 시트 안에 'Total Unit'이나 'Output' 글자가 있는지 엑셀을 확인해주세요."); return
 
         def get_sum_row(keywords):
             for _, row in df_raw.iterrows():
@@ -362,17 +365,77 @@ def render_equipment_data_page():
         if m['P']==-1 and m['M']!=-1: m['P']=m['M']-1
         
         cl = []
+        
+        # ★ 핵심 패치: 파이썬의 고질병 'nan' 가짜 문자열을 완벽하게 걸러내는 필터 도입
+        def is_meaningful(val):
+            if pd.isna(val): return False
+            vs = str(val).strip().lower()
+            if vs in ['nan', 'none', 'null', 'nat', '', '0', '0.0']: return False
+            
+            # 영어, 한글, 숫자가 하나라도 있어야 진짜 글자로 인정 (단, nan은 위에서 먼저 차단)
+            cleaned = re.sub(r'[^a-zA-Z0-9가-힣]', '', vs)
+            return len(cleaned) > 0
+
+        def clean_val(val):
+            if pd.isna(val): return ""
+            vs = str(val).strip()
+            if vs.lower() in ['nan', 'none', 'null', 'nat', '0.0']: return ""
+            return vs
+
         for _, r in df_raw.iloc[h_idx+1:].iterrows():
-            def mv(v): return len(re.sub(r'[^a-zA-Z0-9가-힣]', '', str(v))) > 0
-            if not mv(r.iloc[m['C']]) and not mv(r.iloc[m['M']]): continue
-            dt = pd.to_datetime(float(r.iloc[m['D']]), unit='D', origin='1899-12-30').strftime('%Y-%m-%d') if str(r.iloc[m['D']]).replace('.','').isdigit() else str(r.iloc[m['D']]).split(' ')[0]
-            cl.append({"Date": dt, "Code": str(r.iloc[m['C']]).replace('.0',''), "PPJ": str(r.iloc[m['P']]).split('.')[0], "Msg": str(r.iloc[m['M']]), "Act": str(r.iloc[m['A']]), "Time": str(r.iloc[m['T']]), "Loc": str(r.iloc[m['L']])})
+            raw_c = r.iloc[m['C']] if m['C'] != -1 else None
+            raw_m = r.iloc[m['M']] if m['M'] != -1 else None
+            
+            # ★ 코드와 내용 중 하나라도 진짜 의미있는 글자가 있어야 통과시킴
+            if not is_meaningful(raw_c) and not is_meaningful(raw_m): 
+                continue
+                
+            raw_d = r.iloc[m['D']] if m['D'] != -1 else None
+            dt = ""
+            if is_meaningful(raw_d):
+                try:
+                    if str(raw_d).replace('.','').isdigit(): 
+                        dt = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
+                    else: 
+                        dt = str(raw_d).split(' ')[0]
+                except:
+                    dt = str(raw_d)
+            
+            raw_p = r.iloc[m['P']] if m['P'] != -1 else None
+            ppj_val = clean_val(raw_p).split('.')[0] if is_meaningful(raw_p) else ""
+            
+            code_val = clean_val(raw_c)
+            if code_val.endswith('.0'): code_val = code_val[:-2]
+
+            time_val = clean_val(r.iloc[m['T']] if m['T'] != -1 else None)
+            if ':' not in time_val and '.' in time_val: time_val = time_val.split('.')[0]
+
+            cl.append({
+                "Date": dt if dt else pd.NA, 
+                "Code": code_val, 
+                "PPJ": ppj_val if ppj_val else pd.NA, 
+                "Msg": clean_val(raw_m), 
+                "Act": clean_val(r.iloc[m['A']] if m['A'] != -1 else None), 
+                "Time": time_val, 
+                "Loc": clean_val(r.iloc[m['L']] if m['L'] != -1 else None)
+            })
         
         if cl:
-            fdf = pd.DataFrame(cl); fdf['Date'] = fdf['Date'].ffill(); fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
-            html = "".join([f"<tr><td>{r['Date']}</td><td>{r['Code']}</td><td>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td>{r['Time']}</td><td>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
+            fdf = pd.DataFrame(cl)
+            # 비어있는 날짜와 PPJ는 윗줄을 복사해서 내려채움
+            fdf['Date'] = fdf['Date'].ffill()
+            fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
+            
+            html = "".join([f"<tr><td>{r['Date'] if not pd.isna(r['Date']) else ''}</td><td>{r['Code']}</td><td>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td>{r['Time']}</td><td>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
             st.markdown(f"<table class='final-report-table'><thead><tr><th>날짜</th><th>코드</th><th>PPJ</th><th>내용</th><th>조치</th><th>시간</th><th>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
-    except Exception as e: st.error(f"파일을 찾는 중이거나 오류가 발생했습니다: {target_file}")
+        else:
+            st.info("상세 에러 내역이 없습니다.")
+
+    except Exception as e:
+        if "404" in str(e):
+            st.error(f"⚠️ 깃허브에 파일이 없습니다. 파일명이나 폴더 위치를 다시 확인해주세요: {target_file}")
+        else:
+            st.error(f"⚠️ 파일을 읽는 중 오류가 발생했습니다: {e}")
 
 # ==========================================
 # 6. 메인 실행 (네비게이션 버튼 고정)
@@ -382,7 +445,9 @@ def main():
         g = Github(st.secrets["GITHUB_TOKEN"]); repo = g.get_repo(st.secrets["REPO_NAME"])
         db_log = DataManager(repo, st.secrets["FILE_PATH"], ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"])
         db_flow = DataManager(repo, "cs_flow_data.csv", ["프로젝트명", "대항목", "작업내용", "상태", "비고", "첨부", "업데이트일"])
-    except: return
+    except Exception as e:
+        st.error(f"⚠️ 깃허브 연결 설정 오류: {e}")
+        return
 
     if 'logged_in' not in st.session_state: st.session_state.update({'logged_in': False, 'user_name': ""})
     if 'current_page' not in st.session_state: st.session_state['current_page'] = "업무일지"
@@ -403,6 +468,6 @@ def main():
 
         if st.session_state['current_page'] == "업무일지": render_work_log_page(db_log)
         elif st.session_state['current_page'] == "CS 작업체크시트": render_cs_flow_page(db_flow)
-        elif st.session_state['current_page'] == "장비가동데이터": render_equipment_data_page()
+        elif st.session_state['current_page'] == "장비가동데이터": render_equipment_data_page(repo)
 
 if __name__ == "__main__": main()
