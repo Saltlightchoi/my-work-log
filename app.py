@@ -536,7 +536,7 @@ def render_equipment_data_page(repo):
         st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
 # ==========================================
-# 6. 화면 UI - 4페이지: ECN & STN (★ 헤더 자동 스캐너 도입 완료)
+# 6. 화면 UI - 4페이지: ECN & STN
 # ==========================================
 def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -544,69 +544,74 @@ def render_ecn_stn_page(repo):
 
     col1, col2, col3 = st.columns([1, 1, 2])
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="ecn_equip")
-    with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="ecn_unit")
+    # ★ 호기 드롭다운에 "전체" 옵션 추가
+    with col2: unit = st.selectbox("호기 선택", ["전체"] + [f"{i}호기" for i in range(1, 16)], key="ecn_unit")
     
     target_file = f"data/ECN/ECN_STN_Master({equipment}).xlsx"
     
     st.info(f"💡 **이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
-            f"엑셀 파일 내의 어딘가에 **'날짜', '발행부서', '발행자', '장비호기', 'ECN No', '내용', '변경', '특이사항', '조치현황', '첨부'** 가 포함된 헤더 행이 존재해야 작동합니다.")
+            f"엑셀 파일 내에 **'날짜', '발행부서', '발행자', '장비호기', 'ECN No', '내용', '변경', '특이사항', '조치현황', '첨부'** 열이 존재해야 작동합니다.")
 
     try:
         file_content = repo.get_contents(target_file)
         excel_data = io.BytesIO(file_content.decoded_content)
         
-        # ★ 핵심 1: 헤더 없이 일단 엑셀 파일의 모든 줄을 다 읽어옵니다. (위쪽 빈칸 무시 작전)
         df_raw = pd.read_excel(excel_data, engine='openpyxl', header=None)
         
-        # ★ 핵심 2: 위에서부터 한 줄씩 읽으면서 '장비호기'와 '날짜'가 있는 진짜 제목줄을 찾아냅니다.
         h_idx = -1
         for i, row in df_raw.iterrows():
             row_str = "".join(row.astype(str)).replace(" ", "")
-            if '장비호기' in row_str or 'ecn' in row_str.lower():
+            if '장비호기' in row_str or 'ecn' in row_str.lower() or '발행부서' in row_str:
                 h_idx = i
                 break
         
-        # 진짜 제목줄을 못 찾았다면 친절하게 에러를 뿜고 멈춥니다.
-        if h_idx == -1:
-            st.error("⚠️ 엑셀 파일 안에서 '장비호기', 'ECN' 등의 제목이 적힌 줄을 찾지 못했습니다. 양식을 확인해주세요.")
-            st.dataframe(df_raw, use_container_width=True) # 무엇이 문제인지 볼 수 있게 원본 출력
-            return
-            
-        # ★ 핵심 3: 찾아낸 제목줄(h_idx)을 진짜 컬럼(열 이름)으로 세팅하고, 그 윗줄들은 쓰레기통에 버립니다.
-        df = df_raw.iloc[h_idx + 1:].reset_index(drop=True) # 제목줄 바로 아랫줄부터가 진짜 데이터!
-        df.columns = df_raw.iloc[h_idx].astype(str).str.strip() # 찾은 줄을 컬럼 이름표로 찰칵!
-        
-        # '내용' -> 'AS-IS'로, '변경' -> 'TO-BE'로 자동 변환
-        df = df.rename(columns={'내용': 'AS-IS', '변경': 'TO-BE'})
+        if h_idx != -1:
+            df = df_raw.iloc[h_idx + 1:].reset_index(drop=True)
+            df.columns = df_raw.iloc[h_idx].astype(str).str.strip()
+            df = df.rename(columns={'내용': 'AS-IS', '변경': 'TO-BE'})
+        else:
+            # ★ 헤더(제목줄)를 생략하고 1번 줄부터 바로 데이터를 적은 경우
+            df = df_raw.copy()
+            default_cols = ['No', '날짜', '발행부서', '발행자', '장비호기', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부']
+            num_cols = len(df.columns)
+            if num_cols > len(default_cols):
+                df.columns = default_cols + [f"Extra_{i}" for i in range(len(default_cols), num_cols)]
+            else:
+                df.columns = default_cols[:num_cols]
         
         if '장비호기' in df.columns:
-            target_match = re.search(r'(\d+)호기', unit)
-            target_num = int(target_match.group(1)) if target_match else -1
-            
-            def check_match(val):
-                if pd.isna(val): return False
-                val_str = str(val).lower()
-                eq_lower = equipment.lower()
+            if unit == "전체":
+                filtered_df = df.copy()
+            else:
+                target_match = re.search(r'(\d+)호기', unit)
+                target_num = int(target_match.group(1)) if target_match else -1
                 
-                if eq_lower not in val_str:
-                    return False
+                def check_match(val):
+                    if pd.isna(val): return False
+                    val_str = str(val).lower()
                     
-                if unit.lower() in val_str:
-                    return True
-                    
-                ranges = re.findall(r'(\d+)\s*[~-]\s*(\d+)', val_str)
-                for s_str, e_str in ranges:
-                    s, e = int(s_str), int(e_str)
-                    if s > e: s, e = e, s
-                    if s <= target_num <= e:
+                    # 명시적으로 호기가 적혀있는 경우 (예: "5호기")
+                    if unit.lower() in val_str:
                         return True
                         
-                return False
+                    # "2~7호기" 처럼 범위로 적혀있는 경우
+                    ranges = re.findall(r'(\d+)\s*[~-]\s*(\d+)', val_str)
+                    for s_str, e_str in ranges:
+                        s, e = int(s_str), int(e_str)
+                        if s > e: s, e = e, s
+                        # 선택한 호기 숫자가 해당 범위 안에 들어가는지 확인
+                        if s <= target_num <= e:
+                            return True
+                            
+                    return False
 
-            mask = df['장비호기'].apply(check_match)
-            filtered_df = df[mask].copy()
+                mask = df['장비호기'].apply(check_match)
+                filtered_df = df[mask].copy()
         elif '장비' in df.columns and '호기' in df.columns:
-            filtered_df = df[(df['장비'].astype(str) == equipment) & (df['호기'].astype(str) == unit)].copy()
+            if unit == "전체":
+                filtered_df = df[df['장비'].astype(str) == equipment].copy()
+            else:
+                filtered_df = df[(df['장비'].astype(str) == equipment) & (df['호기'].astype(str) == unit)].copy()
         else:
             st.error("⚠️ 엑셀 파일 안에 '장비호기' 열(Column)이 존재하지 않아 장비별 검색을 할 수 없습니다. 엑셀 파일을 다시 확인해주세요.")
             st.dataframe(df, use_container_width=True)
@@ -617,7 +622,6 @@ def render_ecn_stn_page(repo):
         
         filtered_df = filtered_df[display_cols]
         
-        # 꼴보기 싫은 nan 문자열들을 싹 지워버립니다.
         filtered_df = filtered_df.replace(['nan', 'NaN', 'None', 'nat', 'NaT'], '')
         
         if '날짜' in filtered_df.columns:
