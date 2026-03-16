@@ -113,7 +113,7 @@ def get_row_color(row):
     return [''] * len(row)
 
 # ==========================================
-# 3. 화면 UI - 1페이지: 팀 업무일지
+# 3. 화면 UI - 1페이지: 팀 업무일지 (★ 첨부 복구)
 # ==========================================
 def render_work_log_page(db_log):
     df_log, sha_log = db_log.load()
@@ -131,8 +131,10 @@ def render_work_log_page(db_log):
             e = st.selectbox("장비", EQUIPMENT_OPTIONS)
             c = st.text_area("업무 내용", height=300)
             n = st.text_input("비고")
+            # ★ '첨부' 입력 필드 복구
+            a = st.text_input("첨부 (FTP 경로 등)")
             if st.form_submit_button("저장하기"):
-                new_row = pd.DataFrame([{"날짜": str(d), "장비": e, "작성자": st.session_state['user_name'], "업무내용": c, "비고": n}])
+                new_row = pd.DataFrame([{"날짜": str(d), "장비": e, "작성자": st.session_state['user_name'], "업무내용": c, "비고": n, "첨부": a}])
                 db_log.save(pd.concat([df_log, new_row], ignore_index=True), sha_log, f"Add Log: {d}")
                 st.rerun()
 
@@ -141,8 +143,19 @@ def render_work_log_page(db_log):
         with st.sidebar.form("edit_log"):
             e_date = st.date_input("날짜 수정", pd.to_datetime(df_log.loc[idx, '날짜']))
             e_content = st.text_area("내용 수정", value=df_log.loc[idx, '업무내용'], height=300)
+            
+            # ★ '비고' 및 '첨부' 수정 필드 추가
+            val_note = df_log.loc[idx, '비고'] if '비고' in df_log.columns else ""
+            val_note = "" if pd.isna(val_note) else str(val_note)
+            e_note = st.text_input("비고 수정", value=val_note)
+            
+            val_attach = df_log.loc[idx, '첨부'] if '첨부' in df_log.columns else ""
+            val_attach = "" if pd.isna(val_attach) else str(val_attach)
+            e_attach = st.text_input("첨부 수정", value=val_attach)
+            
             if st.form_submit_button("수정 완료"):
-                df_log.loc[idx, ['날짜', '업무내용']] = [str(e_date), e_content]
+                # '첨부'와 '비고'도 함께 저장되도록 리스트 확장
+                df_log.loc[idx, ['날짜', '업무내용', '비고', '첨부']] = [str(e_date), e_content, e_note, e_attach]
                 db_log.save(df_log, sha_log, "Edit Log")
                 st.rerun()
 
@@ -164,7 +177,18 @@ def render_work_log_page(db_log):
     search = st.text_input("🔍 검색어 (장비, 내용 등)", placeholder="검색어를 입력하세요...")
     disp = df_log.copy()
     if search: disp = disp[disp.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
-    st.dataframe(disp, use_container_width=True, hide_index=True, column_config={"업무내용": st.column_config.TextColumn("업무내용", width="large")})
+    
+    # ★ 업무일지 표에서도 비고와 첨부 컬럼 너비를 콤팩트하게 설정
+    st.dataframe(
+        disp, 
+        use_container_width=True, 
+        hide_index=True, 
+        column_config={
+            "업무내용": st.column_config.TextColumn("업무내용", width="large"),
+            "비고": st.column_config.TextColumn("비고", width="small"),
+            "첨부": st.column_config.TextColumn("첨부", width="small")
+        }
+    )
 
 # ==========================================
 # 4. 화면 UI - 2페이지: CS 작업체크시트
@@ -311,7 +335,13 @@ def render_cs_flow_page(db_flow):
                 styled_df = display_df.style.apply(get_row_color, axis=1)
                 edited_cat_df = st.data_editor(
                     styled_df, use_container_width=True, hide_index=True, num_rows="dynamic", key=f"editor_{selected_proj}_{group_id}",
-                    column_config={"순서": st.column_config.NumberColumn("No", width="small"), "작업내용": st.column_config.TextColumn("세부 작업 내용", width="large"), "상태": st.column_config.SelectboxColumn("상태", options=["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"], width="small")}
+                    column_config={
+                        "순서": st.column_config.NumberColumn("No", width="small"), 
+                        "작업내용": st.column_config.TextColumn("세부 작업 내용", width="large"), 
+                        "상태": st.column_config.SelectboxColumn("상태", options=["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"], width="small"),
+                        "비고": st.column_config.TextColumn("비고", width="small"),
+                        "첨부": st.column_config.TextColumn("첨부", width="small")
+                    }
                 )
                 for idx, new_row in edited_cat_df.iterrows():
                     if new_row['상태'] == "⬜ 대기": edited_cat_df.at[idx, '업데이트일'] = ""
@@ -536,7 +566,7 @@ def render_equipment_data_page(repo):
         st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
 # ==========================================
-# 6. 화면 UI - 4페이지: ECN & STN
+# 6. 화면 UI - 4페이지: ECN & STN (★ 첨부 및 특이사항 열 너비 콤팩트 적용)
 # ==========================================
 def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -544,7 +574,6 @@ def render_ecn_stn_page(repo):
 
     col1, col2, col3 = st.columns([1, 1, 2])
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="ecn_equip")
-    # ★ 호기 드롭다운에 "전체" 옵션 추가
     with col2: unit = st.selectbox("호기 선택", ["전체"] + [f"{i}호기" for i in range(1, 16)], key="ecn_unit")
     
     target_file = f"data/ECN/ECN_STN_Master({equipment}).xlsx"
@@ -570,7 +599,6 @@ def render_ecn_stn_page(repo):
             df.columns = df_raw.iloc[h_idx].astype(str).str.strip()
             df = df.rename(columns={'내용': 'AS-IS', '변경': 'TO-BE'})
         else:
-            # ★ 헤더(제목줄)를 생략하고 1번 줄부터 바로 데이터를 적은 경우
             df = df_raw.copy()
             default_cols = ['No', '날짜', '발행부서', '발행자', '장비호기', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부']
             num_cols = len(df.columns)
@@ -590,16 +618,13 @@ def render_ecn_stn_page(repo):
                     if pd.isna(val): return False
                     val_str = str(val).lower()
                     
-                    # 명시적으로 호기가 적혀있는 경우 (예: "5호기")
                     if unit.lower() in val_str:
                         return True
                         
-                    # "2~7호기" 처럼 범위로 적혀있는 경우
                     ranges = re.findall(r'(\d+)\s*[~-]\s*(\d+)', val_str)
                     for s_str, e_str in ranges:
                         s, e = int(s_str), int(e_str)
                         if s > e: s, e = e, s
-                        # 선택한 호기 숫자가 해당 범위 안에 들어가는지 확인
                         if s <= target_num <= e:
                             return True
                             
@@ -639,15 +664,16 @@ def render_ecn_stn_page(repo):
         filtered_df = filtered_df.fillna("")
         
         if not filtered_df.empty:
+            # ★ 첨부의 제목을 짧게 "첨부(복사)"로 바꾸고, 너비를 가장 좁은 width="small"로 설정하여 공간 최적화
             st.dataframe(
                 filtered_df, 
                 use_container_width=True, 
                 hide_index=True,
                 column_config={
-                    "첨부": st.column_config.TextColumn("첨부 (클릭 후 Ctrl+C 복사)", width="large"),
                     "AS-IS": st.column_config.TextColumn("AS-IS", width="large"),
                     "TO-BE": st.column_config.TextColumn("TO-BE", width="large"),
-                    "특이사항": st.column_config.TextColumn("특이사항", width="medium"),
+                    "특이사항": st.column_config.TextColumn("특이사항", width="small"),
+                    "첨부": st.column_config.TextColumn("첨부(복사)", width="small")
                 }
             )
         else:
