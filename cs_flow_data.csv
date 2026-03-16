@@ -314,7 +314,7 @@ SLH1 #7호기,기구물 Setting,1,Hand 제작 전 Up/Down Cylinder Damper All Op
 SLH1 #7호기,기구물 Setting,2,"Stacker Conveyor Belt Inverter 값 설정
 ->운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)
 -> P3 60  P4 : 60(고속), P5 : 30(중속), P6 : 10(저속)
--> P7 : 5 (가속),  P8 : 0 (감속)",⬜ 대기,,,
+-> P7 : 5 (가속),  P8 : 0 (감속)",✅ 완료,,,최염광 (26-03-16)
 SLH1 #7호기,기구물 Setting,3,"Reject Stacker Front/Rear Base 높이 조정
  -> Rear Base Cylinder Rod 최대로 내린뒤, front를 무두 볼트 사용하여 Setting",⬜ 대기,,,
 SLH1 #7호기,기구물 Setting,4,Set-Plate Support Lock/Unlock Cylinder Rod SETTING,✅ 완료,,,최염광 (26-03-13)
