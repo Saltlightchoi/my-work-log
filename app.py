@@ -336,7 +336,7 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (정렬 추가)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터
 # ==========================================
 def render_equipment_data_page(repo):
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
@@ -438,37 +438,40 @@ def render_equipment_data_page(repo):
                 vs = str(val).strip()
                 return "" if pd.isna(val) or vs.lower() in ['nan', 'none', 'null', 'nat', '0.0'] else vs
 
+            current_dt_obj = None
+            current_ppj_val = "0"
             for _, r in df_raw.iloc[h_idx+1:].iterrows():
                 raw_c = r.iloc[m_col['C']] if m_col['C'] != -1 else None
                 raw_m = r.iloc[m_col['M']] if m_col['M'] != -1 else None
                 if not is_meaningful(raw_c) and not is_meaningful(raw_m): continue
                     
                 raw_d = r.iloc[m_col['D']] if m_col['D'] != -1 else None
-                dt_obj = None
+                
                 if is_meaningful(raw_d):
                     try: 
                         if str(raw_d).replace('.','').isdigit(): 
-                            dt_obj = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').date()
+                            current_dt_obj = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').date()
                         else: 
-                            dt_obj = pd.to_datetime(str(raw_d).split(' ')[0].replace('.', '-')).date()
+                            current_dt_obj = pd.to_datetime(str(raw_d).split(' ')[0].replace('.', '-')).date()
                     except: pass
                 
-                if dt_obj is None or not (s_date <= dt_obj <= e_date):
+                if current_dt_obj is None or not (s_date <= current_dt_obj <= e_date):
                     continue
 
                 raw_p = r.iloc[m_col['P']] if m_col['P'] != -1 else None
-                ppj_val = clean_val(raw_p).split('.')[0] if is_meaningful(raw_p) else ""
+                if is_meaningful(raw_p):
+                    current_ppj_val = clean_val(raw_p).split('.')[0]
                 
                 time_val = clean_val(r.iloc[m_col['T']] if m_col['T'] != -1 else None)
                 if ':' not in time_val and '.' in time_val: time_val = time_val.split('.')[0]
 
                 all_cl.append({
-                    "DateObj": dt_obj, # 정렬을 위해 DateObj를 리스트에 담음
-                    "Date": dt_obj.strftime('%Y-%m-%d'), 
-                    "PPJ": ppj_val if ppj_val else pd.NA, 
+                    "DateObj": current_dt_obj,
+                    "Date": current_dt_obj.strftime('%Y-%m-%d'), 
+                    "Time": time_val,
+                    "PPJ": current_ppj_val, 
                     "Msg": clean_val(raw_m), 
                     "Act": clean_val(r.iloc[m_col['A']] if m_col['A'] != -1 else None), 
-                    "Time": time_val, 
                     "Loc": clean_val(r.iloc[m_col['L']] if m_col['L'] != -1 else None)
                 })
 
@@ -522,8 +525,7 @@ def render_equipment_data_page(repo):
     st.subheader(f"📋 에러 상세 분석 통합 리스트")
     if all_cl:
         fdf = pd.DataFrame(all_cl)
-        # ★ 정렬을 위해 사용한 DateObj를 기준으로 내림차순 정렬 (가장 최근 날짜가 위로)
-        fdf = fdf.sort_values(by="DateObj", ascending=False).reset_index(drop=True)
+        fdf = fdf.sort_values(by=["DateObj", "Time"], ascending=[False, False], na_position='last').reset_index(drop=True)
         
         fdf['Date'] = fdf['Date'].ffill()
         fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
@@ -533,9 +535,95 @@ def render_equipment_data_page(repo):
     else:
         st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
+# ==========================================
+# 6. 화면 UI - 4페이지: ECN & STN (장비 파트 및 수정사항)
+# ==========================================
+def render_ecn_stn_page(repo):
+    st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 1, 2])
+    with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="ecn_equip")
+    with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="ecn_unit")
+    
+    # ★ ECN 마스터 파일의 경로를 data/ECN/ 폴더 내부로 수정
+    target_file = f"data/ECN/ECN_STN_Master({equipment}).xlsx"
+    
+    st.info(f"💡 **이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
+            f"엑셀 파일 1열(헤더)에 **'날짜', '발행부서', '발행자', '장비호기', 'ECN No', '내용', '변경', '특이사항', '조치현황', '첨부'** 열(Column)이 반드시 있어야 필터링 및 출력이 정상 작동합니다.")
+
+    try:
+        file_content = repo.get_contents(target_file)
+        excel_data = io.BytesIO(file_content.decoded_content)
+        df = pd.read_excel(excel_data, engine='openpyxl')
+        
+        df.columns = df.columns.str.strip()
+        df = df.rename(columns={'내용': 'AS-IS', '변경': 'TO-BE'})
+        
+        if '장비호기' in df.columns:
+            target_match = re.search(r'(\d+)호기', unit)
+            target_num = int(target_match.group(1)) if target_match else -1
+            
+            def check_match(val):
+                val_str = str(val).lower()
+                eq_lower = equipment.lower()
+                
+                if eq_lower not in val_str:
+                    return False
+                    
+                if unit.lower() in val_str:
+                    return True
+                    
+                ranges = re.findall(r'(\d+)\s*[~-]\s*(\d+)', val_str)
+                for s_str, e_str in ranges:
+                    s, e = int(s_str), int(e_str)
+                    if s > e: s, e = e, s
+                    if s <= target_num <= e:
+                        return True
+                        
+                return False
+
+            mask = df['장비호기'].apply(check_match)
+            filtered_df = df[mask].copy()
+        elif '장비' in df.columns and '호기' in df.columns:
+            filtered_df = df[(df['장비'].astype(str) == equipment) & (df['호기'].astype(str) == unit)].copy()
+        else:
+            st.error("⚠️ 엑셀 파일 안에 '장비호기' 열(Column)이 존재하지 않아 장비별 검색을 할 수 없습니다. 엑셀 파일을 다시 확인해주세요.")
+            st.dataframe(df, use_container_width=True)
+            return
+            
+        expected_cols = ['날짜', '발행부서', '발행자', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부']
+        display_cols = [c for c in expected_cols if c in filtered_df.columns]
+        
+        filtered_df = filtered_df[display_cols]
+        
+        if '날짜' in filtered_df.columns:
+            filtered_df['날짜'] = pd.to_datetime(filtered_df['날짜'], errors='coerce').dt.strftime('%Y-%m-%d')
+            filtered_df['날짜'] = filtered_df['날짜'].fillna("")
+        
+        if not filtered_df.empty:
+            st.dataframe(
+                filtered_df, 
+                use_container_width=True, 
+                hide_index=True,
+                column_config={
+                    "첨부": st.column_config.TextColumn("첨부 (클릭 후 Ctrl+C 복사)", width="large"),
+                    "AS-IS": st.column_config.TextColumn("AS-IS", width="large"),
+                    "TO-BE": st.column_config.TextColumn("TO-BE", width="large"),
+                    "특이사항": st.column_config.TextColumn("특이사항", width="medium"),
+                }
+            )
+        else:
+            st.warning(f"선택하신 [{equipment}] - [{unit}] 에 등록된 ECN & STN 내역이 아직 없습니다.")
+            
+    except Exception as e:
+        if "404" in str(e):
+            st.error(f"⚠️ 깃허브에 **`{target_file}`** 파일이 없습니다. 엑셀 양식을 만들어 업로드해주세요.")
+        else:
+            st.error(f"⚠️ 파일을 읽는 중 오류가 발생했습니다: {e}")
 
 # ==========================================
-# 6. 메인 실행 
+# 7. 메인 실행 
 # ==========================================
 def main():
     try:
@@ -556,7 +644,7 @@ def main():
     else:
         top_col1, top_col2, top_col3 = st.columns([6, 3, 1])
         with top_col2:
-            menu_selection = st.selectbox("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터"], label_visibility="collapsed")
+            menu_selection = st.selectbox("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터", "🛠️ ECN & STN"], label_visibility="collapsed")
         with top_col3:
             if st.button("🚪 로그아웃", use_container_width=True): 
                 st.session_state['logged_in'] = False
@@ -567,5 +655,6 @@ def main():
         if menu_selection == "📝 업무일지": render_work_log_page(db_log)
         elif menu_selection == "✅ CS 작업체크시트": render_cs_flow_page(db_flow)
         elif menu_selection == "📊 장비가동데이터": render_equipment_data_page(repo)
+        elif menu_selection == "🛠️ ECN & STN": render_ecn_stn_page(repo)
 
 if __name__ == "__main__": main()
