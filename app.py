@@ -374,7 +374,7 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (★ 정상 깃허브 연동 버전으로 완전 복구)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터
 # ==========================================
 def render_equipment_data_page(repo):
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
@@ -580,14 +580,23 @@ def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 1, 2])
+    # ★ 도움말/수정안내를 호기 선택 우측에 팝오버(메모형식) 버튼으로 콤팩트하게 배치
+    col1, col2, col3, col4, col5 = st.columns([1.5, 1.5, 1, 1, 5])
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="ecn_equip")
     with col2: unit = st.selectbox("호기 선택", ["전체"] + [f"{i}호기" for i in range(1, 16)], key="ecn_unit")
     
+    with col3:
+        st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+        with st.popover("💡 도움말"):
+            st.markdown(f"**이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
+                        f"엑셀 파일 내에 **'날짜', '발행부서', '발행자', '장비호기', 'ECN No', '내용', '변경', '특이사항', '조치현황', '첨부'** 열이 존재해야 작동합니다.")
+            
+    with col4:
+        st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+        with st.popover("✏️ 수정방법"):
+            st.markdown("표의 **'조치현황'** 과 **'특이사항'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다.\n\n수정한 뒤엔 하단의 **저장 버튼**을 꼭 눌러주세요.")
+
     target_file = f"data/ECN/ECN_STN_Master({equipment}).xlsx"
-    
-    st.info(f"💡 **이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
-            f"엑셀 파일 내에 **'날짜', '발행부서', '발행자', '장비호기', 'ECN No', '내용', '변경', '특이사항', '조치현황', '첨부'** 열이 존재해야 작동합니다.")
 
     try:
         file_content = repo.get_contents(target_file)
@@ -704,8 +713,6 @@ def render_ecn_stn_page(repo):
         if not filtered_df.empty:
             disabled_cols = [c for c in filtered_df.columns if c not in ['특이사항', '조치현황']]
             
-            st.info("✏️ 표의 **'조치현황'** 과 **'특이사항'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 아래 저장 버튼을 꼭 눌러주세요.")
-            
             edited_df = st.data_editor(
                 filtered_df, 
                 use_container_width=True, 
@@ -790,7 +797,6 @@ def main():
 
         st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
 
-        # ★ 장비가동데이터(render_equipment_data_page) 호출 시 정상적으로 repo 인자를 전달하도록 복구
         if menu_selection == "📝 업무일지": render_work_log_page(db_log)
         elif menu_selection == "✅ CS 작업체크시트": render_cs_flow_page(db_flow)
         elif menu_selection == "📊 장비가동데이터": render_equipment_data_page(repo)
