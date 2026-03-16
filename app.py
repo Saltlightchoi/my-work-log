@@ -113,7 +113,7 @@ def get_row_color(row):
     return [''] * len(row)
 
 # ==========================================
-# 3. 화면 UI - 1페이지: 팀 업무일지 (★ 첨부 복구)
+# 3. 화면 UI - 1페이지: 팀 업무일지 
 # ==========================================
 def render_work_log_page(db_log):
     df_log, sha_log = db_log.load()
@@ -362,7 +362,7 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (이전 요청대로 유지)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터
 # ==========================================
 def render_equipment_data_page(repo):
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
@@ -562,7 +562,7 @@ def render_equipment_data_page(repo):
         st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
 # ==========================================
-# 6. 화면 UI - 4페이지: ECN & STN (★ 날짜 빈칸/정렬 수정)
+# 6. 화면 UI - 4페이지: ECN & STN (★ 날짜 정렬, 빈칸 삭제 완벽 수정본)
 # ==========================================
 def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -581,28 +581,44 @@ def render_ecn_stn_page(repo):
         file_content = repo.get_contents(target_file)
         excel_data = io.BytesIO(file_content.decoded_content)
         
+        # 1. 헤더 없이 일단 엑셀 파일 로드
         df_raw = pd.read_excel(excel_data, engine='openpyxl', header=None)
         
+        # ★ 핵심 1: 더 스마트하고 안전한 제목줄 탐색
+        # 데이터('ECN-001' 등)를 제목으로 착각하지 않도록 '날짜'와 ('발행' 또는 '장비호기' 또는 '내용') 이 명확히 섞인 줄만 찾음
         h_idx = -1
-        for i, row in df_raw.iterrows():
-            row_str = "".join(row.astype(str)).replace(" ", "")
-            if '장비호기' in row_str or 'ecn' in row_str.lower() or '발행부서' in row_str:
+        for i, row in df_raw.head(20).iterrows(): # 상위 20줄 안에서만 검색
+            row_str = "".join(row.astype(str)).replace(" ", "").lower()
+            if '날짜' in row_str and ('발행' in row_str or '장비호기' in row_str or '내용' in row_str or 'as-is' in row_str):
                 h_idx = i
                 break
         
+        # 헤더를 찾으면 그 줄을 컬럼으로, 못 찾으면 1번 줄(인덱스 0)을 컬럼으로 강제 지정
         if h_idx != -1:
             df = df_raw.iloc[h_idx + 1:].reset_index(drop=True)
             df.columns = df_raw.iloc[h_idx].astype(str).str.strip()
-            df = df.rename(columns={'내용': 'AS-IS', '변경': 'TO-BE'})
         else:
-            df = df_raw.copy()
-            default_cols = ['No', '날짜', '발행부서', '발행자', '장비호기', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부']
-            num_cols = len(df.columns)
-            if num_cols > len(default_cols):
-                df.columns = default_cols + [f"Extra_{i}" for i in range(len(default_cols), num_cols)]
-            else:
-                df.columns = default_cols[:num_cols]
+            df = df_raw.iloc[1:].reset_index(drop=True)
+            df.columns = df_raw.iloc[0].astype(str).str.strip()
+            
+        # ★ 핵심 2: 컬럼명 정규화 (사용자가 엑셀에 공백을 넣거나 약간 다르게 적어도 찰떡같이 인식)
+        new_cols = []
+        for c in df.columns:
+            c_clean = str(c).replace(" ", "").upper()
+            if '날짜' in c_clean or '일자' in c_clean: new_cols.append('날짜')
+            elif '발행부서' in c_clean: new_cols.append('발행부서')
+            elif '발행자' in c_clean or '작성자' in c_clean: new_cols.append('발행자')
+            elif '장비호기' in c_clean or '호기' in c_clean: new_cols.append('장비호기')
+            elif 'ECN' in c_clean or '문서번호' in c_clean: new_cols.append('ECN No')
+            elif 'AS-IS' in c_clean or 'ASIS' in c_clean or '내용' in c_clean: new_cols.append('AS-IS')
+            elif 'TO-BE' in c_clean or 'TOBE' in c_clean or '변경' in c_clean: new_cols.append('TO-BE')
+            elif '특이사항' in c_clean or '비고' in c_clean: new_cols.append('특이사항')
+            elif '조치' in c_clean or '진행' in c_clean: new_cols.append('조치현황')
+            elif '첨부' in c_clean: new_cols.append('첨부')
+            else: new_cols.append(str(c).strip())
+        df.columns = new_cols
         
+        # 장비 호기 필터링 (범위 로직 포함)
         if '장비호기' in df.columns:
             if unit == "전체":
                 filtered_df = df.copy()
@@ -628,52 +644,53 @@ def render_ecn_stn_page(repo):
 
                 mask = df['장비호기'].apply(check_match)
                 filtered_df = df[mask].copy()
-        elif '장비' in df.columns and '호기' in df.columns:
-            if unit == "전체":
-                filtered_df = df[df['장비'].astype(str) == equipment].copy()
-            else:
-                filtered_df = df[(df['장비'].astype(str) == equipment) & (df['호기'].astype(str) == unit)].copy()
+        elif '발행부서' in df.columns: # 장비호기가 없어도 일단 출력하게 방어
+            filtered_df = df.copy()
         else:
-            st.error("⚠️ 엑셀 파일 안에 '장비호기' 열(Column)이 존재하지 않아 장비별 검색을 할 수 없습니다. 엑셀 파일을 다시 확인해주세요.")
+            st.error("⚠️ 엑셀 파일 컬럼을 인식할 수 없습니다. 양식을 다시 확인해주세요.")
             st.dataframe(df, use_container_width=True)
             return
             
+        # 필요한 열만 추출
         expected_cols = ['날짜', '발행부서', '발행자', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부']
         display_cols = [c for c in expected_cols if c in filtered_df.columns]
-        
         filtered_df = filtered_df[display_cols]
         
+        # 쓰레기 문자 제거
         filtered_df = filtered_df.replace(['nan', 'NaN', 'None', 'nat', 'NaT'], '')
         
+        # ★ 핵심 3: 완벽한 날짜 파싱 및 내림차순 정렬, 빈칸 데이터 삭제
         if '날짜' in filtered_df.columns:
             def parse_date_robust(d):
                 if pd.isna(d) or str(d).strip() in ['', 'nan', 'NaN', 'None', 'nat', 'NaT']: 
                     return pd.NaT
                 d_str = str(d).strip()
-                try: 
-                    # 엑셀 시리얼 날짜 (예: 45000)
-                    if d_str.replace('.', '').isdigit():
-                        val = float(d_str)
-                        # 너무 과거의 쓰레기 숫자는 무시 (1954년 이전 제외)
-                        if val < 20000: return pd.NaT 
+                
+                # 엑셀 시리얼 날짜 (예: 45000) 검출
+                # 2026.01.05 같은 날짜가 오작동하지 않도록 딱 1개의 소수점까지만 허용하고 순수 숫자인지 검사
+                if d_str.replace('.', '', 1).isdigit():
+                    val = float(d_str)
+                    # 정상적인 엑셀 날짜 범위 (대략 1982년 ~ 2064년) -> 이 범위면 시리얼로 인식
+                    if 30000 < val < 80000: 
                         return pd.to_datetime(val, unit='D', origin='1899-12-30')
-                    
-                    # 2026.01.05 같은 형식을 2026-01-05로 변경
-                    d_str = d_str.replace('.', '-').replace('/', '-')
-                    return pd.to_datetime(d_str, errors='coerce')
+                
+                # 2026.01.05 문자열을 2026-01-05로 변경하여 파싱
+                try: 
+                    d_str_clean = d_str.replace('.', '-').replace('/', '-')
+                    return pd.to_datetime(d_str_clean, errors='coerce')
                 except:
                     return pd.NaT
                     
-            # 1. 임시 컬럼에 완벽한 날짜 객체 생성
+            # 임시 컬럼(TempDate)에 실제 시간 객체 저장
             filtered_df['TempDate'] = filtered_df['날짜'].apply(parse_date_robust)
             
-            # 2. 날짜가 빈칸이거나 에러난 행(NaT)은 표에서 완전 삭제!
+            # ⚠️ 날짜가 비어있거나 에러 난 행(NaT)은 화면에서 아예 삭제!
             filtered_df = filtered_df.dropna(subset=['TempDate'])
             
-            # 3. 가장 최근 날짜가 위로 오도록 내림차순 정렬!
+            # ⚠️ 최신 날짜가 위로 오도록(내림차순) 정렬!
             filtered_df = filtered_df.sort_values(by='TempDate', ascending=False)
             
-            # 4. 깔끔한 문자열 YYYY-MM-DD 포맷팅 후 임시 컬럼 제거
+            # 정렬 후 날짜를 YYYY-MM-DD 형식의 예쁜 글자로 덮어씌우고 임시 컬럼 삭제
             filtered_df['날짜'] = filtered_df['TempDate'].dt.strftime('%Y-%m-%d')
             filtered_df = filtered_df.drop(columns=['TempDate'])
             
