@@ -536,7 +536,7 @@ def render_equipment_data_page(repo):
         st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
 # ==========================================
-# 6. 화면 UI - 4페이지: ECN & STN (장비 파트 및 수정사항)
+# 6. 화면 UI - 4페이지: ECN & STN (★ 헤더 자동 스캐너 도입 완료)
 # ==========================================
 def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -546,18 +546,37 @@ def render_ecn_stn_page(repo):
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="ecn_equip")
     with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="ecn_unit")
     
-    # ★ ECN 마스터 파일의 경로를 data/ECN/ 폴더 내부로 수정
     target_file = f"data/ECN/ECN_STN_Master({equipment}).xlsx"
     
     st.info(f"💡 **이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
-            f"엑셀 파일 1열(헤더)에 **'날짜', '발행부서', '발행자', '장비호기', 'ECN No', '내용', '변경', '특이사항', '조치현황', '첨부'** 열(Column)이 반드시 있어야 필터링 및 출력이 정상 작동합니다.")
+            f"엑셀 파일 내의 어딘가에 **'날짜', '발행부서', '발행자', '장비호기', 'ECN No', '내용', '변경', '특이사항', '조치현황', '첨부'** 가 포함된 헤더 행이 존재해야 작동합니다.")
 
     try:
         file_content = repo.get_contents(target_file)
         excel_data = io.BytesIO(file_content.decoded_content)
-        df = pd.read_excel(excel_data, engine='openpyxl')
         
-        df.columns = df.columns.str.strip()
+        # ★ 핵심 1: 헤더 없이 일단 엑셀 파일의 모든 줄을 다 읽어옵니다. (위쪽 빈칸 무시 작전)
+        df_raw = pd.read_excel(excel_data, engine='openpyxl', header=None)
+        
+        # ★ 핵심 2: 위에서부터 한 줄씩 읽으면서 '장비호기'와 '날짜'가 있는 진짜 제목줄을 찾아냅니다.
+        h_idx = -1
+        for i, row in df_raw.iterrows():
+            row_str = "".join(row.astype(str)).replace(" ", "")
+            if '장비호기' in row_str or 'ecn' in row_str.lower():
+                h_idx = i
+                break
+        
+        # 진짜 제목줄을 못 찾았다면 친절하게 에러를 뿜고 멈춥니다.
+        if h_idx == -1:
+            st.error("⚠️ 엑셀 파일 안에서 '장비호기', 'ECN' 등의 제목이 적힌 줄을 찾지 못했습니다. 양식을 확인해주세요.")
+            st.dataframe(df_raw, use_container_width=True) # 무엇이 문제인지 볼 수 있게 원본 출력
+            return
+            
+        # ★ 핵심 3: 찾아낸 제목줄(h_idx)을 진짜 컬럼(열 이름)으로 세팅하고, 그 윗줄들은 쓰레기통에 버립니다.
+        df = df_raw.iloc[h_idx + 1:].reset_index(drop=True) # 제목줄 바로 아랫줄부터가 진짜 데이터!
+        df.columns = df_raw.iloc[h_idx].astype(str).str.strip() # 찾은 줄을 컬럼 이름표로 찰칵!
+        
+        # '내용' -> 'AS-IS'로, '변경' -> 'TO-BE'로 자동 변환
         df = df.rename(columns={'내용': 'AS-IS', '변경': 'TO-BE'})
         
         if '장비호기' in df.columns:
@@ -565,6 +584,7 @@ def render_ecn_stn_page(repo):
             target_num = int(target_match.group(1)) if target_match else -1
             
             def check_match(val):
+                if pd.isna(val): return False
                 val_str = str(val).lower()
                 eq_lower = equipment.lower()
                 
@@ -597,9 +617,22 @@ def render_ecn_stn_page(repo):
         
         filtered_df = filtered_df[display_cols]
         
+        # 꼴보기 싫은 nan 문자열들을 싹 지워버립니다.
+        filtered_df = filtered_df.replace(['nan', 'NaN', 'None', 'nat', 'NaT'], '')
+        
         if '날짜' in filtered_df.columns:
-            filtered_df['날짜'] = pd.to_datetime(filtered_df['날짜'], errors='coerce').dt.strftime('%Y-%m-%d')
-            filtered_df['날짜'] = filtered_df['날짜'].fillna("")
+            def parse_date(d):
+                if pd.isna(d) or str(d).strip() == '': return ""
+                try: 
+                    if str(d).replace('.','').isdigit():
+                        return pd.to_datetime(float(d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
+                    return pd.to_datetime(str(d)).strftime('%Y-%m-%d')
+                except:
+                    return str(d).split(' ')[0]
+                    
+            filtered_df['날짜'] = filtered_df['날짜'].apply(parse_date)
+            
+        filtered_df = filtered_df.fillna("")
         
         if not filtered_df.empty:
             st.dataframe(
