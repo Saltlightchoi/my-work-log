@@ -131,7 +131,6 @@ def render_work_log_page(db_log):
             e = st.selectbox("장비", EQUIPMENT_OPTIONS)
             c = st.text_area("업무 내용", height=300)
             n = st.text_input("비고")
-            # ★ '첨부' 입력 필드 복구
             a = st.text_input("첨부 (FTP 경로 등)")
             if st.form_submit_button("저장하기"):
                 new_row = pd.DataFrame([{"날짜": str(d), "장비": e, "작성자": st.session_state['user_name'], "업무내용": c, "비고": n, "첨부": a}])
@@ -144,7 +143,6 @@ def render_work_log_page(db_log):
             e_date = st.date_input("날짜 수정", pd.to_datetime(df_log.loc[idx, '날짜']))
             e_content = st.text_area("내용 수정", value=df_log.loc[idx, '업무내용'], height=300)
             
-            # ★ '비고' 및 '첨부' 수정 필드 추가
             val_note = df_log.loc[idx, '비고'] if '비고' in df_log.columns else ""
             val_note = "" if pd.isna(val_note) else str(val_note)
             e_note = st.text_input("비고 수정", value=val_note)
@@ -154,7 +152,6 @@ def render_work_log_page(db_log):
             e_attach = st.text_input("첨부 수정", value=val_attach)
             
             if st.form_submit_button("수정 완료"):
-                # '첨부'와 '비고'도 함께 저장되도록 리스트 확장
                 df_log.loc[idx, ['날짜', '업무내용', '비고', '첨부']] = [str(e_date), e_content, e_note, e_attach]
                 db_log.save(df_log, sha_log, "Edit Log")
                 st.rerun()
@@ -178,7 +175,6 @@ def render_work_log_page(db_log):
     disp = df_log.copy()
     if search: disp = disp[disp.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
     
-    # ★ 업무일지 표에서도 비고와 첨부 컬럼 너비를 콤팩트하게 설정
     st.dataframe(
         disp, 
         use_container_width=True, 
@@ -366,7 +362,7 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (이전 요청대로 유지)
 # ==========================================
 def render_equipment_data_page(repo):
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
@@ -566,7 +562,7 @@ def render_equipment_data_page(repo):
         st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
 # ==========================================
-# 6. 화면 UI - 4페이지: ECN & STN (★ 첨부 및 특이사항 열 너비 콤팩트 적용)
+# 6. 화면 UI - 4페이지: ECN & STN (★ 날짜 빈칸/정렬 수정)
 # ==========================================
 def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -646,25 +642,38 @@ def render_ecn_stn_page(repo):
         display_cols = [c for c in expected_cols if c in filtered_df.columns]
         
         filtered_df = filtered_df[display_cols]
-        
         filtered_df = filtered_df.replace(['nan', 'NaN', 'None', 'nat', 'NaT'], '')
         
+        # ★ 날짜 처리 완벽 적용 (빈칸 제외 + 정렬용 데이트타임 변환)
         if '날짜' in filtered_df.columns:
-            def parse_date(d):
-                if pd.isna(d) or str(d).strip() == '': return ""
+            def parse_date_robust(d):
+                if pd.isna(d) or str(d).strip() == '': return pd.NaT
                 try: 
                     if str(d).replace('.','').isdigit():
-                        return pd.to_datetime(float(d), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
-                    return pd.to_datetime(str(d)).strftime('%Y-%m-%d')
+                        return pd.to_datetime(float(d), unit='D', origin='1899-12-30')
+                    return pd.to_datetime(str(d), errors='coerce')
                 except:
-                    return str(d).split(' ')[0]
-                    
-            filtered_df['날짜'] = filtered_df['날짜'].apply(parse_date)
+                    try:
+                        return pd.to_datetime(str(d).split(' ')[0])
+                    except:
+                        return pd.NaT
+            
+            # 임시 컬럼 생성하여 날짜 데이터 파싱
+            filtered_df['TempDate'] = filtered_df['날짜'].apply(parse_date_robust)
+            
+            # 1. 날짜가 빈칸인 행 날리기 (화면 출력 X)
+            filtered_df = filtered_df.dropna(subset=['TempDate'])
+            
+            # 2. 내림차순 정렬 (가장 최근 날짜가 최상단)
+            filtered_df = filtered_df.sort_values(by='TempDate', ascending=False)
+            
+            # 3. 화면 표시용으로 텍스트 포맷 다시 변경 및 임시 컬럼 삭제
+            filtered_df['날짜'] = filtered_df['TempDate'].dt.strftime('%Y-%m-%d')
+            filtered_df = filtered_df.drop(columns=['TempDate'])
             
         filtered_df = filtered_df.fillna("")
         
         if not filtered_df.empty:
-            # ★ 첨부의 제목을 짧게 "첨부(복사)"로 바꾸고, 너비를 가장 좁은 width="small"로 설정하여 공간 최적화
             st.dataframe(
                 filtered_df, 
                 use_container_width=True, 
@@ -677,7 +686,7 @@ def render_ecn_stn_page(repo):
                 }
             )
         else:
-            st.warning(f"선택하신 [{equipment}] - [{unit}] 에 등록된 ECN & STN 내역이 아직 없습니다.")
+            st.warning(f"선택하신 [{equipment}] - [{unit}] 에 등록된 유효한 ECN & STN 내역이 없습니다. (날짜가 입력된 내역만 표출됩니다.)")
             
     except Exception as e:
         if "404" in str(e):
