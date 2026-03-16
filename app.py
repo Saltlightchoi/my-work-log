@@ -642,32 +642,38 @@ def render_ecn_stn_page(repo):
         display_cols = [c for c in expected_cols if c in filtered_df.columns]
         
         filtered_df = filtered_df[display_cols]
+        
         filtered_df = filtered_df.replace(['nan', 'NaN', 'None', 'nat', 'NaT'], '')
         
-        # ★ 날짜 처리 완벽 적용 (빈칸 제외 + 정렬용 데이트타임 변환)
         if '날짜' in filtered_df.columns:
             def parse_date_robust(d):
-                if pd.isna(d) or str(d).strip() == '': return pd.NaT
+                if pd.isna(d) or str(d).strip() in ['', 'nan', 'NaN', 'None', 'nat', 'NaT']: 
+                    return pd.NaT
+                d_str = str(d).strip()
                 try: 
-                    if str(d).replace('.','').isdigit():
-                        return pd.to_datetime(float(d), unit='D', origin='1899-12-30')
-                    return pd.to_datetime(str(d), errors='coerce')
+                    # 엑셀 시리얼 날짜 (예: 45000)
+                    if d_str.replace('.', '').isdigit():
+                        val = float(d_str)
+                        # 너무 과거의 쓰레기 숫자는 무시 (1954년 이전 제외)
+                        if val < 20000: return pd.NaT 
+                        return pd.to_datetime(val, unit='D', origin='1899-12-30')
+                    
+                    # 2026.01.05 같은 형식을 2026-01-05로 변경
+                    d_str = d_str.replace('.', '-').replace('/', '-')
+                    return pd.to_datetime(d_str, errors='coerce')
                 except:
-                    try:
-                        return pd.to_datetime(str(d).split(' ')[0])
-                    except:
-                        return pd.NaT
-            
-            # 임시 컬럼 생성하여 날짜 데이터 파싱
+                    return pd.NaT
+                    
+            # 1. 임시 컬럼에 완벽한 날짜 객체 생성
             filtered_df['TempDate'] = filtered_df['날짜'].apply(parse_date_robust)
             
-            # 1. 날짜가 빈칸인 행 날리기 (화면 출력 X)
+            # 2. 날짜가 빈칸이거나 에러난 행(NaT)은 표에서 완전 삭제!
             filtered_df = filtered_df.dropna(subset=['TempDate'])
             
-            # 2. 내림차순 정렬 (가장 최근 날짜가 최상단)
+            # 3. 가장 최근 날짜가 위로 오도록 내림차순 정렬!
             filtered_df = filtered_df.sort_values(by='TempDate', ascending=False)
             
-            # 3. 화면 표시용으로 텍스트 포맷 다시 변경 및 임시 컬럼 삭제
+            # 4. 깔끔한 문자열 YYYY-MM-DD 포맷팅 후 임시 컬럼 제거
             filtered_df['날짜'] = filtered_df['TempDate'].dt.strftime('%Y-%m-%d')
             filtered_df = filtered_df.drop(columns=['TempDate'])
             
