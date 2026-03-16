@@ -114,7 +114,7 @@ def get_row_color(row):
     return [''] * len(row)
 
 # ==========================================
-# 3. 화면 UI - 1페이지: 팀 업무일지 
+# 3. 화면 UI - 1페이지: 팀 업무일지
 # ==========================================
 def render_work_log_page(db_log):
     df_log, sha_log = db_log.load()
@@ -172,9 +172,23 @@ def render_work_log_page(db_log):
         st.download_button(label="📥 엑셀 다운로드", data=csv_data, file_name=f"work_log_{datetime.now().strftime('%Y%m%d')}.csv", use_container_width=True)
 
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
-    search = st.text_input("🔍 검색어 (장비, 내용 등)", placeholder="검색어를 입력하세요...")
+    
+    # ★ 추가된 장비 모델 드롭다운 필터 기능 + 기존 텍스트 검색 기능 연동
+    filter_col1, filter_col2 = st.columns([2, 8])
+    with filter_col1:
+        equip_filter = st.selectbox("📌 장비모델 필터", ["전체"] + EQUIPMENT_OPTIONS)
+    with filter_col2:
+        search = st.text_input("🔍 내용/작성자 검색", placeholder="검색어를 입력하세요...")
+        
     disp = df_log.copy()
-    if search: disp = disp[disp.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
+    
+    # 1. 장비모델 필터 적용
+    if equip_filter != "전체":
+        disp = disp[disp['장비'].astype(str) == equip_filter]
+        
+    # 2. 텍스트 검색 필터 적용
+    if search: 
+        disp = disp[disp.apply(lambda r: search.lower() in str(r).lower(), axis=1)]
     
     st.dataframe(
         disp, 
@@ -365,7 +379,7 @@ def render_cs_flow_page(db_flow):
 # ==========================================
 # 5. 화면 UI - 3페이지: 장비 가동 데이터 
 # ==========================================
-def render_equipment_data_page(repo):
+def render_equipment_data_page():
     import re
     from plotly.subplots import make_subplots
     import pandas as pd
@@ -452,6 +466,7 @@ def render_equipment_data_page(repo):
                 h_idx = i; h_row = row.tolist(); break
 
         if h_idx != -1:
+            # ★ 핵심 해결: 엉뚱한 열을 찾지 않도록 모호한 한글 키워드 제거, 자물쇠(is None) 장착
             m = {'D': None, 'C': None, 'M': None, 'A': None, 'T': None, 'L': None, 'P': None}
             for i, v in enumerate(h_row):
                 v_str = str(v).lower().replace(' ', '').replace('\n', '')
@@ -478,6 +493,7 @@ def render_equipment_data_page(repo):
                 if not has_code and not has_msg:
                     continue
                 
+                # ★ 코드 데이터가 실수(float)로 읽혀 .0 이 붙는 현상 제거
                 code_orig = str(r[m['C']]).strip() if m['C'] is not None else ""
                 if code_orig.endswith('.0'): code_orig = code_orig[:-2]
                 
@@ -761,7 +777,7 @@ def main():
 
         if menu_selection == "📝 업무일지": render_work_log_page(db_log)
         elif menu_selection == "✅ CS 작업체크시트": render_cs_flow_page(db_flow)
-        elif menu_selection == "📊 장비가동데이터": render_equipment_data_page(repo)
+        elif menu_selection == "📊 장비가동데이터": render_equipment_data_page()
         elif menu_selection == "🛠️ ECN & STN": render_ecn_stn_page(repo)
 
 if __name__ == "__main__": main()
