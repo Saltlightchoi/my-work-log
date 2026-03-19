@@ -47,7 +47,7 @@ SLH1 #6호기,기구물 Setting,9,"배출 Fan 장착 및 전원 Connect 연결
  -> I/O 번호 확인, OS에서 FAN Check 확인",✅ 완료,,,최염광 (26-03-13)
 SLH1 #6호기,기구물 Setting,10,Hand Vac/Blow Air Line CDA Main to Hand Regulator Direct Connect Setting,⏳ 작업중,"고정 Pannel 만 장착상태, Filter 공압 포설 후 장착 예정.",,최염광 (26-03-13)
 SLH1 #6호기,기구물 Setting,11,LD/ULD Gripper Up/Down Air Line 스피드콘 장착,✅ 완료,,,최염광 (26-03-13)
-SLH1 #6호기,기구물 Setting,12,LD/EMPTY Stacker Align Guide 1번 JIG 장착 상태 Setting,⬜ 대기,,,
+SLH1 #6호기,기구물 Setting,12,LD/EMPTY Stacker Align Guide 1번 JIG 장착 상태 Setting,✅ 완료,,,최염광 (26-03-19)
 SLH1 #6호기,기구물 Setting,13,"LD/ULD Hand Deviation Sensor Setting
 - LD Hand T-Tray Place Pos' -5.0mm 적용 후 Setting
 - ULD Hand Fix Buffer Place 후 -12.00mm 적용 후 Setting
