@@ -94,7 +94,7 @@ ex) L/D 1,2 : 21mm UL/D 1,2 24mm pass",⬜ 대기,,"""\\192.168.0.100\500 생산
 SLH1 #6호기,조립정밀도,4,Transfer JIG -> Set-Plate -> Stacker JIG Setting,⬜ 대기,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",
 SLH1 #6호기,Test Site 평탄도,1,"Front, Rear Press 평탄도(±0.25mm) Setting 및 측정
 - 디지털 거리 측정기, 측정 지그 사용
-- 무두 볼트 풀어놓은 후 측정 -> + 수치가 제일 큰 부분에 리셋 -> 무두 볼트 사용하여 평탄도 Setting",⬜ 대기,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",
+- 무두 볼트 풀어놓은 후 측정 -> + 수치가 제일 큰 부분에 리셋 -> 무두 볼트 사용하여 평탄도 Setting",✅ 완료,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",최염광 (26-03-19)
 SLH1 #6호기,Test Site 평탄도,2,"Front, Rear Press Load Cell (0.2bar, 0.29bar) Setting 및 측정
 - Load Cell, 측정 지그
 - 언 컨텍 값(기구 이동 가능), 컨택값(해당 수치 도달 지점)
