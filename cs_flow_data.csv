@@ -103,11 +103,11 @@ SLH1 #6호기,Test Site 평탄도,3,"Front, Rear T-Tray Rail 평탄도(±0.2mm) 
 - 디지털 전자 수평계 사용
 - 측정 위치 : T-Tray 왼쪽 중간 오른쪽",✅ 완료,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",최염광 (26-03-19)
 SLH1 #6호기,반복정밀도,1,"LD/ULD Hand X,Y축 반복도(±0.05mm) 측정 (10회)
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",최염광 (26-03-20)
 SLH1 #6호기,반복정밀도,2,"LD/ULD Hand Transfer X,Z축 반복도(±0.05mm) 측정 (10회)
- -> Digital Indicator (0.001mm) 사용",⬜ 대기,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",
+ -> Digital Indicator (0.001mm) 사용",✅ 완료,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",최염광 (26-03-20)
 SLH1 #6호기,반복정밀도,3,"Bottom Feeder X축 반복도(±0.05mm) 측정 (10회)
-- Dial Gauge Indicator 0.01mm(바늘)",⬜ 대기,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",
+- Dial Gauge Indicator 0.01mm(바늘)",✅ 완료,,"""\\192.168.0.100\500 생산\550 국내CS\SLH1 작업표준서(SLH1 조립 정밀도)\#5\SLH1 #5호기 정밀도 Spec Check-List_REV01.pdf""",최염광 (26-03-20)
 SLH1 #6호기,환경안전,1,"Ionizer Loader A-01, Unloader A-02 설정",✅ 완료,,,최염광 (26-03-10)
 SLH1 #6호기,환경안전,2,접지 연결 및 확인,✅ 완료,,,최염광 (26-03-10)
 SLH1 #6호기,환경안전,3,LD/ULD Conveyor Inverter 장착 Pannel 모서리 안전띠 부착,✅ 완료,,,최염광 (26-03-10)
