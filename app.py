@@ -10,27 +10,39 @@ from plotly.subplots import make_subplots
 import openpyxl
 
 # ==========================================
-# 1. 환경 설정 및 전체 디자인 (CSS)
+# 1. 환경 설정 및 전체 디자인 (CSS) - 와이드 & 큰 글자 모드 적용
 # ==========================================
 st.set_page_config(layout="wide", page_title="장비 관리 통합 시스템")
 st.markdown("""
     <style>
-        .block-container { padding-top: 3.5rem !important; padding-bottom: 2rem !important; }
-        [data-testid="stSidebar"] { width: 330px !important; }
-        .main-title { font-size: 1.5rem !important; font-weight: bold; padding-bottom: 10px !important; margin-top: -10px; }
-        .info-box { background-color: #f8f9fa; padding: 12px; border-radius: 4px; border-left: 5px solid #4CAF50; margin-bottom: 15px; color: #333; font-size: 13px; }
+        /* 화면을 98%까지 꽉 채우기 */
+        .block-container {
+            max-width: 98% !important;
+            padding-top: 2rem !important; 
+            padding-bottom: 2rem !important;
+        }
+        [data-testid="stSidebar"] { width: 350px !important; }
         
+        /* 전체적인 텍스트 크기 확대 */
+        html, body, [class*="css"] {
+            font-size: 16px !important;
+        }
+        .main-title { font-size: 2rem !important; font-weight: bold; padding-bottom: 15px !important; margin-top: -10px; }
+        .info-box { background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 6px solid #4CAF50; margin-bottom: 15px; color: #333; font-size: 15px; }
+        
+        /* 표 글자 크기 및 여백 확대 */
         .final-report-table {
             width: 100%; border-collapse: collapse; border: 2px solid #000000 !important;
-            font-size: 12px; color: #000000; background-color: #ffffff;
+            font-size: 14px; color: #000000; background-color: #ffffff;
         }
         .final-report-table th, .final-report-table td {
-            border: 1px solid #000000 !important; padding: 6px 8px; text-align: center;
+            border: 1px solid #000000 !important; padding: 8px 10px; text-align: center;
         }
-        .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; }
+        .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; font-size: 15px; }
         .t-left { text-align: left !important; }
         
-        div[data-testid="stSidebar"] button { width: 100% !important; font-weight: bold; }
+        /* 사이드바 버튼 크기 키우기 */
+        div[data-testid="stSidebar"] button { width: 100% !important; font-weight: bold; font-size: 15px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -199,7 +211,7 @@ def render_work_log_page(db_log):
     )
 
 # ==========================================
-# 4. 화면 UI - 2페이지: CS 작업체크시트
+# 4. 화면 UI - 2페이지: CS 작업체크시트 (★ 완료 개수 표시 복구)
 # ==========================================
 def render_cs_flow_page(db_flow):
     df_flow, sha_flow = db_flow.load()
@@ -223,7 +235,8 @@ def render_cs_flow_page(db_flow):
             blocks = pct // 10
             bar = "🟩" * blocks + "⬜" * (10 - blocks)
             batt_icon = "🔋" if pct >= 20 else "🪫"
-            progress_dict[proj] = f"{proj}  |  {batt_icon} {pct}% [{bar}]"
+            # ★ 드롭다운에 (완료수/총개수) 추가
+            progress_dict[proj] = f"{proj}  |  {batt_icon} {pct}% ({completed_items}/{total_items}) [{bar}]"
 
     col_a, col_b = st.columns(2)
     with col_a:
@@ -323,7 +336,7 @@ def render_cs_flow_page(db_flow):
 
         total_tasks = len(proj_df); comp_tasks = len(proj_df[proj_df["상태"] == "✅ 완료"])
         pct_float = (comp_tasks / total_tasks) if total_tasks > 0 else 0.0
-        st.markdown(f"<div style='font-size:14px; font-weight:bold; color:#4CAF50;'>⚡ 진행도 ({comp_tasks} / {total_tasks})</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:16px; font-weight:bold; color:#4CAF50;'>⚡ 전체 진행도 ({comp_tasks} / {total_tasks})</div>", unsafe_allow_html=True)
         st.progress(pct_float, text=f"{int(pct_float * 100)}% 완료")
 
         proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
@@ -334,10 +347,16 @@ def render_cs_flow_page(db_flow):
             cat = group_df['대항목'].iloc[0]
             display_df = group_df.drop(columns=['group_id']).reset_index(drop=True)
             curr_stats = display_df['상태'].tolist()
-            if '🚨 보류' in curr_stats: tab_title = f"🔴 [보류] {cat}"
-            elif curr_stats and all(s == '✅ 완료' for s in curr_stats): tab_title = f"🟢 [완료] {cat}"
-            elif any(s in ['⏳ 작업중', '✅ 완료'] for s in curr_stats): tab_title = f"🟡 [진행] {cat}"
-            else: tab_title = f"📍 [대기] {cat}"
+            
+            # ★ 대항목(카테고리) 별 완료 개수 계산 및 표시 추가
+            cat_total = len(curr_stats)
+            cat_comp = curr_stats.count('✅ 완료')
+            cnt_str = f"({cat_comp}/{cat_total})"
+            
+            if '🚨 보류' in curr_stats: tab_title = f"🔴 [보류] {cat} {cnt_str}"
+            elif curr_stats and all(s == '✅ 완료' for s in curr_stats): tab_title = f"🟢 [완료] {cat} {cnt_str}"
+            elif any(s in ['⏳ 작업중', '✅ 완료'] for s in curr_stats): tab_title = f"🟡 [진행] {cat} {cnt_str}"
+            else: tab_title = f"📍 [대기] {cat} {cnt_str}"
             
             with st.expander(tab_title, expanded=False):
                 styled_df = display_df.style.apply(get_row_color, axis=1)
@@ -580,7 +599,6 @@ def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-    # ★ 도움말/수정안내를 호기 선택 우측에 팝오버(메모형식) 버튼으로 콤팩트하게 배치
     col1, col2, col3, col4, col5 = st.columns([1.5, 1.5, 1, 1, 5])
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="ecn_equip")
     with col2: unit = st.selectbox("호기 선택", ["전체"] + [f"{i}호기" for i in range(1, 16)], key="ecn_unit")
