@@ -376,7 +376,7 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (정상 깃허브 연동 + 달력 조회 완벽 복구본)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 
 # ==========================================
 def render_equipment_data_page(repo):
     import re
@@ -550,7 +550,7 @@ def render_equipment_data_page(repo):
     final_cdf = final_cdf[mask].reset_index(drop=True)
     
     if final_cdf.empty:
-        st.warning("선택하신 조회 기간에 기록된 가동 데이터가 없습니다.")
+        st.warning("선택하신 조회 기간에 기록 가동 데이터가 없습니다.")
         return
 
     for c in ['Unit', 'Jam', 'PPJ']: 
@@ -594,7 +594,7 @@ def render_equipment_data_page(repo):
         st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
 # ==========================================
-# 6. 화면 UI - 4페이지: ECN & STN (에러 방어 완벽 조치본)
+# 6. 화면 UI - 4페이지: ECN & STN
 # ==========================================
 def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -608,7 +608,11 @@ def render_ecn_stn_page(repo):
         st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
         with st.expander("💡 도움말 및 수정방법 보기"):
             st.markdown(f"**이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
-                        f"표의 **'조치현황'** 과 **'특이사항'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.")
+                        f"표의 **'조치현황'** 과 **'특이사항'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
+                        "**📁 첨부파일/원본 열기 팁:**\n"
+                        "1. 표의 **'첨부(복사)'** 칸을 클릭해 경로를 복사합니다.\n"
+                        "2. 키보드에서 **`[윈도우키 + R]`**을 누릅니다.\n"
+                        "3. **'실행'** 창에 붙여넣기(`Ctrl + V`) 후 엔터를 치면 파일이 바로 열립니다! (주의: 경로 앞뒤의 따옴표(`\"`)는 제거하고 넣어주세요.)")
             
     with col_search:
         st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
@@ -744,7 +748,6 @@ def render_ecn_stn_page(repo):
             total_cnt = len(filtered_df)
             done_cnt = 0
             prog_cnt = 0
-            # 에러 방지: 조치현황 컬럼이 존재할 때만 카운트 계산
             if '조치현황' in filtered_df.columns:
                 done_cnt = len(filtered_df[filtered_df['조치현황'].astype(str).str.contains('완료', na=False)])
                 prog_cnt = len(filtered_df[filtered_df['조치현황'].astype(str).str.contains('진행중|진행 중', na=False)])
@@ -854,7 +857,6 @@ def render_ecn_stn_page(repo):
                     for _, row in edited_df.iterrows():
                         orig_idx = int(row['Original_Index'])
                         xl_row = orig_idx + 1 
-                        # 저장할 때 해당 컬럼의 값이 없으면 에러가 나지 않도록 get() 메서드 사용
                         if '특이사항' in col_idx_map:
                             ws.cell(row=xl_row, column=col_idx_map['특이사항'] + 1, value=row.get('특이사항', ''))
                             changes_made = True
@@ -872,26 +874,6 @@ def render_ecn_stn_page(repo):
                         st.warning("저장할 변경사항이 없습니다.")
                 except Exception as save_err:
                     st.error(f"엑셀 저장 중 오류가 발생했습니다: {save_err}")
-            
-            # --- ECN 첨부파일 윈도우 실행(바로 열기) 가이드 ---
-            st.markdown("<hr style='margin-top: 30px; margin-bottom: 15px;'>", unsafe_allow_html=True)
-            st.markdown("### 📁 첨부파일/폴더 원본 바로 열기 (Windows 실행)")
-            st.info("💡 **가장 빠르고 확실한 원본 열기 팁 (용량 차지 및 웹 과부하 0%)**\n\n"
-                    "웹 브라우저(크롬, 엣지 등)는 보안 정책상 웹사이트 버튼을 클릭해 내 컴퓨터의 로컬 네트워크 파일(`\\\\192.168...`)을 억지로 실행하는 것을 엄격하게 차단하고 있습니다.\n\n"
-                    "따라서 파일을 직접 팍! 열고 싶으실 때는 **윈도우 기본 기능**을 사용하시는 것이 가장 깔끔하고 빠릅니다.\n"
-                    "1. 위 표의 **'첨부(복사)'** 칸을 클릭 후 경로를 복사(`Ctrl + C`) 합니다.\n"
-                    "2. 키보드에서 **`[윈도우키 + R]`** 을 누릅니다.\n"
-                    "3. 화면 왼쪽 아래에 뜨는 **'실행'** 창에 붙여넣기(`Ctrl + V`) 하고 **엔터**를 칩니다.\n"
-                    "▶️ PPT, PDF, 엑셀 파일 등 원본 프로그램이 내 컴퓨터 화면에 즉시 열립니다!")
-            
-            st.markdown("#### 🛠️ 경로 따옴표 자동 제거기")
-            st.write("표에서 경로를 복사할 때 실수로 앞뒤에 따옴표(`\"`)가 붙어버려 '실행'창에서 에러가 나는 경우가 있습니다. 그럴 땐 아래 칸에 붙여넣어 주세요.")
-            raw_path = st.text_input("경로 붙여넣기:", placeholder='예: "\\\\192.168.0.100\\500 생산\\..."', label_visibility="collapsed")
-            
-            if raw_path:
-                clean_path = raw_path.strip('"').strip("'")
-                st.success("✨ 따옴표가 제거된 깔끔한 경로입니다! 우측 상단의 **복사 아이콘(📋)**을 눌러 복사 후 `[윈도우키 + R]` 창에 붙여넣으세요.")
-                st.code(clean_path, language="text")
 
         else:
             st.warning(f"선택하신 조건에 해당하는 ECN 내역이 없습니다.")
