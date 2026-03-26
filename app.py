@@ -374,9 +374,27 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (★ 정상 작동 달력+보조축 버전 완전 복구본)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (정상 작동 원본 보존)
 # ==========================================
 def render_equipment_data_page(repo):
+    import re
+    from plotly.subplots import make_subplots
+    import pandas as pd
+
+    st.markdown("""
+        <style>
+            .final-report-table {
+                width: 100%; border-collapse: collapse; border: 2px solid #000000 !important;
+                font-size: 12px; color: #000000; background-color: #ffffff;
+            }
+            .final-report-table th, .final-report-table td {
+                border: 1px solid #000000 !important; padding: 6px 8px; text-align: center !important;
+            }
+            .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; }
+            .t-left { text-align: left !important; }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
@@ -539,14 +557,14 @@ def render_equipment_data_page(repo):
     final_cdf['Cum_PPJ'] = final_cdf.apply(lambda r: round(final_cdf.loc[:r.name, 'Unit'].sum() / final_cdf.loc[:r.name, 'Jam'].sum(), 1) if final_cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
 
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.15, 
-                        subplot_titles=("Unit 및 Jam 건수 (보조축 적용)", "생산 효율(PPJ)"), 
+                        subplot_titles=("투입량(Unit) 및 에러(Jam) 건수", "생산 효율(PPJ) 추이"), 
                         specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
     
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입', marker_color='#5B9BD5', legendgroup="1", hovertemplate="%{x}<br>투입: %{y:,.0f}<extra></extra>"), row=1, col=1, secondary_y=False)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러', mode='lines+markers', line=dict(color='#ED7D31'), legendgroup="1", hovertemplate="%{x}<br>에러: %{y:,.0f}<extra></extra>"), row=1, col=1, secondary_y=True)
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
     
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별PPJ', marker_color='#A9D18E', legendgroup="2", hovertemplate="%{x}<br>일별 PPJ: %{y:,.1f}<extra></extra>"), row=2, col=1)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='누적PPJ', mode='lines+markers', line=dict(color='#FF0000', width=4), legendgroup="2", hovertemplate="%{x}<br>누적 PPJ: %{y:,.1f}<extra></extra>"), row=2, col=1)
+    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.8), row=2, col=1)
+    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='월 누적 PPJ (실선)', mode='lines+markers', line=dict(color='#FF0000', width=4)), row=2, col=1)
     
     fig.update_yaxes(title_text="투입량 (EA)", secondary_y=False, row=1, col=1, tickformat="d", exponentformat="none")
     fig.update_yaxes(title_text="Jam (건)", secondary_y=True, row=1, col=1, tickformat="d", exponentformat="none")
@@ -574,7 +592,7 @@ def render_equipment_data_page(repo):
         st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
 # ==========================================
-# 6. 화면 UI - 4페이지: ECN & STN (★ 에러/팝오버 버그 완벽 차단본)
+# 6. 화면 UI - 4페이지: ECN & STN (★ 날짜 버그 완벽 조치본)
 # ==========================================
 def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -586,7 +604,6 @@ def render_ecn_stn_page(repo):
     
     with col3:
         st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-        # ★ 호환성 100% 방어: 에러를 내던 popover 대신 expander(접기/펴기) 사용!
         with st.expander("💡 도움말 및 수정방법 보기"):
             st.markdown(f"**이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
                         f"표의 **'조치현황'** 과 **'특이사항'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.")
@@ -650,7 +667,6 @@ def render_ecn_stn_page(repo):
             elif '첨부' in c_clean: base_col = '첨부'
             else: base_col = str(c).strip()
 
-            # ★ 중복 컬럼명 충돌 에러 방지벽
             if base_col in seen_cols:
                 base_col = f"{base_col}_{i}"
             seen_cols.add(base_col)
@@ -692,16 +708,31 @@ def render_ecn_stn_page(repo):
         display_cols = [c for c in expected_cols if c in filtered_df.columns]
         filtered_df = filtered_df[display_cols].copy()
         
-        # 엑셀 쓰레기값 및 결측치 안전 제거
-        filtered_df = filtered_df.astype(str).replace(['nan', 'NaN', 'None', 'nat', 'NaT', '0.0'], '')
-        
+        # ★ 날짜 데이터 처리 완벽 패치 (datetime.time 객체 충돌 등 모든 에러 방어)
         if '날짜' in filtered_df.columns:
+            import datetime as dt
             def parse_date_robust(d):
-                if pd.isna(d) or str(d).strip() in ['', 'nan', 'NaN', 'None', 'nat', 'NaT']: return pd.NaT
+                # 1. 엑셀에 실수로 날짜 대신 시간(Time) 객체가 들어온 경우 완벽 방어
+                if isinstance(d, dt.time): return pd.NaT
+                # 2. 이미 날짜(Date) 객체로 정상 인식된 경우 그대로 사용
+                if isinstance(d, (dt.datetime, dt.date)): return pd.to_datetime(d)
+                
+                # 3. 빈칸 체크 (안전망 추가)
+                try:
+                    if pd.isna(d): return pd.NaT
+                except: pass
+                
                 d_str = str(d).strip()
+                if d_str in ['', 'nan', 'NaN', 'None', 'nat', 'NaT', '0.0']: return pd.NaT
+                
+                # 4. 엑셀 특유의 숫자형(시리얼) 날짜 포맷 검출
                 if d_str.replace('.', '', 1).isdigit():
-                    val = float(d_str)
-                    if 30000 < val < 80000: return pd.to_datetime(val, unit='D', origin='1899-12-30')
+                    try:
+                        val = float(d_str)
+                        if 30000 < val < 80000: return pd.to_datetime(val, unit='D', origin='1899-12-30')
+                    except: pass
+                
+                # 5. 일반 문자열 날짜 (예: 2026.01.05) 포맷팅
                 try: 
                     d_str_clean = d_str.replace('.', '-').replace('/', '-')
                     return pd.to_datetime(d_str_clean, errors='coerce')
@@ -713,7 +744,8 @@ def render_ecn_stn_page(repo):
             filtered_df['날짜'] = filtered_df['TempDate'].dt.strftime('%Y-%m-%d')
             filtered_df = filtered_df.drop(columns=['TempDate'])
             
-        filtered_df = filtered_df.fillna("")
+        # 엑셀 쓰레기값 및 결측치 안전 제거 (날짜 처리가 모두 끝난 후 문자열 처리)
+        filtered_df = filtered_df.astype(str).replace(['nan', 'NaN', 'None', 'nat', 'NaT', '0.0'], '')
         filtered_df.reset_index(drop=True, inplace=True)
         
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
@@ -746,7 +778,6 @@ def render_ecn_stn_page(repo):
             else:
                 styled_df = filtered_df
 
-            # ★ column config 에러 방어벽 (데이터프레임에 존재하는 열만 설정)
             col_cfg = {"Original_Index": None}
             if "AS-IS" in filtered_df.columns: col_cfg["AS-IS"] = st.column_config.TextColumn("AS-IS", width="large")
             if "TO-BE" in filtered_df.columns: col_cfg["TO-BE"] = st.column_config.TextColumn("TO-BE", width="large")
@@ -767,7 +798,8 @@ def render_ecn_stn_page(repo):
                 save_btn = st.button("💾 변경사항 엑셀에 자동 저장하기", type="primary", use_container_width=True)
             with action_col2:
                 output_excel = io.BytesIO()
-                with pd.ExcelWriter(output_excel, engine='xlsxwriter') as writer:
+                # 엑셀 생성 엔진을 xlsxwriter에서 이미 설치되어 있는 openpyxl로 변경합니다.
+                with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
                     filtered_df.drop(columns=['Original_Index'], errors='ignore').to_excel(writer, index=False, sheet_name='ECN_Data')
                 st.download_button(
                     label="📥 현재 리스트 엑셀 다운로드",
