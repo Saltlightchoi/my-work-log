@@ -4,6 +4,7 @@ from github import Github
 import io
 import re
 import calendar
+import os
 from datetime import datetime, date
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -384,216 +385,112 @@ def render_equipment_data_page(repo):
 
     st.markdown("""
         <style>
-            .final-report-table {
-                width: 100%; border-collapse: collapse; border: 2px solid #000000 !important;
-                font-size: 12px; color: #000000; background-color: #ffffff;
-            }
-            .final-report-table th, .final-report-table td {
-                border: 1px solid #000000 !important; padding: 6px 8px; text-align: center !important;
-            }
+            .final-report-table { width: 100%; border-collapse: collapse; border: 2px solid #000000 !important; font-size: 12px; color: #000000; background-color: #ffffff; }
+            .final-report-table th, .final-report-table td { border: 1px solid #000000 !important; padding: 6px 8px; text-align: center !important; }
             .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; }
             .t-left { text-align: left !important; }
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>📊 장비 가동 데이터 통합 분석</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 1, 2])
+    col1, col2, col3 = st.columns(3)
     with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="eq_data_equip")
-    with col2: unit = st.selectbox("호기 선택", [f"{i}호기" for i in range(1, 16)], key="eq_data_unit")
-    
-    today = datetime.today().date()
-    with col3: 
-        date_range = st.date_input("📅 조회 기간 선택 (시작일과 종료일을 클릭하세요)", [today.replace(day=1), today])
+    with col2: unit = st.selectbox("호기 선택", ["1호기", "2호기", "3호기", "4호기", "5호기"], key="eq_data_unit")
+    with col3: month_str = st.selectbox("조회할 월 선택", ["1월", "2월", "3월"], key="eq_data_month")
 
-    if len(date_range) == 2:
-        s_date, e_date = date_range
-    else:
-        s_date = e_date = date_range[0]
+    file_map = {"1월": "SLH1 - January 2026.xlsx", "2월": "SLH1 - February 2026.xlsx", "3월": "SLH1 - March 2026.xlsx"}
+    target_file = file_map.get(month_str, "")
+    month_num = month_str.replace("월", "")
 
-    periods = pd.period_range(s_date.replace(day=1), e_date, freq='M')
-    ym_list = [(p.year, p.month) for p in periods]
-    month_dict = {i: eng for i, eng in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], start=1)}
-    
-    all_cdf = []
-    all_cl = []
-    missing_files = []
-
-    for y, m in ym_list:
-        eng_month = month_dict.get(m, "January")
-        target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} {y}.xlsx"
-
-        try:
-            file_content = repo.get_contents(target_file)
-            excel_data = io.BytesIO(file_content.decoded_content)
-            xls = pd.read_excel(excel_data, sheet_name=None, header=None, engine='openpyxl')
-            
-            df_raw = None
-            for _, data in xls.items():
-                if data.astype(str).apply(lambda r: r.str.contains('Unit|Output', case=False).any(), axis=1).any():
-                    df_raw = data; break
-            
-            if df_raw is None: 
-                missing_files.append(target_file)
-                continue
-
-            def get_sum_row(keywords):
-                for _, row in df_raw.iterrows():
-                    rs = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
-                    if any(k in rs for k in keywords) and not any(x in rs for x in ['%', '발생률']):
-                        vals = row.tolist()
-                        for i, v in enumerate(vals):
-                            if str(v).replace('.','').isdigit(): return (vals[i:i+31]+[0]*31)[:31]
-                return [0]*31
-
-            u_vals = get_sum_row(['totalunit', 'output'])
-            j_vals = get_sum_row(['jamcount', 'jam'])
-            p_vals = get_sum_row(['ppj'])
-            
-            _, last_day = calendar.monthrange(y, m)
-            month_dates = [date(y, m, d) for d in range(1, last_day + 1)]
-            
-            cdf = pd.DataFrame({
-                'DateObj': month_dates,
-                '날짜': [f"{str(y)[-2:]}.{m}/{d}" for d in range(1, last_day + 1)],
-                'Unit': u_vals[:last_day],
-                'Jam': j_vals[:last_day],
-                'PPJ': p_vals[:last_day]
-            })
-            all_cdf.append(cdf)
-
-            h_idx = -1
-            for i, r in df_raw.iterrows():
-                rs = "".join(r.astype(str)).lower().replace(" ", "")
-                if 'errorcode' in rs or '에러코드' in rs or '코드' in rs:
-                    h_idx = i
-                    break
-            
-            if h_idx == -1:
-                continue 
-
-            sh = ["".join([str(df_raw.iloc[h_idx+o, cidx]).lower().replace(" ", "") for o in [-1,0,1] if 0 <= h_idx+o < len(df_raw)]) for cidx in range(len(df_raw.columns))]
-            m_col = {'D': -1, 'C': -1, 'M': -1, 'A': -1, 'T': -1, 'L': -1, 'P': -1}
-            for i, vs in enumerate(sh):
-                if m_col['D']==-1 and ('date' in vs or '일자' in vs or '날짜' in vs): m_col['D']=i
-                elif m_col['C']==-1 and ('errorcode' in vs or '에러코드' in vs or '코드' in vs): m_col['C']=i
-                elif m_col['M']==-1 and ('massage' in vs or 'message' in vs or '내용' in vs): m_col['M']=i
-                elif m_col['A']==-1 and ('finding' in vs or 'action' in vs or '조치' in vs): m_col['A']=i
-                elif m_col['T']==-1 and ('time' in vs or '시간' in vs): m_col['T']=i
-                elif m_col['L']==-1 and ('point' in vs or '위치' in vs): m_col['L']=i
-                elif m_col['P']==-1 and ('ppj' in vs or '효율' in vs): m_col['P']=i
-            if m_col['P']==-1 and m_col['M']!=-1: m_col['P']=m_col['M']-1
-            
-            def is_meaningful(val):
-                if pd.isna(val): return False
-                vs = str(val).strip().lower()
-                if vs in ['nan', 'none', 'null', 'nat', '', '0', '0.0']: return False
-                return len(re.sub(r'[^a-zA-Z0-9가-힣]', '', vs)) > 0
-
-            def clean_val(val):
-                vs = str(val).strip()
-                return "" if pd.isna(val) or vs.lower() in ['nan', 'none', 'null', 'nat', '0.0'] else vs
-
-            current_dt_obj = None
-            current_ppj_val = "0"
-            for _, r in df_raw.iloc[h_idx+1:].iterrows():
-                raw_c = r.iloc[m_col['C']] if m_col['C'] != -1 else None
-                raw_m = r.iloc[m_col['M']] if m_col['M'] != -1 else None
-                if not is_meaningful(raw_c) and not is_meaningful(raw_m): continue
-                    
-                raw_d = r.iloc[m_col['D']] if m_col['D'] != -1 else None
-                
-                if is_meaningful(raw_d):
-                    try: 
-                        if str(raw_d).replace('.','').isdigit(): 
-                            current_dt_obj = pd.to_datetime(float(raw_d), unit='D', origin='1899-12-30').date()
-                        else: 
-                            current_dt_obj = pd.to_datetime(str(raw_d).split(' ')[0].replace('.', '-')).date()
-                    except: pass
-                
-                if current_dt_obj is None or not (s_date <= current_dt_obj <= e_date):
-                    continue
-
-                raw_p = r.iloc[m_col['P']] if m_col['P'] != -1 else None
-                if is_meaningful(raw_p):
-                    current_ppj_val = clean_val(raw_p).split('.')[0]
-                
-                time_val = clean_val(r.iloc[m_col['T']] if m_col['T'] != -1 else None)
-                if ':' not in time_val and '.' in time_val: time_val = time_val.split('.')[0]
-
-                all_cl.append({
-                    "DateObj": current_dt_obj,
-                    "Date": current_dt_obj.strftime('%Y-%m-%d'), 
-                    "Time": time_val,
-                    "PPJ": current_ppj_val, 
-                    "Msg": clean_val(raw_m), 
-                    "Act": clean_val(r.iloc[m_col['A']] if m_col['A'] != -1 else None), 
-                    "Loc": clean_val(r.iloc[m_col['L']] if m_col['L'] != -1 else None)
-                })
-
-        except Exception as e:
-            if "404" in str(e):
-                missing_files.append(target_file)
-            continue
-
-    if missing_files:
-        st.warning(f"⚠️ 선택하신 기간 중 깃허브에 존재하지 않는 파일이 있습니다:\n" + "\n".join([f"- {f}" for f in missing_files]))
-
-    if not all_cdf:
-        st.error("데이터를 찾지 못했습니다. 깃허브에 해당 월의 파일이 있는지, 또는 선택한 날짜에 데이터가 있는지 확인해주세요.")
-        return
-
-    final_cdf = pd.concat(all_cdf).reset_index(drop=True)
-    mask = (final_cdf['DateObj'] >= s_date) & (final_cdf['DateObj'] <= e_date)
-    final_cdf = final_cdf[mask].reset_index(drop=True)
-    
-    if final_cdf.empty:
-        st.warning("선택하신 조회 기간에 기록된 가동 데이터가 없습니다.")
-        return
-
-    for c in ['Unit', 'Jam', 'PPJ']: 
-        final_cdf[c] = pd.to_numeric(final_cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
-    
-    final_cdf['Cum_PPJ'] = final_cdf.apply(lambda r: round(final_cdf.loc[:r.name, 'Unit'].sum() / final_cdf.loc[:r.name, 'Jam'].sum(), 1) if final_cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
-
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.15, 
-                        subplot_titles=("투입량(Unit) 및 에러(Jam) 건수", "생산 효율(PPJ) 추이"), 
-                        specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
-    
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['Unit'], name='투입(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Jam'], name='에러(Jam)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
-    
-    fig.add_trace(go.Bar(x=final_cdf['날짜'], y=final_cdf['PPJ'], name='일별 PPJ', marker_color='#A9D18E', opacity=0.8), row=2, col=1)
-    fig.add_trace(go.Scatter(x=final_cdf['날짜'], y=final_cdf['Cum_PPJ'], name='월 누적 PPJ (실선)', mode='lines+markers', line=dict(color='#FF0000', width=4)), row=2, col=1)
-    
-    fig.update_yaxes(title_text="투입량 (EA)", secondary_y=False, row=1, col=1, tickformat="d", exponentformat="none")
-    fig.update_yaxes(title_text="Jam (건)", secondary_y=True, row=1, col=1, tickformat="d", exponentformat="none")
-    fig.update_yaxes(title_text="PPJ", row=2, col=1, tickformat=".1f")
-
-    fig.update_layout(
-        height=650, 
-        margin=dict(l=50, r=50, t=60, b=50),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1.0, bgcolor="rgba(0,0,0,0)"),
-        hovermode="x unified"
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.subheader(f"📋 에러 상세 분석 통합 리스트")
-    if all_cl:
-        fdf = pd.DataFrame(all_cl)
-        fdf = fdf.sort_values(by=["DateObj", "Time"], ascending=[False, False], na_position='last').reset_index(drop=True)
+    try:
+        xls = pd.read_excel(target_file, sheet_name=None, header=None, engine='openpyxl')
+        df_raw = None
+        for name, data in xls.items():
+            if data.astype(str).apply(lambda r: r.str.contains('Unit|Output', case=False).any(), axis=1).any():
+                df_raw = data; break
         
-        fdf['Date'] = fdf['Date'].ffill()
-        fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
-        
-        html = "".join([f"<tr><td>{r['Date'] if not pd.isna(r['Date']) else ''}</td><td>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td>{r['Time']}</td><td>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
-        st.markdown(f"<table class='final-report-table'><thead><tr><th style='width:90px;'>날짜</th><th style='width:60px;'>PPJ</th><th>에러내용</th><th>조치내용</th><th style='width:70px;'>시간</th><th style='width:90px;'>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
-    else:
-        st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
+        if df_raw is None:
+            st.error("⚠️ 데이터를 포함한 시트를 찾을 수 없습니다."); return
+
+        def get_sum_row(keywords):
+            for _, row in df_raw.iterrows():
+                row_str = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
+                if any(k in row_str for k in keywords) and not any(x in row_str for x in ['%', '발생률', 'rate']):
+                    vals = row.tolist()
+                    for i, v in enumerate(vals):
+                        v_s = str(v).replace('.','').replace(',','').strip()
+                        if v_s.isdigit() or v in ['비가동', '미가동']:
+                            return (vals[i:i+31] + [0]*31)[:31]
+            return [0]*31
+
+        units = get_sum_row(['totalunit', 'output'])
+        jams = get_sum_row(['jamcount', 'jam'])
+        ppjs = get_sum_row(['ppj'])
+
+        chart_df = pd.DataFrame({'날짜': [f"{month_num}/{i}" for i in range(1, 32)], 'Unit': units, 'Jam': jams, 'PPJ': ppjs})
+        for c in ['Unit', 'Jam', 'PPJ']:
+            chart_df[c] = pd.to_numeric(chart_df[c].astype(str).str.replace(',', '').replace(['nan','비가동','미가동','None',''], '0'), errors='coerce').fillna(0)
+
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1, subplot_titles=("투입량 및 Jam 현황 (보조축 적용)", "생산 효율 (PPJ)"), specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
+        fig.add_trace(go.Bar(x=chart_df['날짜'], y=chart_df['Unit'], name='투입량(Unit)', marker_color='#5B9BD5'), row=1, col=1, secondary_y=False)
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['Jam'], name='Jam(건)', mode='lines+markers', line=dict(color='#ED7D31', width=2)), row=1, col=1, secondary_y=True)
+        fig.add_trace(go.Scatter(x=chart_df['날짜'], y=chart_df['PPJ'], name='PPJ 효율', mode='lines+markers', line=dict(color='#70AD47', width=2)), row=2, col=1)
+
+        fig.update_layout(height=600, margin=dict(l=50, r=50, t=50, b=50), hovermode="x unified")
+        fig.update_yaxes(title_text="투입량 (Unit)", secondary_y=False, row=1, col=1)
+        fig.update_yaxes(title_text="Jam 건수 (건)", secondary_y=True, row=1, col=1)
+        fig.update_yaxes(title_text="PPJ", row=2, col=1)
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader(f"📋 {month_str} 에러 상세 분석 리스트")
+        h_idx = -1
+        for i, row in df_raw.iterrows():
+            if 'error code' in " ".join(row.astype(str)).lower():
+                h_idx = i; h_row = row.tolist(); break
+
+        if h_idx != -1:
+            m = {'D': 0, 'C': 0, 'M': 0, 'A': 0, 'T': 0, 'L': 0, 'P': 0}
+            for i, v in enumerate(h_row):
+                v_l = str(v).lower()
+                if 'date' in v_l: m['D'] = i
+                elif 'error code' in v_l: m['C'] = i
+                elif 'error massage' in v_l: m['M'] = i
+                elif 'finding' in v_l: m['A'] = i
+                elif 'time' in v_l: m['T'] = i
+                elif 'point' in v_l: m['L'] = i
+                elif 'ppj' in v_l: m['P'] = i
+
+            data_slice = df_raw.iloc[h_idx + 1:].copy()
+            rows_html = ""
+            cur_d, cur_p = "", "0"
+
+            for _, r in data_slice.iterrows():
+                c_val = str(r[m['C']]).strip()
+                m_val = str(r[m['M']]).strip()
+                if c_val in ['nan', 'None', ''] and m_val in ['nan', 'None', '']: continue
+                
+                if not pd.isna(r[m['D']]) and str(r[m['D']]).strip() != 'nan':
+                    try:
+                        if str(r[m['D']]).replace('.','').isdigit(): cur_d = pd.to_datetime(float(r[m['D']]), unit='D', origin='1899-12-30').strftime('%Y-%m-%d')
+                        else: cur_d = str(r[m['D']]).split(' ')[0]
+                    except: cur_d = str(r[m['D']])
+                
+                if not pd.isna(r[m['P']]) and str(r[m['P']]).strip() != 'nan': cur_p = str(r[m['P']]).split('.')[0]
+                
+                rows_html += f"<tr><td style='width:75px;'>{cur_d}</td><td style='width:60px;'>{c_val}</td><td style='width:60px;'>{cur_p}</td><td class='t-left'>{m_val}</td><td class='t-left'>{str(r[m['A']])}</td><td style='width:65px;'>{str(r[m['T']]).split('.')[0]}</td><td style='width:90px;'>{str(r[m['L']])}</td></tr>"
+
+            if rows_html:
+                st.markdown(f"<table class='final-report-table'><thead><tr><th>날짜</th><th>코드</th><th>PPJ</th><th>에러내용</th><th>조치내용</th><th>시간</th><th>위치</th></tr></thead><tbody>{rows_html}</tbody></table>", unsafe_allow_html=True)
+            else: st.info("상세 에러 내역이 없습니다.")
+        else: st.info("데이터 헤더를 찾을 수 없습니다.")
+
+    except Exception as e: st.error(f"⚠️ 시스템 오류 발생: {e}")
 
 # ==========================================
-# 6. 화면 UI - 4페이지: ECN & STN
+# 6. 화면 UI - 4페이지: ECN & STN (★ 윈도우 실행 다이렉트 가이드 적용)
 # ==========================================
 def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -867,28 +764,26 @@ def render_ecn_stn_page(repo):
                 except Exception as save_err:
                     st.error(f"엑셀 저장 중 오류가 발생했습니다: {save_err}")
             
+            # --- ECN 첨부파일 윈도우 실행(바로 열기) 가이드 ---
             st.markdown("<hr style='margin-top: 30px; margin-bottom: 15px;'>", unsafe_allow_html=True)
-            st.markdown("### 🖼️ ECN 첨부파일 직관적 미리보기 (PPT 대체 솔루션)")
-            st.info("💡 **꿀팁:** 파워포인트(PPT) 파일을 저장하실 때 **[다른 이름으로 저장 ➡️ PNG 또는 JPG 또는 PDF]** 형태로 FTP에 저장해 보세요. 아래 입력창에 경로를 붙여넣으시면, 엑셀을 열 필요 없이 이곳에서 즉시 문서를 볼 수 있습니다!")
+            st.markdown("### 📁 첨부파일/폴더 원본 바로 열기 (Windows 실행)")
+            st.info("💡 **가장 빠르고 확실한 원본 열기 팁 (용량 차지 및 웹 과부하 0%)**\n\n"
+                    "웹 브라우저(크롬, 엣지 등)는 보안 정책상 웹사이트 버튼을 클릭해 내 컴퓨터의 로컬 네트워크 파일(`\\\\192.168...`)을 억지로 실행하는 것을 엄격하게 차단하고 있습니다.\n\n"
+                    "따라서 파일을 직접 팍! 열고 싶으실 때는 **윈도우 기본 기능**을 사용하시는 것이 가장 깔끔하고 빠릅니다.\n"
+                    "1. 위 표의 **'첨부(복사)'** 칸을 클릭 후 경로를 복사(`Ctrl + C`) 합니다.\n"
+                    "2. 키보드에서 **`[윈도우키 + R]`** 을 누릅니다.\n"
+                    "3. 화면 왼쪽 아래에 뜨는 **'실행'** 창에 붙여넣기(`Ctrl + V`) 하고 **엔터**를 칩니다.\n"
+                    "▶️ PPT, PDF, 엑셀 파일 등 원본 프로그램이 내 컴퓨터 화면에 즉시 열립니다!")
             
-            preview_path = st.text_input("📋 복사한 FTP 경로를 이곳에 붙여넣으세요. (예: \\\\192.168.0.100\\문서.pdf)")
+            # 혹시 복사할 때 따옴표가 묻어왔을 때를 대비한 경로 정제기
+            st.markdown("#### 🛠️ 경로 따옴표 자동 제거기")
+            st.write("표에서 경로를 복사할 때 실수로 앞뒤에 따옴표(`\"`)가 붙어버려 '실행'창에서 에러가 나는 경우가 있습니다. 그럴 땐 아래 칸에 붙여넣어 주세요.")
+            raw_path = st.text_input("경로 붙여넣기:", placeholder='예: "\\\\192.168.0.100\\500 생산\\..."', label_visibility="collapsed")
             
-            if preview_path:
-                if preview_path.lower().endswith(('.png', '.jpg', '.jpeg')):
-                    try:
-                        st.image(preview_path, use_container_width=True, caption="[미리보기 화면] 로컬 네트워크가 연결된 컴퓨터에서는 여기에 사진이 뜹니다.")
-                    except:
-                        st.error("⚠️ 이미지를 띄울 수 없습니다. (현재 사용하는 PC가 해당 FTP 네트워크에 연결되어 있는지 확인해주세요)")
-                elif preview_path.lower().endswith('.pdf'):
-                    try:
-                        with open(preview_path, "rb") as f:
-                            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
-                        st.markdown(pdf_display, unsafe_allow_html=True)
-                    except Exception as e:
-                        st.error(f"⚠️ PDF 파일을 불러올 수 없습니다. 경로가 정확한지, 해당 파일에 접근 권한이 있는지 확인해주세요.")
-                else:
-                    st.warning("🚨 웹 브라우저는 PPT 파일(.pptx)을 직접 화면에 띄울 수 없습니다. PPT 대신 이미지(JPG/PNG)나 PDF로 경로를 넣어주세요!")
+            if raw_path:
+                clean_path = raw_path.strip('"').strip("'")
+                st.success("✨ 따옴표가 제거된 깔끔한 경로입니다! 우측 상단의 **복사 아이콘(📋)**을 눌러 복사 후 `[윈도우키 + R]` 창에 붙여넣으세요.")
+                st.code(clean_path, language="text")
 
         else:
             st.warning(f"선택하신 조건에 해당하는 ECN 내역이 없습니다.")
