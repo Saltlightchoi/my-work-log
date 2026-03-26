@@ -8,6 +8,7 @@ from datetime import datetime, date
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import openpyxl
+import base64
 
 # ==========================================
 # 1. 환경 설정 및 전체 디자인 (CSS)
@@ -374,7 +375,7 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 (정상 작동 원본 보존)
+# 5. 화면 UI - 3페이지: 장비 가동 데이터
 # ==========================================
 def render_equipment_data_page(repo):
     import re
@@ -592,7 +593,7 @@ def render_equipment_data_page(repo):
         st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
 
 # ==========================================
-# 6. 화면 UI - 4페이지: ECN & STN (★ 날짜 버그 완벽 조치본)
+# 6. 화면 UI - 4페이지: ECN & STN
 # ==========================================
 def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -708,31 +709,21 @@ def render_ecn_stn_page(repo):
         display_cols = [c for c in expected_cols if c in filtered_df.columns]
         filtered_df = filtered_df[display_cols].copy()
         
-        # ★ 날짜 데이터 처리 완벽 패치 (datetime.time 객체 충돌 등 모든 에러 방어)
         if '날짜' in filtered_df.columns:
             import datetime as dt
             def parse_date_robust(d):
-                # 1. 엑셀에 실수로 날짜 대신 시간(Time) 객체가 들어온 경우 완벽 방어
                 if isinstance(d, dt.time): return pd.NaT
-                # 2. 이미 날짜(Date) 객체로 정상 인식된 경우 그대로 사용
                 if isinstance(d, (dt.datetime, dt.date)): return pd.to_datetime(d)
-                
-                # 3. 빈칸 체크 (안전망 추가)
                 try:
                     if pd.isna(d): return pd.NaT
                 except: pass
-                
                 d_str = str(d).strip()
                 if d_str in ['', 'nan', 'NaN', 'None', 'nat', 'NaT', '0.0']: return pd.NaT
-                
-                # 4. 엑셀 특유의 숫자형(시리얼) 날짜 포맷 검출
                 if d_str.replace('.', '', 1).isdigit():
                     try:
                         val = float(d_str)
                         if 30000 < val < 80000: return pd.to_datetime(val, unit='D', origin='1899-12-30')
                     except: pass
-                
-                # 5. 일반 문자열 날짜 (예: 2026.01.05) 포맷팅
                 try: 
                     d_str_clean = d_str.replace('.', '-').replace('/', '-')
                     return pd.to_datetime(d_str_clean, errors='coerce')
@@ -744,7 +735,6 @@ def render_ecn_stn_page(repo):
             filtered_df['날짜'] = filtered_df['TempDate'].dt.strftime('%Y-%m-%d')
             filtered_df = filtered_df.drop(columns=['TempDate'])
             
-        # 엑셀 쓰레기값 및 결측치 안전 제거 (날짜 처리가 모두 끝난 후 문자열 처리)
         filtered_df = filtered_df.astype(str).replace(['nan', 'NaN', 'None', 'nat', 'NaT', '0.0'], '')
         filtered_df.reset_index(drop=True, inplace=True)
         
@@ -798,7 +788,6 @@ def render_ecn_stn_page(repo):
                 save_btn = st.button("💾 변경사항 엑셀에 자동 저장하기", type="primary", use_container_width=True)
             with action_col2:
                 output_excel = io.BytesIO()
-                # 엑셀 생성 엔진을 xlsxwriter에서 이미 설치되어 있는 openpyxl로 변경합니다.
                 with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
                     filtered_df.drop(columns=['Original_Index'], errors='ignore').to_excel(writer, index=False, sheet_name='ECN_Data')
                 st.download_button(
@@ -880,9 +869,9 @@ def render_ecn_stn_page(repo):
             
             st.markdown("<hr style='margin-top: 30px; margin-bottom: 15px;'>", unsafe_allow_html=True)
             st.markdown("### 🖼️ ECN 첨부파일 직관적 미리보기 (PPT 대체 솔루션)")
-            st.info("💡 **꿀팁:** 파워포인트(PPT) 파일을 저장하실 때 **[다른 이름으로 저장 ➡️ PNG 또는 JPG]** 형태로 FTP에 저장해 보세요. 아래 입력창에 경로를 붙여넣으시면, 엑셀을 열 필요 없이 이곳에서 즉시 사진을 볼 수 있습니다!")
+            st.info("💡 **꿀팁:** 파워포인트(PPT) 파일을 저장하실 때 **[다른 이름으로 저장 ➡️ PNG 또는 JPG 또는 PDF]** 형태로 FTP에 저장해 보세요. 아래 입력창에 경로를 붙여넣으시면, 엑셀을 열 필요 없이 이곳에서 즉시 문서를 볼 수 있습니다!")
             
-            preview_path = st.text_input("📋 복사한 FTP 경로를 이곳에 붙여넣으세요. (예: \\\\192.168.0.100\\사진.jpg)")
+            preview_path = st.text_input("📋 복사한 FTP 경로를 이곳에 붙여넣으세요. (예: \\\\192.168.0.100\\문서.pdf)")
             
             if preview_path:
                 if preview_path.lower().endswith(('.png', '.jpg', '.jpeg')):
@@ -891,7 +880,13 @@ def render_ecn_stn_page(repo):
                     except:
                         st.error("⚠️ 이미지를 띄울 수 없습니다. (현재 사용하는 PC가 해당 FTP 네트워크에 연결되어 있는지 확인해주세요)")
                 elif preview_path.lower().endswith('.pdf'):
-                    st.info("💡 PDF 뷰어가 이 위치에 렌더링 됩니다. (네트워크 연결 필요)")
+                    try:
+                        with open(preview_path, "rb") as f:
+                            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
+                        st.markdown(pdf_display, unsafe_allow_html=True)
+                    except Exception as e:
+                        st.error(f"⚠️ PDF 파일을 불러올 수 없습니다. 경로가 정확한지, 해당 파일에 접근 권한이 있는지 확인해주세요.")
                 else:
                     st.warning("🚨 웹 브라우저는 PPT 파일(.pptx)을 직접 화면에 띄울 수 없습니다. PPT 대신 이미지(JPG/PNG)나 PDF로 경로를 넣어주세요!")
 
