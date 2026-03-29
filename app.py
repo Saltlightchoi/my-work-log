@@ -618,11 +618,13 @@ def render_ecn_stn_page(repo):
     if show_help:
         st.info(f"**이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
                 f"표의 **'조치현황'**, **'특이사항'**, **'첨부(파일명 입력)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
-                "**📁 첨부파일/원본 열기 팁:**\n"
-                f"1. **'첨부(파일명 입력)'** 칸에는 파일명만 적으시면 됩니다.\n"
-                "2. 자동으로 완성된 **'전체경로(복사용)'** 칸을 더블클릭해 경로를 복사합니다.\n"
-                "3. 키보드에서 **`[윈도우키 + R]`**을 누릅니다.\n"
-                "4. **'실행'** 창에 붙여넣기(`Ctrl + V`) 후 엔터를 치면 파일이 바로 열립니다!")
+                "**📁 첨부파일/원본 열기 팁 (따옴표 3개 복사 버그 해결법):**\n"
+                "웹 표(데이터 그리드)의 특성상 띄어쓰기와 따옴표가 같이 있는 칸을 한 번만 클릭하고 복사하면 따옴표가 3개(`\"\"\"`)로 증식되는 현상이 있습니다. 이를 방지하려면 아래 방법을 사용해주세요!\n"
+                "1. **'첨부(파일명 입력)'** 칸에는 파일명만 적으시면 됩니다.\n"
+                "2. **'전체경로(복사용)'** 칸을 **[더블 클릭]** 합니다. (칸 안의 글자를 드래그할 수 있는 상태로 바뀝니다.)\n"
+                "3. 마우스로 안의 **텍스트만 쭉 드래그하여 복사(`Ctrl+C`)** 합니다.\n"
+                "4. 키보드에서 **`[윈도우키 + R]`**을 눌러 **'실행'** 창에 붙여넣기(`Ctrl+V`) 후 엔터를 치면 정상적으로 열립니다!\n"
+                "*(또는 복사한 경로를 윈도우 탐색기(Win+E) 상단 주소창에 붙여넣으셔도 완벽하게 실행됩니다.)*")
 
     target_file = f"data/ECN/ECN_STN_Master({equipment}).xlsx"
 
@@ -761,9 +763,9 @@ def render_ecn_stn_page(repo):
             
             filtered_df['첨부(파일명)'] = filtered_df['첨부'].apply(clean_attachment)
             
-            # ★ 수정됨: 윈도우 실행(Win+R) 창에서는 따옴표가 있으면 에러가 나므로, 따옴표 없이 순수 경로만 생성!
+            # ★ 다시 따옴표를 추가하여 윈도우 실행창 호환성을 높임!
             filtered_df['전체경로(복사용)'] = filtered_df['첨부(파일명)'].apply(
-                lambda x: f"{ecn_base_path}\\{x}" if x and not x.startswith("\\\\") and not x.startswith("http") else x
+                lambda x: f'"{ecn_base_path}\\{x}"' if x and not x.startswith("\\\\") and not x.startswith("http") else (f'"{x}"' if x else "")
             )
         
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
@@ -785,7 +787,8 @@ def render_ecn_stn_page(repo):
         st.markdown("<br>", unsafe_allow_html=True)
 
         if not filtered_df.empty:
-            disabled_cols = [c for c in filtered_df.columns if c not in ['특이사항', '조치현황', '첨부(파일명)']]
+            # ★ '전체경로(복사용)' 잠금을 해제하여 유저가 안의 글자를 더블클릭해서 선택할 수 있게 함!
+            disabled_cols = [c for c in filtered_df.columns if c not in ['특이사항', '조치현황', '첨부(파일명)', '전체경로(복사용)']]
             
             def highlight_status(val):
                 val_str = str(val).strip()
@@ -813,7 +816,7 @@ def render_ecn_stn_page(repo):
                 hide_index=True,
                 disabled=disabled_cols,
                 column_config=col_cfg,
-                key=f"ecn_editor_{equipment}_{unit}_{search_keyword}_{len(filtered_df)}" # 추가된 핵심 방어벽
+                key=f"ecn_editor_{equipment}_{unit}_{search_keyword}_{len(filtered_df)}"
             )
             
             action_col1, action_col2, action_col3 = st.columns([2, 2, 6])
@@ -822,7 +825,9 @@ def render_ecn_stn_page(repo):
             with action_col2:
                 output_excel = io.BytesIO()
                 with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
-                    filtered_df.drop(columns=['Original_Index'], errors='ignore').to_excel(writer, index=False, sheet_name='ECN_Data')
+                    # 복사용 임시 컬럼들은 엑셀 파일 다운로드 시 제외하여 깔끔하게 만듦
+                    cols_to_drop = ['Original_Index', '첨부(파일명)', '전체경로(복사용)']
+                    filtered_df.drop(columns=cols_to_drop, errors='ignore').to_excel(writer, index=False, sheet_name='ECN_Data')
                 st.download_button(
                     label="📥 현재 리스트 엑셀 다운로드",
                     data=output_excel.getvalue(),
