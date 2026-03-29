@@ -612,8 +612,8 @@ def render_ecn_stn_page(repo):
             st.markdown(f"**이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
                         f"표의 **'조치현황'**, **'특이사항'**, **'첨부(파일명)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
                         "**📁 첨부파일/원본 열기 팁:**\n"
-                        f"1. **'첨부' 칸에는 파일명만 적으시면 됩니다.** (기본 경로 `{ecn_base_path}\\` 가 자동으로 붙습니다.)\n"
-                        "2. 자동으로 완성된 **'전체경로 (Win+R 복사용)'** 칸을 더블클릭해 경로를 복사합니다.\n"
+                        f"1. **'첨부(파일명 입력)'** 칸에는 파일명만 적으시면 됩니다.\n"
+                        "2. 자동으로 완성된 **'전체경로(복사용)'** 칸을 더블클릭해 경로를 복사합니다. (경로의 `&` 기호 오류를 막기 위해 양끝에 큰따옴표 `\"` 가 자동 추가됩니다.)\n"
                         "3. 키보드에서 **`[윈도우키 + R]`**을 누릅니다.\n"
                         "4. **'실행'** 창에 붙여넣기(`Ctrl + V`) 후 엔터를 치면 파일이 바로 열립니다!")
             
@@ -752,13 +752,16 @@ def render_ecn_stn_page(repo):
         if '첨부' in filtered_df.columns:
             def clean_attachment(val):
                 val_str = str(val).strip()
+                val_str = val_str.replace('"', '') # 따옴표 제거 추가
                 if val_str.startswith(ecn_base_path):
                     return val_str[len(ecn_base_path):].lstrip("\\")
                 return val_str
             
             filtered_df['첨부(파일명)'] = filtered_df['첨부'].apply(clean_attachment)
+            
+            # ★ 핵심: ECT&STN 폴더의 '&' 기호 때문에 윈도우 실행창에서 에러가 나지 않도록 양끝에 큰따옴표(") 자동 부착
             filtered_df['전체경로(복사용)'] = filtered_df['첨부(파일명)'].apply(
-                lambda x: f"{ecn_base_path}\\{x}" if x and not x.startswith("\\\\") and not x.startswith("http") else x
+                lambda x: f'"{ecn_base_path}\\{x}"' if x and not x.startswith("\\\\") and not x.startswith("http") else (f'"{x}"' if x else "")
             )
         
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
@@ -860,10 +863,11 @@ def render_ecn_stn_page(repo):
                             elif '특이사항' in c_clean or '비고' in c_clean: new_row_data[i] = n_note
                             elif '조치' in c_clean or '진행' in c_clean: new_row_data[i] = n_status
                             elif '첨부' in c_clean: 
-                                if n_attach and not n_attach.startswith("\\\\") and not n_attach.startswith("http"):
-                                    new_row_data[i] = f"{ecn_base_path}\\{n_attach}"
+                                n_attach_clean = n_attach.strip().replace('"', '')
+                                if n_attach_clean and not n_attach_clean.startswith("\\\\") and not n_attach_clean.startswith("http"):
+                                    new_row_data[i] = f"{ecn_base_path}\\{n_attach_clean}"
                                 else:
-                                    new_row_data[i] = n_attach
+                                    new_row_data[i] = n_attach_clean
                         ws.append(new_row_data)
                         
                         output = io.BytesIO()
@@ -887,7 +891,7 @@ def render_ecn_stn_page(repo):
                             ws.cell(row=xl_row, column=col_idx_map['조치현황'] + 1, value=row.get('조치현황', ''))
                             changes_made = True
                         if '첨부' in col_idx_map:
-                            fname = str(row.get('첨부(파일명)', '')).strip()
+                            fname = str(row.get('첨부(파일명)', '')).strip().replace('"', '')
                             if fname and not fname.startswith("\\\\") and not fname.startswith("http"):
                                 full_path = f"{ecn_base_path}\\{fname}"
                             else:
