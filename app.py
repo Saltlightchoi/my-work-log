@@ -608,7 +608,7 @@ def render_ecn_stn_page(repo):
         st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
         with st.expander("💡 도움말 및 수정방법 보기"):
             st.markdown(f"**이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
-                        f"표의 **'조치현황'** 과 **'특이사항'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
+                        f"표의 **'조치현황'**, **'특이사항'**, **'첨부'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
                         "**📁 첨부파일/원본 열기 팁:**\n"
                         "1. 표의 **'첨부(복사)'** 칸을 클릭해 경로를 복사합니다.\n"
                         "2. 키보드에서 **`[윈도우키 + R]`**을 누릅니다.\n"
@@ -670,7 +670,9 @@ def render_ecn_stn_page(repo):
             elif '조치' in c_clean or '진행' in c_clean: 
                 base_col = '조치현황'
                 col_idx_map['조치현황'] = i
-            elif '첨부' in c_clean: base_col = '첨부'
+            elif '첨부' in c_clean: 
+                base_col = '첨부'
+                col_idx_map['첨부'] = i
             else: base_col = str(c).strip()
 
             if base_col in seen_cols:
@@ -762,7 +764,7 @@ def render_ecn_stn_page(repo):
         st.markdown("<br>", unsafe_allow_html=True)
 
         if not filtered_df.empty:
-            disabled_cols = [c for c in filtered_df.columns if c not in ['특이사항', '조치현황']]
+            disabled_cols = [c for c in filtered_df.columns if c not in ['특이사항', '조치현황', '첨부']]
             
             def highlight_status(val):
                 val_str = str(val).strip()
@@ -862,6 +864,9 @@ def render_ecn_stn_page(repo):
                             changes_made = True
                         if '조치현황' in col_idx_map:
                             ws.cell(row=xl_row, column=col_idx_map['조치현황'] + 1, value=row.get('조치현황', ''))
+                            changes_made = True
+                        if '첨부' in col_idx_map:
+                            ws.cell(row=xl_row, column=col_idx_map['첨부'] + 1, value=row.get('첨부', ''))
                             changes_made = True
                             
                     if changes_made:
