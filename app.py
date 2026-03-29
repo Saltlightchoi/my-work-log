@@ -608,14 +608,7 @@ def render_ecn_stn_page(repo):
     
     with col3:
         st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-        with st.expander("💡 도움말 및 수정방법 보기"):
-            st.markdown(f"**이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
-                        f"표의 **'조치현황'**, **'특이사항'**, **'첨부(파일명 입력)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
-                        "**📁 첨부파일/원본 열기 팁:**\n"
-                        f"1. **'첨부(파일명 입력)'** 칸에는 파일명만 적으시면 됩니다.\n"
-                        "2. 자동으로 완성된 **'전체경로(복사용)'** 칸을 더블클릭해 경로를 복사합니다.\n"
-                        "3. 키보드에서 **`[윈도우키 + R]`**을 누릅니다.\n"
-                        "4. **'실행'** 창에 붙여넣기(`Ctrl + V`) 후 엔터를 치면 파일이 바로 열립니다!")
+        show_help = st.checkbox("💡 도움말 및 수정방법 보기")
             
     with col_search:
         st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
@@ -627,7 +620,7 @@ def render_ecn_stn_page(repo):
                 f"표의 **'조치현황'**, **'특이사항'**, **'첨부(파일명 입력)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
                 "**📁 첨부파일/원본 열기 팁:**\n"
                 f"1. **'첨부(파일명 입력)'** 칸에는 파일명만 적으시면 됩니다.\n"
-                "2. 자동으로 완성된 **'전체경로(복사용)'** 칸을 더블클릭해 경로를 복사합니다. (경로의 `&` 기호 오류를 막기 위해 양끝에 큰따옴표 `\"` 가 자동 추가됩니다.)\n"
+                "2. 자동으로 완성된 **'전체경로(복사용)'** 칸을 더블클릭해 경로를 복사합니다.\n"
                 "3. 키보드에서 **`[윈도우키 + R]`**을 누릅니다.\n"
                 "4. **'실행'** 창에 붙여넣기(`Ctrl + V`) 후 엔터를 치면 파일이 바로 열립니다!")
 
@@ -819,7 +812,8 @@ def render_ecn_stn_page(repo):
                 use_container_width=True, 
                 hide_index=True,
                 disabled=disabled_cols,
-                column_config=col_cfg
+                column_config=col_cfg,
+                key=f"ecn_editor_{equipment}_{unit}_{search_keyword}_{len(filtered_df)}" # 추가된 핵심 방어벽
             )
             
             action_col1, action_col2, action_col3 = st.columns([2, 2, 6])
