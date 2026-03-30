@@ -53,17 +53,21 @@ def main():
                 st.session_state.update({'logged_in': True, 'user_name': name})
                 st.rerun()
     else:
-        # ★ 원래의 드롭다운(Selectbox)으로 원상 복구 및 비율 조정 (메뉴 칸을 90% 이상 넓게 써서 잘림 원천 차단)
-        menu_col, logout_col = st.columns([9, 1])
+        # ★ 1. 글씨 짤림 원천 차단: 제목을 컴포넌트 내부에서 빼내어 화면 100% 너비에 안전하게 그립니다.
+        st.markdown("<h4 style='margin-bottom: 5px; color: #1f2937;'>📂 대시보드 메뉴 이동</h4>", unsafe_allow_html=True)
+        
+        # ★ 2. 크기 절반 축소: 오른쪽의 '빈 공간(empty_col)'을 크게 주어 왼쪽의 드롭다운과 버튼 크기를 압축합니다!
+        # 비율 설정 -> 드롭다운(4) : 로그아웃(1) : 빈공간(5)
+        menu_col, logout_col, empty_col = st.columns([4, 1, 5])
         
         with menu_col:
             menu_selection = st.selectbox(
-                "📂 대시보드 메뉴 이동",
-                ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터", "🛠️ ECN & STN"]
+                "메뉴선택",
+                ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터", "🛠️ ECN & STN"],
+                label_visibility="collapsed" # 이미 위에 제목을 달았으므로 내장 라벨은 숨김
             )
             
         with logout_col:
-            st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True) # 로그아웃 버튼 높이 맞춤
             if st.button("🚪 로그아웃", use_container_width=True): 
                 st.session_state['logged_in'] = False
                 st.rerun()
