@@ -549,9 +549,9 @@ SLH1 #4호기,Set-Up,3,"Lay-Out 이동 및 임시 Leveling
  - Handler 전/후면부 위치 맞춘 후 임시 Level 시 Foot 하단 받침  필수
  - 우익 요청 수급 후에 모든 Foot 하단에 적용",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Set-Up,4,"전/후면부 Docking 및 Auto Leveling
- - 전면부 Conveyor Belt to Bottom Hight Spec 400mm 이상 Check 필수
+ - 전면부 Conveyor Belt to Bottom Hight Spec 400mm 이상, In/Output Bottom Rail Hight Spec 1342mm Check 필수
  - 전면부 Auto-Leveling 후 후면부 Level Docking Pin 높이, 좌우 맞춘 후 Docking
- - 후면부 최종 Leveling 후 연결 Pin 고정",✅ 완료,,,최염광 (26-03-11)
+ - 후면부 최종 Leveling 후 연결 Pin 고정",✅ 완료,,,김범규 (26-03-30)
 SLH1 #4호기,Set-Up,5,"Tester Docking
  - Handler TestSite -> Tester MB 상단 삽입 JIG 사용 Setting 및 확인",✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Set-Up,6,"Uitility Connect
