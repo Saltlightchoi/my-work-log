@@ -53,7 +53,8 @@ def main():
                 st.session_state.update({'logged_in': True, 'user_name': name})
                 st.rerun()
     else:
-        top_col1, top_col2, top_col3 = st.columns([6, 3, 1])
+        # ★ 수정: 메뉴가 들어가는 두 번째 칸(top_col2)의 비율을 늘려서 글자가 잘리지 않도록 조정
+        top_col1, top_col2, top_col3 = st.columns([4.5, 4.5, 1])
         with top_col2:
             menu_selection = st.selectbox("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터", "🛠️ ECN & STN"], label_visibility="collapsed")
         with top_col3:
