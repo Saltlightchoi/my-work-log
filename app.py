@@ -763,18 +763,6 @@ def render_ecn_stn_page(repo):
                 return val_str
             
             filtered_df['첨부(파일명)'] = filtered_df['첨부'].apply(clean_attachment)
-
-            def get_full_copy_path(x):
-                val = str(x).strip()
-                if not val: return ""
-                # PDF 확장자 자동 추가
-                if not val.lower().endswith('.pdf') and not val.startswith("http") and not val.startswith("\\\\"):
-                    val += ".pdf"
-                if val.startswith("http") or val.startswith("\\\\"):
-                    return f'"{val}"'
-                return f'"{ecn_base_path}\\{val}"'
-
-            filtered_df['전체경로(복사용)'] = filtered_df['첨부(파일명)'].apply(get_full_copy_path)
         
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
         if not filtered_df.empty:
@@ -857,7 +845,7 @@ def render_ecn_stn_page(repo):
             with action_col2:
                 output_excel = io.BytesIO()
                 with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
-                    cols_to_drop = ['Original_Index', '첨부(파일명)', '전체경로(복사용)']
+                    cols_to_drop = ['Original_Index', '첨부(파일명)']
                     filtered_df.drop(columns=cols_to_drop, errors='ignore').to_excel(writer, index=False, sheet_name='ECN_Data')
                 st.download_button(
                     label="📥 현재 리스트 엑셀 다운로드",
