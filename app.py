@@ -25,6 +25,9 @@ st.markdown("""
         .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; font-size: 15px; }
         .t-left { text-align: left !important; }
         div[data-testid="stSidebar"] button { width: 100% !important; font-weight: bold; font-size: 15px !important; }
+        
+        /* 라디오 버튼(가로형 탭) 디자인 깔끔하게 다듬기 */
+        div.row-widget.stRadio > div { flex-direction: row; gap: 20px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -53,11 +56,22 @@ def main():
                 st.session_state.update({'logged_in': True, 'user_name': name})
                 st.rerun()
     else:
-        # ★ 수정: 상단 탭 이름이 절대 잘리지 않도록 왼쪽 여백(top_col1)을 대폭 줄이고 메뉴(top_col2) 공간을 최대로 넓혔습니다!
-        top_col1, top_col2, top_col3 = st.columns([1, 8, 2])
-        with top_col2:
-            menu_selection = st.selectbox("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터", "🛠️ ECN & STN"], label_visibility="collapsed")
-        with top_col3:
+        # ★ UI 전면 개편: 글자가 잘리는 드롭다운(Selectbox) 대신 '가로형 탭'과 '독립된 제목'으로 레이아웃 수정!
+        menu_col, logout_col = st.columns([8.5, 1.5])
+        
+        with menu_col:
+            # 제목을 별도 텍스트로 분리하여 절대 짤리지 않게 방어
+            st.markdown("<h4 style='margin-bottom: 5px;'>📂 대시보드 메뉴 이동</h4>", unsafe_allow_html=True)
+            # 드롭다운 대신 1클릭 가로형 탭(Radio) 사용
+            menu_selection = st.radio(
+                "메뉴선택",
+                ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터", "🛠️ ECN & STN"],
+                horizontal=True,
+                label_visibility="collapsed"
+            )
+            
+        with logout_col:
+            st.markdown("<div style='margin-top: 33px;'></div>", unsafe_allow_html=True) # 로그아웃 버튼 높이 맞춤
             if st.button("🚪 로그아웃", use_container_width=True): 
                 st.session_state['logged_in'] = False
                 st.rerun()
