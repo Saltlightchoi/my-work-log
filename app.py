@@ -600,7 +600,6 @@ def render_ecn_stn_page(repo):
     st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-    # 오타 수정 완료: ECT -> ECN
     ecn_base_path = r"\\192.168.0.100\500 생산\550 국내CS\ECN&STN"
     bad_base_path = r"\\192.168.0.100\500 생산\550 국내CS\ECT&STN" # 과거 오타 방어용
 
@@ -621,7 +620,7 @@ def render_ecn_stn_page(repo):
                 f"표의 **'조치현황'**, **'특이사항'**, **'첨부(파일명 입력)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
                 "**📁 첨부파일/원본 열기 팁:**\n"
                 "웹 브라우저 표에서 복사할 때 따옴표가 3개(`\"\"\"`)로 증식하는 버그를 완벽히 피하기 위해 화면 하단에 **[1초 복사기]**를 만들었습니다.\n"
-                f"1. 표의 **'첨부(파일명 입력)'** 칸에는 파일 이름과 함께 **확장자(예: .pdf)를 반드시 포함**해서 입력하세요.\n"
+                f"1. 표의 **'첨부(파일명 입력)'** 칸에는 **확장자 없이 파일명만** 적으셔도 자동으로 PDF로 연결됩니다.\n"
                 "2. 열고 싶은 항목의 파일 이름을 복사(`Ctrl+C`)합니다.\n"
                 "3. 표 밑에 있는 **'1초 복사기'** 칸에 붙여넣기 하시면 완벽한 주소가 생성됩니다!\n"
                 "4. 키보드에서 **`[윈도우키 + R]`**을 눌러 붙여넣고 엔터를 치면 파일이 바로 열립니다.")
@@ -764,6 +763,18 @@ def render_ecn_stn_page(repo):
                 return val_str
             
             filtered_df['첨부(파일명)'] = filtered_df['첨부'].apply(clean_attachment)
+
+            def get_full_copy_path(x):
+                val = str(x).strip()
+                if not val: return ""
+                # PDF 확장자 자동 추가
+                if not val.lower().endswith('.pdf') and not val.startswith("http") and not val.startswith("\\\\"):
+                    val += ".pdf"
+                if val.startswith("http") or val.startswith("\\\\"):
+                    return f'"{val}"'
+                return f'"{ecn_base_path}\\{val}"'
+
+            filtered_df['전체경로(복사용)'] = filtered_df['첨부(파일명)'].apply(get_full_copy_path)
         
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
         if not filtered_df.empty:
@@ -823,18 +834,19 @@ def render_ecn_stn_page(repo):
             st.markdown("#### 🚀 원본 파일 바로 열기 (1초 복사기)")
             st.info("웹 표에서 복사하면 따옴표가 늘어나는 버그가 있어 만든 전용 복사기입니다. 위 표에서 **파일명만 복사**해서 아래에 붙여넣어 주세요.")
             
-            run_target = st.text_input("여기에 파일명을 붙여넣으세요:", placeholder="예: SLH1-PP-260306-01(5건).pdf", label_visibility="collapsed")
+            run_target = st.text_input("여기에 파일명을 붙여넣으세요:", placeholder="예: SLH1-PP-260306-01(5건)", label_visibility="collapsed")
             if run_target:
                 clean_target = run_target.strip().replace('"', '')
                 if clean_target.startswith(bad_base_path):
                     clean_target = clean_target[len(bad_base_path):].lstrip("\\")
                 if clean_target.startswith(ecn_base_path):
                     clean_target = clean_target[len(ecn_base_path):].lstrip("\\")
-                final_run_path = f'"{ecn_base_path}\\{clean_target}"'
                 
-                # ★ 확장자 누락 경고 시스템 추가
-                if "." not in clean_target:
-                    st.warning("⚠️ **잠깐!** 입력하신 파일명에 **.pdf**나 **.pptx** 같은 확장자가 빠져있습니다. 확장자가 없으면 윈도우가 파일을 열 수 없으니 표의 파일명 끝에 꼭 확장자를 적어주세요!")
+                # ★ PDF 확장자 자동 추가 
+                if clean_target and not clean_target.lower().endswith('.pdf') and not clean_target.startswith("http"):
+                    clean_target += ".pdf"
+                    
+                final_run_path = f'"{ecn_base_path}\\{clean_target}"'
                 
                 st.success("✨ 변환 완료! 아래 회색 박스 우측 상단의 **[복사 아이콘(📋)]**을 클릭하고 `[Win + R]` 창에 붙여넣기 하세요.")
                 st.code(final_run_path, language="text")
@@ -845,7 +857,7 @@ def render_ecn_stn_page(repo):
             with action_col2:
                 output_excel = io.BytesIO()
                 with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
-                    cols_to_drop = ['Original_Index', '첨부(파일명)']
+                    cols_to_drop = ['Original_Index', '첨부(파일명)', '전체경로(복사용)']
                     filtered_df.drop(columns=cols_to_drop, errors='ignore').to_excel(writer, index=False, sheet_name='ECN_Data')
                 st.download_button(
                     label="📥 현재 리스트 엑셀 다운로드",
@@ -872,7 +884,7 @@ def render_ecn_stn_page(repo):
                     f_col7, f_col8, f_col9 = st.columns([2, 1, 2])
                     n_note = f_col7.text_input("특이사항")
                     n_status = f_col8.selectbox("조치현황", ["대기", "진행중", "완료"])
-                    n_attach = f_col9.text_input("첨부 (파일명만 입력)", placeholder="예: SLH1-PP-260306-01.pdf")
+                    n_attach = f_col9.text_input("첨부 (파일명만 입력)", placeholder="예: SLH1-PP-260306-01")
                     
                     if st.form_submit_button("새 항목 등록하기"):
                         wb = openpyxl.load_workbook(io.BytesIO(raw_bytes))
@@ -891,6 +903,10 @@ def render_ecn_stn_page(repo):
                             elif '조치' in c_clean or '진행' in c_clean: new_row_data[i] = n_status
                             elif '첨부' in c_clean: 
                                 n_attach_clean = n_attach.strip().replace('"', '')
+                                # ★ 새 항목 등록 시 PDF 자동 추가
+                                if n_attach_clean and not n_attach_clean.lower().endswith('.pdf') and not n_attach_clean.startswith("http") and not n_attach_clean.startswith("\\\\"):
+                                    n_attach_clean += ".pdf"
+                                    
                                 if n_attach_clean.startswith(bad_base_path):
                                     n_attach_clean = n_attach_clean[len(bad_base_path):].lstrip("\\")
                                 if n_attach_clean and not n_attach_clean.startswith("\\\\") and not n_attach_clean.startswith("http"):
@@ -923,6 +939,11 @@ def render_ecn_stn_page(repo):
                             fname = str(row.get('첨부(파일명)', '')).strip().replace('"', '')
                             if fname.startswith(bad_base_path):
                                 fname = fname[len(bad_base_path):].lstrip("\\")
+                                
+                            # ★ 기존 표 항목 수정 시에도 PDF 자동 추가
+                            if fname and not fname.lower().endswith('.pdf') and not fname.startswith("http") and not fname.startswith("\\\\"):
+                                fname += ".pdf"
+                                
                             if fname and not fname.startswith("\\\\") and not fname.startswith("http"):
                                 full_path = f"{ecn_base_path}\\{fname}"
                             else:
