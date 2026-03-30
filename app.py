@@ -376,9 +376,9 @@ def render_cs_flow_page(db_flow):
     else: st.info("프로젝트가 없습니다.")
 
 # ==========================================
-# 5. 화면 UI - 3페이지: 장비 가동 데이터 
+# 5. 화면 UI - 3페이지: 장비 가동 데이터 (달력 조회 및 스마트 탐색 복구 완벽판)
 # ==========================================
-def render_equipment_data_page():
+def render_equipment_data_page(repo):
     import re
     from plotly.subplots import make_subplots
     import pandas as pd
@@ -1013,7 +1013,7 @@ def main():
 
         if menu_selection == "📝 업무일지": render_work_log_page(db_log)
         elif menu_selection == "✅ CS 작업체크시트": render_cs_flow_page(db_flow)
-        elif menu_selection == "📊 장비가동데이터": render_equipment_data_page()
+        elif menu_selection == "📊 장비가동데이터": render_equipment_data_page(repo) # ★ repo 인자 정상 복구
         elif menu_selection == "🛠️ ECN & STN": render_ecn_stn_page(repo)
 
 if __name__ == "__main__": main()
