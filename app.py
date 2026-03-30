@@ -53,8 +53,8 @@ def main():
                 st.session_state.update({'logged_in': True, 'user_name': name})
                 st.rerun()
     else:
-        # ★ 수정: 메뉴가 들어가는 두 번째 칸(top_col2)의 비율을 늘려서 글자가 잘리지 않도록 조정
-        top_col1, top_col2, top_col3 = st.columns([4.5, 4.5, 1])
+        # ★ 수정: 상단 탭 이름이 절대 잘리지 않도록 왼쪽 여백(top_col1)을 대폭 줄이고 메뉴(top_col2) 공간을 최대로 넓혔습니다!
+        top_col1, top_col2, top_col3 = st.columns([1, 8, 2])
         with top_col2:
             menu_selection = st.selectbox("📂 대시보드 메뉴 이동", ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터", "🛠️ ECN & STN"], label_visibility="collapsed")
         with top_col3:
