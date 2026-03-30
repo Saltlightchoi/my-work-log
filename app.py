@@ -423,10 +423,31 @@ def render_equipment_data_page():
 
     for y, m in ym_list:
         eng_month = month_dict.get(m, "January")
-        target_file = f"data/{equipment}/{equipment}_{unit} - {eng_month} {y}.xlsx"
+        
+        # ★ 파일명 호환성 4단계 스마트 탐색 (기존 파일명, 새 파일명, 폴더 위치 상관없이 모두 찾아냅니다!)
+        file_candidates = [
+            f"data/{equipment}/{equipment}_{unit} - {eng_month} {y}.xlsx",
+            f"data/{equipment}/{equipment} - {eng_month} {y}.xlsx",
+            f"{equipment}_{unit} - {eng_month} {y}.xlsx",
+            f"{equipment} - {eng_month} {y}.xlsx"
+        ]
+        
+        target_file = file_candidates[0]
+        file_content = None
+        
+        for cand in file_candidates:
+            try:
+                file_content = repo.get_contents(cand)
+                target_file = cand  # 깃허브에서 실제 찾은 올바른 경로로 덮어쓰기
+                break
+            except:
+                continue
+                
+        if file_content is None:
+            missing_files.append(file_candidates[0])
+            continue
 
         try:
-            file_content = repo.get_contents(target_file)
             excel_data = io.BytesIO(file_content.decoded_content)
             xls = pd.read_excel(excel_data, sheet_name=None, header=None, engine='openpyxl')
             
@@ -834,7 +855,8 @@ def render_ecn_stn_page(repo):
                 if clean_target and not clean_target.lower().endswith('.pdf') and not clean_target.startswith("http"):
                     clean_target += ".pdf"
                     
-                final_run_path = f'"{ecn_base_path}\\{clean_target}"'
+                # ★ 따옴표 제거: 윈도우 실행(Win+R) 창은 따옴표 없이 순수 경로만 넣어야 정상 작동합니다!
+                final_run_path = f"{ecn_base_path}\\{clean_target}"
                 
                 st.success("✨ 변환 완료! 아래 회색 박스 우측 상단의 **[복사 아이콘(📋)]**을 클릭하고 `[Win + R]` 창에 붙여넣기 하세요.")
                 st.code(final_run_path, language="text")
