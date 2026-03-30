@@ -562,8 +562,5 @@ SLH1 #4호기,Set-Up,8,I/O Check,✅ 완료,,,최염광 (26-03-11)
 SLH1 #4호기,Set-Up,9,Teaching,✅ 완료,Deviation 기준 LD Hand - T-Tray. ULD Hand Fix Buffer,,김범규 (26-03-30)
 SLH1 #4호기,Set-Up,10, Dry Run -> Dummy Run,⏳ 작업중,,,최염광 (26-03-11)
 SLH1 #4호기,Set-Up,11,고객사 측 ESD 평가 - 접지저항/누설전류/Conveyor ESD/HANDPICKER PAD ESD/Conveyor 표면저항/Handpicker 표면 저항,⏳ 작업중,고객사 측 표면저항 측정기기 검교정 반출로 인해 해당 항목 미진행,,김범규 (26-03-30)
-SLH1 #4호기,Set-Up,12,D.O.E,⬜ 대기,,,
-SLH1 #4호기,Set-Up,13,양산 Qual,⬜ 대기,,,
-SLH1 #4호기,Set-Up,14,시 양산 및 안정화,⬜ 대기,,,
-SLH1 #4호기,Set-Up,15,,,,,김범규 (26-03-30)
-SLH1 #4호기,Set-Up,16,,,,,김범규 (26-03-30)
+SLH1 #4호기,Set-Up,12,D.O.E 및 양산 Qual,⬜ 대기,,,
+SLH1 #4호기,Set-Up,13,시 양산 및 안정화,⬜ 대기,,,
