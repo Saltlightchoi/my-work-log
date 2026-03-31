@@ -365,8 +365,8 @@ SLH1 #7호기,평탄도 측정,4,"InPut-> Testsite -> Out T-Tray 평탄도 Setti
 SLH1 #7호기,Software,1,OS 설치,✅ 완료,,,최염광 (26-03-08)
 SLH1 #7호기,Software,2,"Motor Parameter Setting 및 다회전 클리어
 - S/W 팀 요청
-- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",✅ 완료,"LD/ULD X,Y Home Check 후 저장 필요",,최염광 (26-03-16)
-SLH1 #7호기,Software,3,"BCR, Vision Setting",⬜ 대기,,,
+- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료",✅ 완료,,,최염광 (26-03-31)
+SLH1 #7호기,Software,3,"BCR, Vision Setting",✅ 완료,,,최염광 (26-03-31)
 SLH1 #7호기,Software,4,LD/ULD Hand 반진동 Test,⬜ 대기,,,
 SLH1 #7호기,조립정밀도,1,LD/ULD Hand Pitch 측정(Pitch JIG 삽입),✅ 완료,,,최염광 (26-03-13)
 SLH1 #7호기,조립정밀도,2,"LD/ULD Hand Z-axis 측정
