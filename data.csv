@@ -1,4 +1,20 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-01,SLH1,김범규,"SLH1 
+4호기
+
+-D.O.E 관련 rnr 부분 누락되어 진행.
+ㄴ 자재 20ea 중 10ea fail 띄워 Lot End시 BCR List 일치 유무, 에러코드 정상 표기 유무, Tester Lot Info 정상 표기 확인.
+ㄴ DATA 취합하여 삼성 이우철 프로 전달 완료.
+ㄴ 작일 진행한 D.O.E 자재 120ea 우익 측 PCT 및 외관검사 Pass.
+ㄴ rnr 건까지 취합 후 삼성 측 D.O.E 결과 공유 예정.
+
+- 명일 설비 반입으로 우익 측 Lay-Out 및 간섭물 제거 요청
+ㄴ 우익 담당자, 어드반 담당자 동행하여 Set-up 확인.
+ㄴ Leveling 이후 어드반 작업 공간 부족 등 기타 이유로 설비 이동 불가 전달.
+
+- Running 진행 간 LD1, LD2 STACKER CONVEYOR INVERTOR 관련
+   같은 SETTING 되어있음에도 동작 상이하여 전장설계팀 메일링 전달(조건희 주임)
+ㄴ ULD HAND SET PLATE DEVIATION NO USE 진행 간 배출 이상 없음.",,
 2026-03-31,SLH1,김범규,"SLH1
 
 4호기 
@@ -3393,19 +3409,19 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-01,SLH1,김범규,"SLH1 
+2026-04-01,SLH1,조건희,"SLH1 
 4호기
 
--D.O.E 관련 rnr 부분 누락되어 진행.
+1. D.O.E 관련 RNR 부분 누락되어 진행
 ㄴ 자재 20ea 중 10ea fail 띄워 Lot End시 BCR List 일치 유무, 에러코드 정상 표기 유무, Tester Lot Info 정상 표기 확인.
 ㄴ DATA 취합하여 삼성 이우철 프로 전달 완료.
 ㄴ 작일 진행한 D.O.E 자재 120ea 우익 측 PCT 및 외관검사 Pass.
 ㄴ rnr 건까지 취합 후 삼성 측 D.O.E 결과 공유 예정.
 
-- 명일 설비 반입으로 우익 측 Lay-Out 및 간섭물 제거 요청
+2. 명일 설비 반입으로 우익 측 Lay-Out 및 간섭물 제거 요청
 ㄴ 우익 담당자, 어드반 담당자 동행하여 Set-up 확인.
 ㄴ Leveling 이후 어드반 작업 공간 부족 등 기타 이유로 설비 이동 불가 전달.
 
-- Running 진행 간 LD1, LD2 STACKER CONVEYOR INVERTOR 관련
-   같은 SETTING 되어있음에도 동작 상이하여 전장설계팀 메일링 전달(조건희 주임)
+3. Running 진행 간 LD1, LD2 STACKER CONVEYOR INVERTOR 관련
+   같은 SETTING 되어있음에도 동작 상이하여 전장설계팀 인폼
 ㄴ ULD HAND SET PLATE DEVIATION NO USE 진행 간 배출 이상 없음.",,
