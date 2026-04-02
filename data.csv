@@ -150,6 +150,12 @@ SLH1 #7
 
 -HAND Cyl. Up시 평탄화 검증 
 ㄴ 이우철 프로 요청으로 미진행.",,
+2026-03-30,4010H,김승수,"03.30
+Hitech 4010 3호기 
+Auto conversion 양산 Qual Test
+ㄴSo-Dimm Dummy Run Test 통과
+-자재 양산 Test 600Ea Damage Check 통과
+-3K 진행 중  이상 없음 확인 완료",,
 2026-03-29,4010H,김승수,"하이텍 4010 3호기 
  Auto conversion 
 1. U-Dimm VM Test  Pass
@@ -3437,9 +3443,6 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-03-30,4010H,김승수,"03.30
-Hitech 4010 3호기 
-Auto conversion 양산 Qual Test
-ㄴSo-Dimm Dummy Run Test 통과
--자재 양산 Test 600Ea Damage Check 통과
--3K 진행 중  이상 없음 확인 완료",,
+2026-04-02,SLH1,김승수,"SLH1 5,6,7호기
+설비 반입 완료 및 임시 Docking 진행 
+-> 주변 정리 진행",,
