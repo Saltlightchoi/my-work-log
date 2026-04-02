@@ -46,6 +46,15 @@
 3. Running 진행 간 LD1, LD2 STACKER CONVEYOR INVERTOR 관련
    같은 SETTING 되어있음에도 동작 상이하여 전장설계팀 인폼
 ㄴ ULD HAND SET PLATE DEVIATION NO USE 진행 간 배출 이상 없음.",,
+2026-04-01,3208AT,윤창섭,"Hynix 
+
+3208AT 물류 
+
+1라인
+-> UnLoader c-tray module 들뜸 check sensor 및 brk 장착 및 Sensor Position 수정 
+
+-> U/D tray flow module guide type Actuator에서 Cylinder type으로 변경
+ㄴ Solve 장착 및 air line 포설 진행 stopper 사용하여 Cylinder load 길이 조정 ",,
 2026-03-31,SLH1,김범규,"SLH1
 
 4호기 
@@ -3446,12 +3455,9 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-01,3208AT,윤창섭,"Hynix 
+2026-04-02,SLH1,조건희,"04.02
 
-3208AT 물류 
+SLH1
 
-1라인
--> UnLoader c-tray module 들뜸 check sensor 및 brk 장착 및 Sensor Position 수정 
-
--> U/D tray flow module guide type Actuator에서 Cylinder type으로 변경
-ㄴ Solve 장착 및 air line 포설 진행 stopper 사용하여 Cylinder load 길이 조정 ",,
+1. 5,6,7호기 설비 반입 완료
+ㄴ Rapping 정리 및 임시 Docking 완료",,
