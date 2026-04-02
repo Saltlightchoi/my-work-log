@@ -11,6 +11,9 @@
 ㄴ 우익 측 품질 담당자 대응 진행.
 ㄴ PFQ 간 필요한 LOG 및 SETTING DATA 삼성 이우철 프로 전달 완료.
 ㄴ 차주 월요일 삼성 측 PFQ 결과 공유 예정.",,
+2026-04-02,SLH1,김승수,"SLH1 5,6,7호기
+설비 반입 완료 및 임시 Docking 진행 
+-> 주변 정리 진행",,
 2026-04-01,SLH1,김범규,"SLH1 
 4호기
 
@@ -3443,6 +3446,12 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-02,SLH1,김승수,"SLH1 5,6,7호기
-설비 반입 완료 및 임시 Docking 진행 
--> 주변 정리 진행",,
+2026-04-01,3208AT,윤창섭,"Hynix 
+
+3208AT 물류 
+
+1라인
+-> UnLoader c-tray module 들뜸 check sensor 및 brk 장착 및 Sensor Position 수정 
+
+-> U/D tray flow module guide type Actuator에서 Cylinder type으로 변경
+ㄴ Solve 장착 및 air line 포설 진행 stopper 사용하여 Cylinder load 길이 조정 ",,
