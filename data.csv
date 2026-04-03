@@ -13,6 +13,13 @@
 ㄴ Insert 점검 이상 없음.
 ㄴ 기존 LPCAMM SIDE 이물로 골드핑거부 반대쪽으로 조금 치우치게 setting 되어, Pick up Err 발생
 ㄴ ULD HAND FRONT 2 X-Axis TEACHING",,
+2026-04-03,SLH1,조건희,"SLH1 
+5호기 
+1. 도킹 및 레벨링 진행완료
+차주 월요일 6,7호기 진행 예정
+
+2. 5,6호기
+반입 물품 확인 완료",,
 2026-04-02,SLH1,김범규,"SLH1
 
 -5,6,7호기 설비 반입 및 안착 완료.
@@ -3478,10 +3485,12 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-03,SLH1,조건희,"SLH1 
-5호기 
-1. 도킹 및 레벨링 진행완료
-차주 월요일 6,7호기 진행 예정
+2026-04-03,SLH1,김기혁,"SLH1 5호기
+ㄴDocking 및 Leveling 작업
+-Docking 및 1차 Leveling 완료
+-차주 어드반 Test 작업 예정
 
-2. 5,6호기
-반입 물품 확인 완료",,
+SLH1 6호기
+ㄴ Leveling 작업
+-차주 작업 임시 작업 진행
+-1차 Leveling 진행 (바닥면에서 일정 수치 띄어 놓는 수준 조정)",,
