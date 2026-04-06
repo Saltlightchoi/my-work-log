@@ -18,6 +18,18 @@
 -> 명일 김정욱 선임 내방하여, 점검 예정.
 - ULD STACKER C-Tray 배출 간 20장 이상 쌓여 배출시 FRONT 단 Tension Block에 C-Tray 간섭 확인
 -> 명일 Conveyor Tension 및 Conveyor BRK 점검 예정.",,
+2026-04-06,SLH1,김승수,"SLH1 6호기
+1. Docking 및 Leveling 작업 진행
+
+5,6,7호기 
+Moving, Fix Buffer  반대로 장착되어있어
+ㄴ정상장착 진행 완료
+DOOR 장착 및 아크릴판 비닐 제거 진행
+4호기
+OS에서 Device Number가 못 넘어오는 현상 발생
+ㄴ실제로 Reading되어 Data로 남아있고 OS상으로 못넘어가서 BIN 9번으로 FAIL됨
+->S/W 김정욱 선임님 내방하여 점검 예정
+",,
 2026-04-05,SLH1,윤창섭,"SLH1
 
 5, 6, 7호기 공통
@@ -3531,15 +3543,17 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-06,SLH1,김승수,"SLH1 6호기
-1. Docking 및 Leveling 작업 진행
+2026-04-06,SLH1,김기혁,"SLH1 6호기
+ㄴDocking 및 Leveling 작업 진행 완료
 
-5,6,7호기 
-Moving, Fix Buffer  반대로 장착되어있어
-ㄴ정상장착 진행 완료
-DOOR 장착 및 아크릴판 비닐 제거 진행
-4호기
-OS에서 Device Number가 못 넘어오는 현상 발생
-ㄴ실제로 Reading되어 Data로 남아있고 OS상으로 못넘어가서 BIN 9번으로 FAIL됨
-->S/W 김정욱 선임님 내방하여 점검 예정
+SLH1 5,6,7호기 
+ㄴMoving, Fix Buffer 장착 오류
+-정상 이동 장착
+
+ㄴMiddle Feeder DOOR 장착 및 아크릴판 비닐 제거 진행
+
+SLH1 4호기
+ㄴOS에서 Device Number가 못 넘어오는 현상 발생
+-LOG에는 Reading되어 Data로 남아있으나 OS상에서는 미인식으로 BIN 9번으로 FAIL 처리(소프트 김정욱선임 인폼)
+-1호기에서 발생 해서 조치 된 부분이나 OS UPDATE 누락 문제로 보임
 ",,
