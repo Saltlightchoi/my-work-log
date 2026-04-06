@@ -39,6 +39,8 @@ SLH1 6호기
 
 5호기 
 -> 전면부 후면부 docking 및 레벨링 진행.",,
+2026-04-03,SLH1,김승수,"SLH1 5호기
+ㄴDocking 및 Leveling 작업 진행",,
 2026-04-02,SLH1,김범규,"SLH1
 
 -5,6,7호기 설비 반입 및 안착 완료.
@@ -3510,5 +3512,22 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-03,SLH1,김승수,"SLH1 5호기
-ㄴDocking 및 Leveling 작업 진행",,
+2026-04-06,SLH1,김범규,"SLH1 
+5호기
+-LD, ULD Manual Port 장착. 
+
+6,7호기 
+- DOCKING 및 AUTO LEVELING 진행.
+
+5,6,7호기
+- Reject, Fix, Mov Buffer 반대로 장착되어 재장착.
+- Cable Veyor 포장지 제거
+- LD, ULD Transfer 고정 BRK 제거 및 LD Flow Sol Air Line 마운트 사용하여 정리.
+- IN/OUTPUT Feeder UP/DOWN Cyl, TOP Gripper Cyl.에 Oil CLEANING 진행.
+
+4호기
+- PFQ(Qual) PASS 확인.
+- 시양산 진행 중 Module BCR Serial 삽입 간 비정상 삽입 확인되어 S/W 김정욱 선임 인폼.
+-> 명일 김정욱 선임 내방하여, 점검 예정.
+- ULD STACKER C-Tray 배출 간 20장 이상 쌓여 배출시 FRONT 단 Tension Block에 C-Tray 간섭 확인
+-> 명일 Conveyor Tension 및 Conveyor BRK 점검 예정.",,
