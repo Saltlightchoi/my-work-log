@@ -3602,3 +3602,25 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
+2026-04-06,SLH1,조건희,"SLH1 
+
+4호기
+1. PFQ(Qual) PASS 확인.
+2. 시양산 진행 중 Module BCR Serial 삽입 간 비정상 삽입 확인되어 S/W 김정욱 선임 인폼.
+-> 명일 김정욱 선임 내방하여, 점검 예정
+- ULD STACKER C-Tray 배출 간 20장 이상 쌓여 배출시 FRONT 단 Tension Block에 C-Tray 간섭 확인
+-> 명일 Conveyor Tension 및 Conveyor BRK 점검 예정
+
+5호기
+1. LD, ULD Manual Port 장착
+
+6,7호기 
+1. DOCKING 및 AUTO LEVELING 진행.
+
+공통 사항
+1. Reject, Fix, Mov Buffer 반대로 장착되어 재장착
+2. Cable Veyor 포장지 제거
+3. LD, ULD Transfer 고정 BRK 제거 및 LD Flow Sol Air Line 마운트 사용하여 정리.
+4. IN/OUTPUT Feeder UP/DOWN Cyl, TOP Gripper Cyl.에 Oil CLEANING 진행.
+5. 전면부 후면부 이어주는 천장 cover 장착 완료
+",,
