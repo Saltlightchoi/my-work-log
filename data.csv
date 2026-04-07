@@ -69,6 +69,33 @@ SLH1 5,6,7호기
 SLH1 4호기
 ㄴOS에서 Device Number가 못 넘어오는 현상 발생
 -김정욱 선임 내방하여 조치 완료",,
+2026-04-07,SLH1,최염광,"SLH1 #5
+ - CCTV 장착 완료.
+ - Head Lamp 장착 완료.
+SLH1 #6, #7
+ - Manual Port 장착 완료
+ - CCTV 장착 완료.
+ - Head Lamp 장착 완료.
+ - 6호기 LD Hand LM 고정 Block 휨 Part 입고 완료.
+  -> 교체 후 Pitch, Z축 Setting 으로 인한 가조립 상태.
+  -> 휨 관련 Align 정상 확인.
+
+SLH1 #4
+ - Soft 김정욱 선임 내방하여 해당 문제 코드 수정 완료.
+ - 원인 분석시 No Read 발생시점 1~4번까지 Flying 동작 후 넘어감.
+ - Module 삽입 BCR Log 확인시 4번만 장입 확인.
+ - ULD 와 동일하게 적용된 부분 수정 후 정상 동작 확인
+ - LD Hand 4번 Deviation Sensor Error  지속 발생
+  -> LD Hand 4번 Picker 장착 Block 상단 Gap 제거.
+  -> LD Hand Picker 4번 Cylinder 고정 Double Nut 및 ROD 풀림 발생
+   -> Picker 탈거 후 재고정 및 해당 Picker 제외 재고정 완료.
+   -> Z 축 관련 평탄은 추후 플로팅 개선 적용 후 재조정 예정.
+ - 해당 작업 후 Module 1ea 안착 Miss 상태 Damage 발생
+  -> Picker 작업 전/후 제거/삽입 한 T-Tray 발생으로 Handling에 의한 Module 이탈 유추됨.
+  -> 이후 동작 30M Monitoring 간 증상 미발생. 해당 Tray Insert Pin Hole Damage 발생되어 Mask 후 진행 중.
+  -> 삼성 동행 확인으로 명일 재확인 및 Insert Hole 교체 예정.
+
+5,6,7호기 Tester 부 Utility 작업 진행, Cable Duct 만 설치 상태.",,
 2026-04-06,SLH1,김범규,"SLH1 
 5호기
 -LD, ULD Manual Port 장착. 
@@ -3658,30 +3685,21 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-07,SLH1,최염광,"SLH1 #5
- - CCTV 장착 완료.
- - Head Lamp 장착 완료.
-SLH1 #6, #7
- - Manual Port 장착 완료
- - CCTV 장착 완료.
- - Head Lamp 장착 완료.
- - 6호기 LD Hand LM 고정 Block 휨 Part 입고 완료.
-  -> 교체 후 Pitch, Z축 Setting 으로 인한 가조립 상태.
-  -> 휨 관련 Align 정상 확인.
+2026-04-06,SLH1,최염광,"SLH1 #6,7호기
+ - Auto Leveling 완료.
+ - Docking 및 고정 완료.
+ - LD/ULD Middle Door 장착 완료.
 
-SLH1 #4
- - Soft 김정욱 선임 내방하여 해당 문제 코드 수정 완료.
- - 원인 분석시 No Read 발생시점 1~4번까지 Flying 동작 후 넘어감.
- - Module 삽입 BCR Log 확인시 4번만 장입 확인.
- - ULD 와 동일하게 적용된 부분 수정 후 정상 동작 확인
- - LD Hand 4번 Deviation Sensor Error  지속 발생
-  -> LD Hand 4번 Picker 장착 Block 상단 Gap 제거.
-  -> LD Hand Picker 4번 Cylinder 고정 Double Nut 및 ROD 풀림 발생
-   -> Picker 탈거 후 재고정 및 해당 Picker 제외 재고정 완료.
-   -> Z 축 관련 평탄은 추후 플로팅 개선 적용 후 재조정 예정.
- - 해당 작업 후 Module 1ea 안착 Miss 상태 Damage 발생
-  -> Picker 작업 전/후 제거/삽입 한 T-Tray 발생으로 Handling에 의한 Module 이탈 유추됨.
-  -> 이후 동작 30M Monitoring 간 증상 미발생. 해당 Tray Insert Pin Hole Damage 발생되어 Mask 후 진행 중.
-  -> 삼성 동행 확인으로 명일 재확인 및 Insert Hole 교체 예정.
+SLH1 #5호기
+ - Manual Port 임시 장착.
+ - LD/ULD Middle Door 장착 완료.
 
-5,6,7호기 Tester 부 Utility 작업 진행, Cable Duct 만 설치 상태.",,
+SLH1 #4호기
+ - 시양산 진행간 LD BCR 동작 이상 발생
+  -> 최초 Flying 동작간 6번 No Read 발생
+  -> Retry 진행 후 Test 결과시 4번 위치만 Bin 1, 나머지 Bin9(BCR Error Bin)
+  -> Recovery Data 취득 후 김정욱 선임 Inform 완료. 명일 내방 예정
+ - Module 하단 Socket 자국 발생
+  -> 해당 내용 이우철프로 확인 후 Socket 업체 문의 예정. 장비 기인성 없음.
+
+5호기 Tester 부 Utility 작업 진행 Start",,
