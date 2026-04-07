@@ -316,7 +316,7 @@ SLH1 #7호기,기구물 Setting,2,"Stacker Conveyor Belt Inverter 값 설정
 -> P3 60  P4 : 60(고속), P5 : 30(중속), P6 : 10(저속)
 -> P7 : 5 (가속),  P8 : 0 (감속)",✅ 완료,,,최염광 (26-03-16)
 SLH1 #7호기,기구물 Setting,3,"Reject Stacker Front/Rear Base 높이 조정
- -> Rear Base Cylinder Rod 최대로 내린뒤, front를 무두 볼트 사용하여 Setting",⬜ 대기,,,
+ -> Rear Base Cylinder Rod 최대로 내린뒤, front를 무두 볼트 사용하여 Setting",🚨 보류,,,최염광 (26-04-07)
 SLH1 #7호기,기구물 Setting,4,Set-Plate Support Lock/Unlock Cylinder Rod SETTING,✅ 완료,,,최염광 (26-03-13)
 SLH1 #7호기,기구물 Setting,5,LD/ULD Middle Gripper UP Cylinder Rod (37mm) SETTING,✅ 완료,,,최염광 (26-03-13)
 SLH1 #7호기,기구물 Setting,6,"LD/ULD Flow Presicer Up Rod (60mm) Setting 
