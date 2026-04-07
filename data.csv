@@ -89,6 +89,28 @@ SLH1 4호기
 -LOG에는 Reading되어 Data로 남아있으나 OS상에서는 미인식으로 BIN 9번으로 FAIL 처리(소프트 김정욱선임 인폼)
 -1호기에서 발생 해서 조치 된 부분이나 OS UPDATE 누락 문제로 보임
 ",,
+2026-04-06,SLH1,조건희,"SLH1 
+
+4호기
+1. PFQ(Qual) PASS 확인.
+2. 시양산 진행 중 Module BCR Serial 삽입 간 비정상 삽입 확인되어 S/W 김정욱 선임 인폼.
+-> 명일 김정욱 선임 내방하여, 점검 예정
+- ULD STACKER C-Tray 배출 간 20장 이상 쌓여 배출시 FRONT 단 Tension Block에 C-Tray 간섭 확인
+-> 명일 Conveyor Tension 및 Conveyor BRK 점검 예정
+
+5호기
+1. LD, ULD Manual Port 장착
+
+6,7호기 
+1. DOCKING 및 AUTO LEVELING 진행.
+
+공통 사항
+1. Reject, Fix, Mov Buffer 반대로 장착되어 재장착
+2. Cable Veyor 포장지 제거
+3. LD, ULD Transfer 고정 BRK 제거 및 LD Flow Sol Air Line 마운트 사용하여 정리.
+4. IN/OUTPUT Feeder UP/DOWN Cyl, TOP Gripper Cyl.에 Oil CLEANING 진행.
+5. 전면부 후면부 이어주는 천장 cover 장착 완료
+",,
 2026-04-05,SLH1,윤창섭,"SLH1
 
 5, 6, 7호기 공통
@@ -3602,25 +3624,19 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-06,SLH1,조건희,"SLH1 
+2026-04-07,SLH1,김승수,"SLH1 
 
-4호기
-1. PFQ(Qual) PASS 확인.
-2. 시양산 진행 중 Module BCR Serial 삽입 간 비정상 삽입 확인되어 S/W 김정욱 선임 인폼.
--> 명일 김정욱 선임 내방하여, 점검 예정
-- ULD STACKER C-Tray 배출 간 20장 이상 쌓여 배출시 FRONT 단 Tension Block에 C-Tray 간섭 확인
--> 명일 Conveyor Tension 및 Conveyor BRK 점검 예정
+1호기
+1. LD PRECIZER MASK OPEN/CLOSE 간 AIR 밸런스 조정
 
-5호기
-1. LD, ULD Manual Port 장착
+4호기 
+1. S/W 김정욱 선임 내방하여 BCR Serial 기입 오류 건 조치
+- 시 양산 대응 진행
+- 시 양산 간 자재 DAMAGE 1EA 발생
+ㄴ HANDPICKER 2중 NUT 풀림으로 작업 후 T-TRAY 원복 투입 간 INSERT 내 자재 틀어짐으로 추정
+- CCTV 영상각도 조정
 
-6,7호기 
-1. DOCKING 및 AUTO LEVELING 진행.
+5,6,7호기
 
-공통 사항
-1. Reject, Fix, Mov Buffer 반대로 장착되어 재장착
-2. Cable Veyor 포장지 제거
-3. LD, ULD Transfer 고정 BRK 제거 및 LD Flow Sol Air Line 마운트 사용하여 정리.
-4. IN/OUTPUT Feeder UP/DOWN Cyl, TOP Gripper Cyl.에 Oil CLEANING 진행.
-5. 전면부 후면부 이어주는 천장 cover 장착 완료
-",,
+1. CCTV BRK 및 CCTV장착
+2. SET-UP 간 PART 자재들 정리 진행",,
