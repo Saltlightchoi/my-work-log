@@ -172,6 +172,24 @@ SLH1 4호기
 4. IN/OUTPUT Feeder UP/DOWN Cyl, TOP Gripper Cyl.에 Oil CLEANING 진행.
 5. 전면부 후면부 이어주는 천장 cover 장착 완료
 ",,
+2026-04-06,SLH1,최염광,"SLH1 #6,7호기
+ - Auto Leveling 완료.
+ - Docking 및 고정 완료.
+ - LD/ULD Middle Door 장착 완료.
+
+SLH1 #5호기
+ - Manual Port 임시 장착.
+ - LD/ULD Middle Door 장착 완료.
+
+SLH1 #4호기
+ - 시양산 진행간 LD BCR 동작 이상 발생
+  -> 최초 Flying 동작간 6번 No Read 발생
+  -> Retry 진행 후 Test 결과시 4번 위치만 Bin 1, 나머지 Bin9(BCR Error Bin)
+  -> Recovery Data 취득 후 김정욱 선임 Inform 완료. 명일 내방 예정
+ - Module 하단 Socket 자국 발생
+  -> 해당 내용 이우철프로 확인 후 Socket 업체 문의 예정. 장비 기인성 없음.
+
+5호기 Tester 부 Utility 작업 진행 Start",,
 2026-04-05,SLH1,윤창섭,"SLH1
 
 5, 6, 7호기 공통
@@ -3685,21 +3703,15 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-06,SLH1,최염광,"SLH1 #6,7호기
- - Auto Leveling 완료.
- - Docking 및 고정 완료.
- - LD/ULD Middle Door 장착 완료.
+2026-04-03,SLH1,최염광,"SLH1 #5
+ - Docking 및 전/후면부 AutoLeveling 완료.
 
-SLH1 #5호기
- - Manual Port 임시 장착.
- - LD/ULD Middle Door 장착 완료.
+SLH1 #6
+ - 임시 Leveling 완료.
 
-SLH1 #4호기
- - 시양산 진행간 LD BCR 동작 이상 발생
-  -> 최초 Flying 동작간 6번 No Read 발생
-  -> Retry 진행 후 Test 결과시 4번 위치만 Bin 1, 나머지 Bin9(BCR Error Bin)
-  -> Recovery Data 취득 후 김정욱 선임 Inform 완료. 명일 내방 예정
- - Module 하단 Socket 자국 발생
-  -> 해당 내용 이우철프로 확인 후 Socket 업체 문의 예정. 장비 기인성 없음.
+입고 Handler 외관 검사 및 물품 검사
+ - SLH1 #5호기 좌측 하단 Cover 까짐, 해당 관련 영업 및 삼성 확인 완료. 추후 입고시 대응 변경 예정.
 
-5호기 Tester 부 Utility 작업 진행 Start",,
+SLH1 #4
+ - LD Hand Z 평탄 측정시 최대 오차 0.7mm 발생, Floating Block 개선 후 조정으로 Inform 후 협조 요청.
+",,
