@@ -232,6 +232,18 @@ SLH1 6호기
 -> 전면부 후면부 docking 및 레벨링 진행.",,
 2026-04-03,SLH1,김승수,"SLH1 5호기
 ㄴDocking 및 Leveling 작업 진행",,
+2026-04-03,SLH1,최염광,"SLH1 #5
+ - Docking 및 전/후면부 AutoLeveling 완료.
+
+SLH1 #6
+ - 임시 Leveling 완료.
+
+입고 Handler 외관 검사 및 물품 검사
+ - SLH1 #5호기 좌측 하단 Cover 까짐, 해당 관련 영업 및 삼성 확인 완료. 추후 입고시 대응 변경 예정.
+
+SLH1 #4
+ - LD Hand Z 평탄 측정시 최대 오차 0.7mm 발생, Floating Block 개선 후 조정으로 Inform 후 협조 요청.
+",,
 2026-04-02,SLH1,김범규,"SLH1
 
 -5,6,7호기 설비 반입 및 안착 완료.
@@ -3703,15 +3715,10 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-03,SLH1,최염광,"SLH1 #5
- - Docking 및 전/후면부 AutoLeveling 완료.
-
-SLH1 #6
- - 임시 Leveling 완료.
-
-입고 Handler 외관 검사 및 물품 검사
- - SLH1 #5호기 좌측 하단 Cover 까짐, 해당 관련 영업 및 삼성 확인 완료. 추후 입고시 대응 변경 예정.
+2026-04-02,SLH1,최염광,"SLH1 #5,#6,#7 Lay-Out 배치 완료.
+ - Level Foot 미작업 상태로 Docking 완료. 명일 AutoLeveling 예정.
+ - 랩핑 제거 및 주변 정리 완료.
 
 SLH1 #4
- - LD Hand Z 평탄 측정시 최대 오차 0.7mm 발생, Floating Block 개선 후 조정으로 Inform 후 협조 요청.
-",,
+ - D.O.E Pass
+ - PFQ 진행 완료.",,
