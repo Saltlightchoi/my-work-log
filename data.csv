@@ -27,6 +27,24 @@ T-Tray 8ea
 로드셀 1ea
 인디게이터 1ea
 Testsite sitting JIG 1ea",,
+2026-04-08,SLH1,김승수,"04/08
+SLH1
+4호기
+-시양산 대응
+ㄴ 작일 점검진행한 S/W 개선건 적용 후 모니터링
+ㄴ 우익측 SLH1 시양산 가동 현황 점검 방문
+
+-ULD1 Stacker 배출 시 C-Tray가 Front Stacker <-> Manual Port 넘어갈때 걸리는 현상.
+ㄴ ULD 1 CONVEYOR 쳐짐 방지 BRK 장착
+ㄴ C-Tray 날개부 헤짐 정도에 따라 더 걸림 확인.
+ㄴ 이전 베트남 설비 해당 문제로 횡전개한 BRK이며, 기구설계팀 문의 예정.
+6,7호기 
+-LD, ULD Manual Port 장착. 
+5,6호기
+어드반에서 TESTER MP Jig사용하여 Docking 완료
+ㄴDocking 확인 진행 
+->7호기 명일 작업 예정
+",,
 2026-04-07,SLH1,김범규,"04.07
 
 SLH1 
@@ -3750,21 +3768,22 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-08,SLH1,김승수,"04/08
-SLH1
+2026-04-08,SLH1,조건희,"SLH1
+
 4호기
--시양산 대응
+
+1. 시양산 대응
 ㄴ 작일 점검진행한 S/W 개선건 적용 후 모니터링
 ㄴ 우익측 SLH1 시양산 가동 현황 점검 방문
 
--ULD1 Stacker 배출 시 C-Tray가 Front Stacker <-> Manual Port 넘어갈때 걸리는 현상.
+2. ULD1 Stacker 배출 시 C-Tray가 Front Stacker <-> Manual Port 넘어갈때 걸리는 현상.
 ㄴ ULD 1 CONVEYOR 쳐짐 방지 BRK 장착
 ㄴ C-Tray 날개부 헤짐 정도에 따라 더 걸림 확인.
 ㄴ 이전 베트남 설비 해당 문제로 횡전개한 BRK이며, 기구설계팀 문의 예정.
-6,7호기 
--LD, ULD Manual Port 장착. 
-5,6호기
-어드반에서 TESTER MP Jig사용하여 Docking 완료
-ㄴDocking 확인 진행 
-->7호기 명일 작업 예정
-",,
+
+3. 5,6호기 Tester Docking 대응 완료. 명일 7호기 진행 예정.
+
+4. 6호기 ManualPort 장착
+
+5. 명일 삼성 측 현장 세미나 예정
+ㄴ RDIMM,LPCAMM,SOCAMM T-TRAY 세미나 브리핑용으로 배출 요청하여 진행완료.",,
