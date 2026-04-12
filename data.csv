@@ -83,6 +83,15 @@ SLH1
 
 SLH1 5,6호기
 ㄴ어드반테스트 업체 내방 하여 TEST Docking 대응",,
+2026-04-08,SLH1,윤창섭,"04.08
+
+SLH1
+
+7호기
+-> manual port 장착
+
+5,6호기
+-> 어드반테스트 업체 내방 하여 TEST Docking 대응",,
 2026-04-07,SLH1,김범규,"04.07
 
 SLH1 
@@ -3830,12 +3839,15 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-08,SLH1,윤창섭,"04.08
+2026-04-09,SLH1,윤창섭,"SLH1
 
-SLH1
+4호기
+-> Stacker Belt 이탈 방지 brk 장착
+ㄴ양산 대응
 
-7호기
--> manual port 장착
+5호기
+-> Power Cable 연결 및 정리
 
-5,6호기
--> 어드반테스트 업체 내방 하여 TEST Docking 대응",,
+5,6,7 호기
+-> 어드반 테스트 업체 Docking 대응 
+ㄴ전 호기 완료되었으나 우익 측에서 Turn On 일정 지연되었다고 인폼 받았습니다.",,
