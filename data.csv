@@ -180,6 +180,20 @@ SLH1 #4
   -> 삼성 동행 확인으로 명일 재확인 및 Insert Hole 교체 예정.
 
 5,6,7호기 Tester 부 Utility 작업 진행, Cable Duct 만 설치 상태.",,
+2026-04-07,SLH1,윤창섭,"SLH1
+
+1호기
+-> Load Mask Up/Down 동작 이상
+ㄴUp/Down shaft 살짝 이물질 묻어 나와 Speed 조절로 사용가능 판단 하여 Cylinder Speed 조절
+
+
+ 7호기
+-> Docking 및 Leveling 작업 진행 완료
+
+SLH1 5,6,7호기
+-> Side Door 들뜸
+ㄴDoor Align 안맞아 조정
+ㄴCCTV 카메라 장착",,
 2026-04-06,SLH1,김범규,"SLH1 
 5호기
 -LD, ULD Manual Port 장착. 
@@ -3816,17 +3830,12 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-07,SLH1,윤창섭,"SLH1
+2026-04-08,SLH1,윤창섭,"04.08
 
-1호기
--> Load Mask Up/Down 동작 이상
-ㄴUp/Down shaft 살짝 이물질 묻어 나와 Speed 조절로 사용가능 판단 하여 Cylinder Speed 조절
+SLH1
 
+7호기
+-> manual port 장착
 
- 7호기
--> Docking 및 Leveling 작업 진행 완료
-
-SLH1 5,6,7호기
--> Side Door 들뜸
-ㄴDoor Align 안맞아 조정
-ㄴCCTV 카메라 장착",,
+5,6호기
+-> 어드반테스트 업체 내방 하여 TEST Docking 대응",,
