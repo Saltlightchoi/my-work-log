@@ -1,4 +1,18 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-09,SLH1,김기혁,"SLH1 4호기
+ㄴStacker쪽 개선품 part 장착
+-Belt 이탈 방지 Stopper 장착 완료
+
+ㄴ양산 대응
+
+SLH1 5호기
+ㄴPower Cable 연결 및 정리
+
+SLH1 5,6,7 호기
+ㄴ어드반 테스트 업체 Docking 대응 
+-전 호기 완료
+
+ㄴTurn On 일정 지연",,
 2026-04-08,SLH1,김범규,"04.08
 
 SLH1
@@ -3792,17 +3806,13 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-09,SLH1,김기혁,"SLH1 4호기
-ㄴStacker쪽 개선품 part 장착
--Belt 이탈 방지 Stopper 장착 완료
+2026-04-06,SLH1,윤창섭,"SLH1
 
-ㄴ양산 대응
+6,7호기
+-> DOCKING 및 AUTO LEVELING 진행.
 
-SLH1 5호기
-ㄴPower Cable 연결 및 정리
-
-SLH1 5,6,7 호기
-ㄴ어드반 테스트 업체 Docking 대응 
--전 호기 완료
-
-ㄴTurn On 일정 지연",,
+5,6,7호기 공통
+->  Reject, Fix, Mov Buffer 반대로 장착되어 재장착.
+-> L/D, U/D hand cable veyor 포장지 제거
+-> L/D, U/D Transfer 고정 BRK 제거 및 LD Flow Sol Air Line 마운트 사용하여 정리
+-> IN/OUTPUT Bottom feeder up/down 및 top gripper에 oil cleaning 진행.",,
