@@ -274,6 +274,16 @@ SLH1 #4호기
   -> 해당 내용 이우철프로 확인 후 Socket 업체 문의 예정. 장비 기인성 없음.
 
 5호기 Tester 부 Utility 작업 진행 Start",,
+2026-04-06,SLH1,윤창섭,"SLH1
+
+6,7호기
+-> DOCKING 및 AUTO LEVELING 진행.
+
+5,6,7호기 공통
+->  Reject, Fix, Mov Buffer 반대로 장착되어 재장착.
+-> L/D, U/D hand cable veyor 포장지 제거
+-> L/D, U/D Transfer 고정 BRK 제거 및 LD Flow Sol Air Line 마운트 사용하여 정리
+-> IN/OUTPUT Bottom feeder up/down 및 top gripper에 oil cleaning 진행.",,
 2026-04-05,SLH1,윤창섭,"SLH1
 
 5, 6, 7호기 공통
@@ -3806,13 +3816,17 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-06,SLH1,윤창섭,"SLH1
+2026-04-07,SLH1,윤창섭,"SLH1
 
-6,7호기
--> DOCKING 및 AUTO LEVELING 진행.
+1호기
+-> Load Mask Up/Down 동작 이상
+ㄴUp/Down shaft 살짝 이물질 묻어 나와 Speed 조절로 사용가능 판단 하여 Cylinder Speed 조절
 
-5,6,7호기 공통
-->  Reject, Fix, Mov Buffer 반대로 장착되어 재장착.
--> L/D, U/D hand cable veyor 포장지 제거
--> L/D, U/D Transfer 고정 BRK 제거 및 LD Flow Sol Air Line 마운트 사용하여 정리
--> IN/OUTPUT Bottom feeder up/down 및 top gripper에 oil cleaning 진행.",,
+
+ 7호기
+-> Docking 및 Leveling 작업 진행 완료
+
+SLH1 5,6,7호기
+-> Side Door 들뜸
+ㄴDoor Align 안맞아 조정
+ㄴCCTV 카메라 장착",,
