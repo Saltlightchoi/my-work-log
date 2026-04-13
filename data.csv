@@ -63,6 +63,19 @@ SLH1 5,6,7 호기
 5,6,7 호기
 -> 어드반 테스트 업체 Docking 대응 
 ㄴ전 호기 완료되었으나 우익 측에서 Turn On 일정 지연되었다고 인폼 받았습니다.",,
+2026-04-09,SLH1,최염광,"SLH1 #4
+ - All Stacker 쳐짐 방지 Braket 장착 완료.
+ - 시양산 중 Module 1ea Cap 위치 Damage 발생.
+  -> Log 및 안착 Miss 관련 확인, 특이사항 없음, 우익,삼성 Infrom
+
+SLH1 #5,#6
+ - 전장 Pannel Connector 연결 및 Cable 정리 완료.
+
+SLH1  #7
+ - Tester Docking 및 확인 완료.
+ - 전장 Pannel Connector 연결 및 Cable 정리 완료.
+
+우익 Utility 관련 공압 Cable 뭉치 바닥까지 내리는 작업 상태로 15일 조치 예정.",,
 2026-04-08,SLH1,김범규,"04.08
 
 SLH1
@@ -3889,16 +3902,16 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-09,SLH1,최염광,"SLH1 #4
- - All Stacker 쳐짐 방지 Braket 장착 완료.
- - 시양산 중 Module 1ea Cap 위치 Damage 발생.
-  -> Log 및 안착 Miss 관련 확인, 특이사항 없음, 우익,삼성 Infrom
+2026-04-08,SLH1,최염광,"SLH1 #4
+ - 시양산 간 ULD Stacker 1번 배출간 Manual Port 진입 전 기울어짐 발생.
+ - ULD 1번 쳐짐 방지 Braket 장착 후 걸림 없음.
+  -> Stacker <-> Manual Port 연결 Braket 걸림 가능성 있음. 
+  -> C-Tray Condition에 따른 증상 심해짐 확인되어, 해당 내용 기구설계 인폼 후 조치 예정.
 
-SLH1 #5,#6
- - 전장 Pannel Connector 연결 및 Cable 정리 완료.
+SLH1 #5
+ - Advantest Tester Docking 작업 완료. Align 최종 확인.
 
-SLH1  #7
- - Tester Docking 및 확인 완료.
- - 전장 Pannel Connector 연결 및 Cable 정리 완료.
-
-우익 Utility 관련 공압 Cable 뭉치 바닥까지 내리는 작업 상태로 15일 조치 예정.",,
+SLH1 #6
+ - Advantest Tester Docking 작업 완료. Align 최종 확인.
+ - Manual Port 장착 완료.
+",,
