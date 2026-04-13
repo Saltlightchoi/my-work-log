@@ -1,4 +1,16 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-10,SLH1,윤창섭,"SLH1
+
+4호기 
+양산중 Device Damage  발생
+-> 개선된 Insert에서 좌우 공차 1mm 추정 Insert pusher에 수지 Block 으로 Device  capacitor damage  발생
+ㄴ 설계팀에 인폼 진행 
+
+5호기
+Power Cable 재 정리 진행
+
+5,6,7호기
+Middle Feeder 부분 Door Key , Door align 조정",,
 2026-04-09,SLH1,김기혁,"SLH1 4호기
 ㄴStacker쪽 개선품 part 장착
 -Belt 이탈 방지 Stopper 장착 완료
@@ -3851,15 +3863,19 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-10,SLH1,윤창섭,"SLH1
+2026-04-13,SLH1,윤창섭,"SLH1 
 
-4호기 
-양산중 Device Damage  발생
--> 개선된 Insert에서 좌우 공차 1mm 추정 Insert pusher에 수지 Block 으로 Device  capacitor damage  발생
-ㄴ 설계팀에 인폼 진행 
+1호기
+작일 Error Review 
+1. Load hand  7번Picker  Module Unclamp Error  발생
+-> 주말간 발생건으로 우익 정비사 측  ReTry로 넘겨서 현상이 명확하지 않음 
+ㄴ 재 발생시 현장사진 촬영 요청
+2.Lord Transfer  방향Check ,Head Tray Check Sensor Error  발생
+-> End Plate  Up기준으로 z축 Teaching 값이 높아 Re Teaching  진행
 
-5호기
-Power Cable 재 정리 진행
+4호기
+이우철 프로 요청으로 L/D hand up/down cylinder tack time 조정
 
-5,6,7호기
-Middle Feeder 부분 Door Key , Door align 조정",,
+Hand deviation check sensor 한쪽을 반대로 장착하여 자재 감지 검증 진행
+-> L/D hand로 검증 진행하였으며 deviation check sensor 반대로 장착시 자재 감지 레이저 point가 자재가 아닌 insert에 내려와 반대로 장착은 불가능으로 인폼
+ㄴ 이우철프로가 설계팀과 협의 후 추후 재진행 예정입니다.",,
