@@ -27,6 +27,16 @@ Power Cable 재 정리 진행
 
 5,6,7호기
 Middle Feeder 부분 Door Key , Door align 조정",,
+2026-04-10,SLH1,최염광,"SLH1 #4
+ - 작일 발생한 Module Damage 1ea 동일 양상 재발생.
+ - Insert 상단 Pusher부 공차로 인한 Hole 위치이상으로 Cap Damage 발생, 재현 완료.
+ - 해당 내용 김지수 차장 Inform 후 해당 Insert 차주 중 개선 Tray 2매 입고 예정.
+ - 시양산 중단.
+
+SLH1 #5,#6,#7
+ - Door Key 장착 불량 다량으로 재장착 및 Cable 류 재정리
+
+우익 Utility 관련 공압 Cable 뭉치 바닥까지 내리는 작업 상태로 15일 조치 예정.",,
 2026-04-09,SLH1,김기혁,"SLH1 4호기
 ㄴStacker쪽 개선품 part 장착
 -Belt 이탈 방지 Stopper 장착 완료
@@ -3879,13 +3889,16 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-10,SLH1,최염광,"SLH1 #4
- - 작일 발생한 Module Damage 1ea 동일 양상 재발생.
- - Insert 상단 Pusher부 공차로 인한 Hole 위치이상으로 Cap Damage 발생, 재현 완료.
- - 해당 내용 김지수 차장 Inform 후 해당 Insert 차주 중 개선 Tray 2매 입고 예정.
- - 시양산 중단.
+2026-04-09,SLH1,최염광,"SLH1 #4
+ - All Stacker 쳐짐 방지 Braket 장착 완료.
+ - 시양산 중 Module 1ea Cap 위치 Damage 발생.
+  -> Log 및 안착 Miss 관련 확인, 특이사항 없음, 우익,삼성 Infrom
 
-SLH1 #5,#6,#7
- - Door Key 장착 불량 다량으로 재장착 및 Cable 류 재정리
+SLH1 #5,#6
+ - 전장 Pannel Connector 연결 및 Cable 정리 완료.
+
+SLH1  #7
+ - Tester Docking 및 확인 완료.
+ - 전장 Pannel Connector 연결 및 Cable 정리 완료.
 
 우익 Utility 관련 공압 Cable 뭉치 바닥까지 내리는 작업 상태로 15일 조치 예정.",,
