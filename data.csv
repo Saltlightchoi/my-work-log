@@ -1,4 +1,20 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-13,SLH1,윤창섭,"SLH1 
+
+1호기
+작일 Error Review 
+1. Load hand  7번Picker  Module Unclamp Error  발생
+-> 주말간 발생건으로 우익 정비사 측  ReTry로 넘겨서 현상이 명확하지 않음 
+ㄴ 재 발생시 현장사진 촬영 요청
+2.Lord Transfer  방향Check ,Head Tray Check Sensor Error  발생
+-> End Plate  Up기준으로 z축 Teaching 값이 높아 Re Teaching  진행
+
+4호기
+이우철 프로 요청으로 L/D hand up/down cylinder tack time 조정
+
+Hand deviation check sensor 한쪽을 반대로 장착하여 자재 감지 검증 진행
+-> L/D hand로 검증 진행하였으며 deviation check sensor 반대로 장착시 자재 감지 레이저 point가 자재가 아닌 insert에 내려와 반대로 장착은 불가능으로 인폼
+ㄴ 이우철프로가 설계팀과 협의 후 추후 재진행 예정입니다.",,
 2026-04-10,SLH1,윤창섭,"SLH1
 
 4호기 
@@ -3863,19 +3879,13 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-13,SLH1,윤창섭,"SLH1 
+2026-04-10,SLH1,최염광,"SLH1 #4
+ - 작일 발생한 Module Damage 1ea 동일 양상 재발생.
+ - Insert 상단 Pusher부 공차로 인한 Hole 위치이상으로 Cap Damage 발생, 재현 완료.
+ - 해당 내용 김지수 차장 Inform 후 해당 Insert 차주 중 개선 Tray 2매 입고 예정.
+ - 시양산 중단.
 
-1호기
-작일 Error Review 
-1. Load hand  7번Picker  Module Unclamp Error  발생
--> 주말간 발생건으로 우익 정비사 측  ReTry로 넘겨서 현상이 명확하지 않음 
-ㄴ 재 발생시 현장사진 촬영 요청
-2.Lord Transfer  방향Check ,Head Tray Check Sensor Error  발생
--> End Plate  Up기준으로 z축 Teaching 값이 높아 Re Teaching  진행
+SLH1 #5,#6,#7
+ - Door Key 장착 불량 다량으로 재장착 및 Cable 류 재정리
 
-4호기
-이우철 프로 요청으로 L/D hand up/down cylinder tack time 조정
-
-Hand deviation check sensor 한쪽을 반대로 장착하여 자재 감지 검증 진행
--> L/D hand로 검증 진행하였으며 deviation check sensor 반대로 장착시 자재 감지 레이저 point가 자재가 아닌 insert에 내려와 반대로 장착은 불가능으로 인폼
-ㄴ 이우철프로가 설계팀과 협의 후 추후 재진행 예정입니다.",,
+우익 Utility 관련 공압 Cable 뭉치 바닥까지 내리는 작업 상태로 15일 조치 예정.",,
