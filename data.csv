@@ -29,6 +29,20 @@ SET PLATE 개선 PIN 6.8*10 8EA",,
 
 6호기, 7호기
 - TRANSFER GRIP MOTOR COVER BRK 개선품 장착 완료.",,
+2026-04-14,SLH1,조건희,"SLH1
+
+4호기
+1. IN/OUTPUT, TESTSITE TRAY LOCK Cyl. Shaft 개선품 교체
+
+2. C-TRAY BOW 관련 PIN 검증
+ㄴ 6.8*10 PIN 사용 시 DEVIATION FRONT/REAR 0.3mm 이내로 되어 확산요청
+ㄴ ULD 1, 2 개선 PIN 장착 완료.
+
+3. LD TRANSFER ROTARY BASE 교체 진행 중
+
+4. 5호기 LD, ULD MIDDLE FEEDER DOCKING LEVELING 완료
+
+5. 6호기, 7호기 TRANSFER GRIP MOTOR COVER BRK 개선품 장착 완료",,
 2026-04-13,SLH1,윤창섭,"SLH1 
 
 1호기
@@ -4019,17 +4033,10 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-14,SLH1,조건희,"SLH1
+2026-04-13,SLH1,김기혁,"SLH1 4호기
+ㄴL/D hand up/down cylinder tack time 조정
 
-4호기
-1. IN/OUTPUT, TESTSITE TRAY LOCK Cyl. Shaft 개선품 교체
-
-2. C-TRAY BOW 관련 PIN 검증
-ㄴ 6.8*10 PIN 사용 시 DEVIATION FRONT/REAR 0.3mm 이내로 되어 확산요청
-ㄴ ULD 1, 2 개선 PIN 장착 완료.
-
-3. LD TRANSFER ROTARY BASE 교체 진행 중
-
-4. 5호기 LD, ULD MIDDLE FEEDER DOCKING LEVELING 완료
-
-5. 6호기, 7호기 TRANSFER GRIP MOTOR COVER BRK 개선품 장착 완료",,
+ㄴHand deviation check sensor 한쪽을 반대로 장착하여 자재 감지 검증 진행
+ -L/D hand로 검증 진행하였으며 deviation check sensor 반대로 장착시 자재 감지 레이저 point가 자재가 아닌 insert에 내려와 반대로 장착은 불가능으로 인폼
+ -이우철프로가 설계팀과 협의 후 추후 재진행 예정입니다.
+",,
