@@ -155,6 +155,19 @@ SLH1
 
 5,6호기
 -> 어드반테스트 업체 내방 하여 TEST Docking 대응",,
+2026-04-08,SLH1,최염광,"SLH1 #4
+ - 시양산 간 ULD Stacker 1번 배출간 Manual Port 진입 전 기울어짐 발생.
+ - ULD 1번 쳐짐 방지 Braket 장착 후 걸림 없음.
+  -> Stacker <-> Manual Port 연결 Braket 걸림 가능성 있음. 
+  -> C-Tray Condition에 따른 증상 심해짐 확인되어, 해당 내용 기구설계 인폼 후 조치 예정.
+
+SLH1 #5
+ - Advantest Tester Docking 작업 완료. Align 최종 확인.
+
+SLH1 #6
+ - Advantest Tester Docking 작업 완료. Align 최종 확인.
+ - Manual Port 장착 완료.
+",,
 2026-04-07,SLH1,김범규,"04.07
 
 SLH1 
@@ -3902,16 +3915,15 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-08,SLH1,최염광,"SLH1 #4
- - 시양산 간 ULD Stacker 1번 배출간 Manual Port 진입 전 기울어짐 발생.
- - ULD 1번 쳐짐 방지 Braket 장착 후 걸림 없음.
-  -> Stacker <-> Manual Port 연결 Braket 걸림 가능성 있음. 
-  -> C-Tray Condition에 따른 증상 심해짐 확인되어, 해당 내용 기구설계 인폼 후 조치 예정.
+2026-04-09,SLH1,김승수,"SLH1 4호기
+ㄴStacker쪽 개선품 part 장착
+-Belt 이탈 방지 Stopper 장착 완료
 
-SLH1 #5
- - Advantest Tester Docking 작업 완료. Align 최종 확인.
+ㄴ양산 대응
 
-SLH1 #6
- - Advantest Tester Docking 작업 완료. Align 최종 확인.
- - Manual Port 장착 완료.
-",,
+SLH1 5호기
+ㄴPower Cable 연결 및 정리
+
+SLH1 5,6,7 호기
+ㄴ어드반 테스트 업체 Docking 대응 
+-전 호기 완료",,
