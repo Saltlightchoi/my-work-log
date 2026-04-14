@@ -76,6 +76,18 @@ SLH1  #7
  - 전장 Pannel Connector 연결 및 Cable 정리 완료.
 
 우익 Utility 관련 공압 Cable 뭉치 바닥까지 내리는 작업 상태로 15일 조치 예정.",,
+2026-04-09,SLH1,김승수,"SLH1 4호기
+ㄴStacker쪽 개선품 part 장착
+-Belt 이탈 방지 Stopper 장착 완료
+
+ㄴ양산 대응
+
+SLH1 5호기
+ㄴPower Cable 연결 및 정리
+
+SLH1 5,6,7 호기
+ㄴ어드반 테스트 업체 Docking 대응 
+-전 호기 완료",,
 2026-04-08,SLH1,김범규,"04.08
 
 SLH1
@@ -3915,15 +3927,17 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-09,SLH1,김승수,"SLH1 4호기
-ㄴStacker쪽 개선품 part 장착
--Belt 이탈 방지 Stopper 장착 완료
+2026-04-14,SLH1,김범규,"SLH1
 
-ㄴ양산 대응
+4호기
+- IN/OUTPUT, TESTSITE TRAY LOCK Cyl. Shaft 개선품 교체.
+- C-TRAY BOW 관련 PIN 검증
+ㄴ 6.8*10 PIN 사용시 DEVIATION FRONT/REAR 0.3mm 이내로 되어 확산요청.
+ㄴ ULD 1, 2 개선 PIN 장착 완료.
+- LD TRANSFER ROTARY BASE 교체 진행중.
 
-SLH1 5호기
-ㄴPower Cable 연결 및 정리
+5호기
+- LD, ULD MIDDLE FEEDER DOCKING LEVELING 완료.
 
-SLH1 5,6,7 호기
-ㄴ어드반 테스트 업체 Docking 대응 
--전 호기 완료",,
+6호기, 7호기
+- TRANSFER GRIP MOTOR COVER BRK 개선품 장착 완료.",,
