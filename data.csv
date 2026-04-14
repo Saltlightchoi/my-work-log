@@ -1,4 +1,18 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-14,SLH1,김범규,"SLH1
+
+4호기
+- IN/OUTPUT, TESTSITE TRAY LOCK Cyl. Shaft 개선품 교체.
+- C-TRAY BOW 관련 PIN 검증
+ㄴ 6.8*10 PIN 사용시 DEVIATION FRONT/REAR 0.3mm 이내로 되어 확산요청.
+ㄴ ULD 1, 2 개선 PIN 장착 완료.
+- LD TRANSFER ROTARY BASE 교체 진행중.
+
+5호기
+- LD, ULD MIDDLE FEEDER DOCKING LEVELING 완료.
+
+6호기, 7호기
+- TRANSFER GRIP MOTOR COVER BRK 개선품 장착 완료.",,
 2026-04-13,SLH1,윤창섭,"SLH1 
 
 1호기
@@ -3927,17 +3941,9 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-14,SLH1,김범규,"SLH1
-
-4호기
-- IN/OUTPUT, TESTSITE TRAY LOCK Cyl. Shaft 개선품 교체.
-- C-TRAY BOW 관련 PIN 검증
-ㄴ 6.8*10 PIN 사용시 DEVIATION FRONT/REAR 0.3mm 이내로 되어 확산요청.
-ㄴ ULD 1, 2 개선 PIN 장착 완료.
-- LD TRANSFER ROTARY BASE 교체 진행중.
-
-5호기
-- LD, ULD MIDDLE FEEDER DOCKING LEVELING 완료.
-
-6호기, 7호기
-- TRANSFER GRIP MOTOR COVER BRK 개선품 장착 완료.",,
+2026-04-14,SLH1,김범규,"입고물품
+TRANSFER ROTARY BASE 1EA
+TRANSFER MOTOR COVER BRK 8EA
+IN/OUTPUT, TESTSITE TRAY LOCK SHAFT 8EA 
+SET PLATE 개선 PIN 6.9*10 8EA
+SET PLATE 개선 PIN 6.8*10 8EA",,
