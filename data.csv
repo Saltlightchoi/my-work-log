@@ -1,4 +1,18 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-15,SLH1,김범규,"SLH1
+
+1호기
+- 삼성 이우철 프로 요청으로 TESTSITE 평탄도 재측정 진행.
+> 평탄도 3mm 이상 틀어짐 확인되어 평탄도 SETTING 진행
+> CONTACT TEACHING 진행 후 SOCKET, TRAY YIELD DATA CLEAR 후 양산 진행하여 현재 SETTING으로 YIELD 측정 진행중.
+
+2호기
+- REJECT IN/OUT STACKER C-TRAY GUIDE 개선품 장착.
+- LD TRANSFER ROTARY BASE 교체
+> 교체 진행 후 GRIP ALIGN 검증 진행하였으나 동일 증상 유지됨.
+> 7호기 우선 SET UP 진행 후 DRY RUN, DEVICE RUN 진행 후 LD TRANSFER 2호기와 SWAP 진행 예정.
+- 명일 INSERT 개선품 2 TYPE 입고하여 검증 진행 예정.
+",,
 2026-04-14,SLH1,김범규,"SLH1
 
 4호기
@@ -4043,17 +4057,12 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-15,SLH1,김범규,"SLH1
+2026-04-15,SLH1,김기혁,"SLH1 1호기
+ㄴTest front rear  평탄도 측정 진행
+-Press teaching 값 조정
+-Retest Yield Test 진행 중(6,8번 Tray 빼고 가동, 명일 Data 취합 및 확인)
+-Retest Yield test (6번 Tray에 retest 많이 나오는 insert 몰아넣고, 가동 확인 예정)
 
-1호기
-- 삼성 이우철 프로 요청으로 TESTSITE 평탄도 재측정 진행.
-> 평탄도 3mm 이상 틀어짐 확인되어 평탄도 SETTING 진행
-> CONTACT TEACHING 진행 후 SOCKET, TRAY YIELD DATA CLEAR 후 양산 진행하여 현재 SETTING으로 YIELD 측정 진행중.
-
-2호기
-- REJECT IN/OUT STACKER C-TRAY GUIDE 개선품 장착.
-- LD TRANSFER ROTARY BASE 교체
-> 교체 진행 후 GRIP ALIGN 검증 진행하였으나 동일 증상 유지됨.
-> 7호기 우선 SET UP 진행 후 DRY RUN, DEVICE RUN 진행 후 LD TRANSFER 2호기와 SWAP 진행 예정.
-- 명일 INSERT 개선품 2 TYPE 입고하여 검증 진행 예정.
-",,
+SLH1 6,7호기
+ㄴMain Air Line 정리 및 연결
+-명일 Turn On ",,
