@@ -1,4 +1,23 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-16,SLH1,김범규,"
+SLH1
+
+4호기
+- INSERT 개선품 검증 진행
+> A, B TYPE 개선 POINT 실측 진행 - 설계치수랑 차이 없음 확인.
+> RFID 삽입하여 T-TRAY #5,6 A TYPE, #7,8 B TYPE으로 RUNNING 진행
+> RUNNING 후 우익 측 CAP DAMAGE 이상 없음으로 시 양산 진행중
+
+- LOT 배출 간 MANUAL PORT BRK에 C-TRAY 걸림
+> MANUAL PORT 후진하여 BRK POS 조정. BRK<->PULLEY POS SETTING 후 배출 간 특이사항 없음.
+> 다른 호기들도 동일 SETTING 진행예정.
+
+- 작일 TRANSFER ROTARY BASE 교체하며 TRANSFER T-Axis 및 GRIP 틀어져
+  INSERT 검증 진행을 위해 임시 TEACHING 진행.
+  TRASNFER SWAP 이후 JIG SETTING 진행 예정.
+
+5,6호기
+- RAN CABLE 연결, 우익 측 담당자 통신 네트워크 설정 및 OS 확산 요청.",,
 2026-04-15,SLH1,김범규,"SLH1
 
 1호기
@@ -4103,22 +4122,10 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-16,SLH1,김범규,"
-SLH1
+2026-04-16,SLH1,김기혁,"SLH1 6,7호기
+ㄴTurn On 
+-MIDDEL FEEDER  DOCKING 및 LEVEL 작업 진행 완료
 
-4호기
-- INSERT 개선품 검증 진행
-> A, B TYPE 개선 POINT 실측 진행 - 설계치수랑 차이 없음 확인.
-> RFID 삽입하여 T-TRAY #5,6 A TYPE, #7,8 B TYPE으로 RUNNING 진행
-> RUNNING 후 우익 측 CAP DAMAGE 이상 없음으로 시 양산 진행중
-
-- LOT 배출 간 MANUAL PORT BRK에 C-TRAY 걸림
-> MANUAL PORT 후진하여 BRK POS 조정. BRK<->PULLEY POS SETTING 후 배출 간 특이사항 없음.
-> 다른 호기들도 동일 SETTING 진행예정.
-
-- 작일 TRANSFER ROTARY BASE 교체하며 TRANSFER T-Axis 및 GRIP 틀어져
-  INSERT 검증 진행을 위해 임시 TEACHING 진행.
-  TRASNFER SWAP 이후 JIG SETTING 진행 예정.
-
-5,6호기
-- RAN CABLE 연결, 우익 측 담당자 통신 네트워크 설정 및 OS 확산 요청.",,
+ㄴ7호기 INIT 동작 중 UNLOAD TRANSFER INIT 불가
+-TRANSFER +LIMIT 인식 불가로 INIT 불가
+-전장박스 COVER 장착시 E-CON 간섭으로 E-CON 접불로 확인 ",,
