@@ -18,6 +18,13 @@ SLH1
 
 5,6호기
 - RAN CABLE 연결, 우익 측 담당자 통신 네트워크 설정 및 OS 확산 요청.",,
+2026-04-16,SLH1,김기혁,"SLH1 6,7호기
+ㄴTurn On 
+-MIDDEL FEEDER  DOCKING 및 LEVEL 작업 진행 완료
+
+ㄴ7호기 INIT 동작 중 UNLOAD TRANSFER INIT 불가
+-TRANSFER +LIMIT 인식 불가로 INIT 불가
+-전장박스 COVER 장착시 E-CON 간섭으로 E-CON 접불로 확인 ",,
 2026-04-15,SLH1,김범규,"SLH1
 
 1호기
@@ -4122,10 +4129,31 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-16,SLH1,김기혁,"SLH1 6,7호기
-ㄴTurn On 
--MIDDEL FEEDER  DOCKING 및 LEVEL 작업 진행 완료
+2026-04-17,SLH1,김범규,"SLH1
 
-ㄴ7호기 INIT 동작 중 UNLOAD TRANSFER INIT 불가
--TRANSFER +LIMIT 인식 불가로 INIT 불가
--전장박스 COVER 장착시 E-CON 간섭으로 E-CON 접불로 확인 ",,
+4호기
+- 시양산 대응 진행.
+> 시양산 진행하며 자재 DAMAGE 육안검사 진행 - 이상 없음.
+> INSERT 개선품 DAMAGE 육안검사 진행 - 이상 없으나 5번 TRAY에 10번 DUT INSERT OPEN 간 부하 발견.
+   ㄴ INSERT COVER 부 조립 불량 발생하여 재조립 후 이상 없음.
+- MOVING BUFFER LOAD 위치 STOPPER 조정.
+> LD HAND MOVING BUFFER X-Axis TEACHING.
+- LD HAND Y-Axis MANUAL 동작 간 떨림 증상
+> 리니어 부 BOLT 풀림 확인되어 재체결 진행.
+
+5호기
+- LD MIDDLE FEEDER RAIL UP 시 T-TRAY 미세하게 튕김
+> RAIL UP Cyl. AIR DAMPER 및 AIR 조절.
+- IN/OUTPUT FRONT/REAR LIFT Cyl. AIR 조절
+> TACK TIME 1050으로 조정 진행.
+- TESTSITE Z-Axis TRAY POS 조정.
+> TRAY POS에서 TRAY LOCKING 시 T-TRAY RAIL 쳐짐 발생하여 TEACHING 진행.
+- MOVING BUFFER ULD POS STOPPER 및 MAGNETIC SENSOR 조정. 
+
+5,6,7호기
+- LAN CABLLE LINE 정리 진행.
+- 우익 측 MAIN POWER 단 상시활선 미연결로 연결작업 진행.
+- LONG RUNNING 진행.
+
+차주 월요일 엔비디아 AUDIT 진행 예정.
+",,
