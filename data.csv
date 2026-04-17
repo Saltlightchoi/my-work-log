@@ -1,4 +1,32 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-17,SLH1,김범규,"SLH1
+
+4호기
+- 시양산 대응 진행.
+> 시양산 진행하며 자재 DAMAGE 육안검사 진행 - 이상 없음.
+> INSERT 개선품 DAMAGE 육안검사 진행 - 이상 없으나 5번 TRAY에 10번 DUT INSERT OPEN 간 부하 발견.
+   ㄴ INSERT COVER 부 조립 불량 발생하여 재조립 후 이상 없음.
+- MOVING BUFFER LOAD 위치 STOPPER 조정.
+> LD HAND MOVING BUFFER X-Axis TEACHING.
+- LD HAND Y-Axis MANUAL 동작 간 떨림 증상
+> 리니어 부 BOLT 풀림 확인되어 재체결 진행.
+
+5호기
+- LD MIDDLE FEEDER RAIL UP 시 T-TRAY 미세하게 튕김
+> RAIL UP Cyl. AIR DAMPER 및 AIR 조절.
+- IN/OUTPUT FRONT/REAR LIFT Cyl. AIR 조절
+> TACK TIME 1050으로 조정 진행.
+- TESTSITE Z-Axis TRAY POS 조정.
+> TRAY POS에서 TRAY LOCKING 시 T-TRAY RAIL 쳐짐 발생하여 TEACHING 진행.
+- MOVING BUFFER ULD POS STOPPER 및 MAGNETIC SENSOR 조정. 
+
+5,6,7호기
+- LAN CABLLE LINE 정리 진행.
+- 우익 측 MAIN POWER 단 상시활선 미연결로 연결작업 진행.
+- LONG RUNNING 진행.
+
+차주 월요일 엔비디아 AUDIT 진행 예정.
+",,
 2026-04-16,SLH1,김범규,"
 SLH1
 
@@ -4129,31 +4157,20 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-17,SLH1,김범규,"SLH1
+2026-04-17,SLH1,김기혁,"SLH1 5,6,7호기
+ㄴ디지털 전력미터 Main Cable 미연결
+-상부 Main 전원 Down후 R,S,T상에 연결 
+-기존 출하 시 연결 되어 왔으나 5,6,7호기 미연결 우익 전장팀에선 해줄일 아니다, 우리쪽에선 결선 메뉴얼에 해당되어 있는 내용이다 의견 충돌로 영업팀과 우익쪽 협의 필요.
 
-4호기
-- 시양산 대응 진행.
-> 시양산 진행하며 자재 DAMAGE 육안검사 진행 - 이상 없음.
-> INSERT 개선품 DAMAGE 육안검사 진행 - 이상 없으나 5번 TRAY에 10번 DUT INSERT OPEN 간 부하 발견.
-   ㄴ INSERT COVER 부 조립 불량 발생하여 재조립 후 이상 없음.
-- MOVING BUFFER LOAD 위치 STOPPER 조정.
-> LD HAND MOVING BUFFER X-Axis TEACHING.
-- LD HAND Y-Axis MANUAL 동작 간 떨림 증상
-> 리니어 부 BOLT 풀림 확인되어 재체결 진행.
+ㄴFlow Cylinder Tack Time 조정
+-Input Output Lift cylinder 속도 조절
+-middle feeder Lift cylinder Damper 조절
+-Test Tray Teaching값 Safety 값이랑 동일 변경
 
-5호기
-- LD MIDDLE FEEDER RAIL UP 시 T-TRAY 미세하게 튕김
-> RAIL UP Cyl. AIR DAMPER 및 AIR 조절.
-- IN/OUTPUT FRONT/REAR LIFT Cyl. AIR 조절
-> TACK TIME 1050으로 조정 진행.
-- TESTSITE Z-Axis TRAY POS 조정.
-> TRAY POS에서 TRAY LOCKING 시 T-TRAY RAIL 쳐짐 발생하여 TEACHING 진행.
-- MOVING BUFFER ULD POS STOPPER 및 MAGNETIC SENSOR 조정. 
+ㄴTray Flow 확인 후 Dry Run 진행
 
-5,6,7호기
-- LAN CABLLE LINE 정리 진행.
-- 우익 측 MAIN POWER 단 상시활선 미연결로 연결작업 진행.
-- LONG RUNNING 진행.
+SLH1 7호기
+ㄴUnload Tray Lift Front Top Check Sensor 미인식
+-Sensor BRK 조정
 
-차주 월요일 엔비디아 AUDIT 진행 예정.
-",,
+ㄴUnload Middle Feeder Docking Sensor 및 Sorber 조정 ",,
