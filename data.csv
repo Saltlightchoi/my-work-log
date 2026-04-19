@@ -98,6 +98,29 @@ SLH1
 ㄴ7호기 INIT 동작 중 UNLOAD TRANSFER INIT 불가
 -TRANSFER +LIMIT 인식 불가로 INIT 불가
 -전장박스 COVER 장착시 E-CON 간섭으로 E-CON 접불로 확인 ",,
+2026-04-16,SLH1,최염광,"SLH1 #1
+ -  Yield Monitoring 시 저조 위치 Socket Swap 요청 및 Insert Tray 3번,4번 Swap 진행
+  -> 특이사항으로 Insert상단 고정 Bolt Type 다른것, 둥근 십자 or 둥근 육각에 따라 고정 면적 줄어들어 저조 발생 의심.
+ - 후속 Lot 진행 후 결과에 따라 Insert 교체 예정.
+  
+SLH1 #4
+ - Insert 개선품 Type 별 2매 입고
+ - 이우철 프로 요청으로 전체 Tray 장착 후 Sample 진행
+ - Transfer Gripper 높이 Setting 및 T축 Teaching 재조정.
+ - ULD Manual Port부 높이 조정 후에 진입부 최대 Tray 기준 정상 배출 확인.
+ - 700ea 자재 나눠서 투입 후 Visual 검증 진행 예정.
+
+SLH1 #6
+ - Turn-ON
+ - LD/ULD Middle Feeder Rail Align 조정 완료.
+
+SLH1 #7
+ - Turn-ON
+ - LD/ULD Middle Feeder Rail Align 조정 완료.
+ - Init 진행시 ULD Transfer Plus Limit 상시감지, 전원 On 안됨
+ - 전면부 Connector Pannel 위치 E-Con 빠짐 재연결
+ - Init 진행시 Hand 정상 Motor Power On, LD Transfer T축 이후부터 On 안됨.
+ - Handler Power Off, 명일 재확인 예정. ",,
 2026-04-15,SLH1,김범규,"SLH1
 
 1호기
@@ -4202,26 +4225,24 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-16,SLH1,최염광,"SLH1 #1
- -  Yield Monitoring 시 저조 위치 Socket Swap 요청 및 Insert Tray 3번,4번 Swap 진행
-  -> 특이사항으로 Insert상단 고정 Bolt Type 다른것, 둥근 십자 or 둥근 육각에 따라 고정 면적 줄어들어 저조 발생 의심.
- - 후속 Lot 진행 후 결과에 따라 Insert 교체 예정.
-  
-SLH1 #4
- - Insert 개선품 Type 별 2매 입고
- - 이우철 프로 요청으로 전체 Tray 장착 후 Sample 진행
- - Transfer Gripper 높이 Setting 및 T축 Teaching 재조정.
- - ULD Manual Port부 높이 조정 후에 진입부 최대 Tray 기준 정상 배출 확인.
- - 700ea 자재 나눠서 투입 후 Visual 검증 진행 예정.
+2026-04-14,SLH1,윤창섭,"SLH1
 
-SLH1 #6
- - Turn-ON
- - LD/ULD Middle Feeder Rail Align 조정 완료.
+5호기
+-> LD/UD Middle feeder docking 완료.
 
-SLH1 #7
- - Turn-ON
- - LD/ULD Middle Feeder Rail Align 조정 완료.
- - Init 진행시 ULD Transfer Plus Limit 상시감지, 전원 On 안됨
- - 전면부 Connector Pannel 위치 E-Con 빠짐 재연결
- - Init 진행시 Hand 정상 Motor Power On, LD Transfer T축 이후부터 On 안됨.
- - Handler Power Off, 명일 재확인 예정. ",,
+6호기, 7호기 공통
+-> transfer motor 고정 block  홀가공이 되어있지 않은 상태로 반입되어 홀가공 되어있는 타입으로 재장착 완료
+
+04.15
+
+SLH1 
+
+5호기
+->  Init 진행 완료 후 Long run 진행
+   ㄴ  LD/UD Middle feeder Y motor error 발생으로 main power 재부팅 및 servo drive 재연결 후 정상 작동 확인
+->  Input/Output t-tray lock shaft 임시 장착
+   ㄴ Input/Output t-tray unlock시 걸림 현상으로 미인식 발생으로 임시 장착 진행 (error 미 발생)
+
+6호기 7호기 공통
+-> LD/UD Hand 공압 Line 포설 및 Cable 정리.
+-> Utility 연결 완료. 명일 Turn on 예정",,
