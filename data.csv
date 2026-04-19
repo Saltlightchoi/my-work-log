@@ -27,6 +27,23 @@
 
 차주 월요일 엔비디아 AUDIT 진행 예정.
 ",,
+2026-04-17,SLH1,김기혁,"SLH1 5,6,7호기
+ㄴ디지털 전력미터 Main Cable 미연결
+-상부 Main 전원 Down후 R,S,T상에 연결 
+-기존 출하 시 연결 되어 왔으나 5,6,7호기 미연결 우익 전장팀에선 해줄일 아니다, 우리쪽에선 결선 메뉴얼에 해당되어 있는 내용이다 의견 충돌로 영업팀과 우익쪽 협의 필요.
+
+ㄴFlow Cylinder Tack Time 조정
+-Input Output Lift cylinder 속도 조절
+-middle feeder Lift cylinder Damper 조절
+-Test Tray Teaching값 Safety 값이랑 동일 변경
+
+ㄴTray Flow 확인 후 Dry Run 진행
+
+SLH1 7호기
+ㄴUnload Tray Lift Front Top Check Sensor 미인식
+-Sensor BRK 조정
+
+ㄴUnload Middle Feeder Docking Sensor 및 Sorber 조정 ",,
 2026-04-16,SLH1,김범규,"
 SLH1
 
@@ -4157,20 +4174,31 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-17,SLH1,김기혁,"SLH1 5,6,7호기
-ㄴ디지털 전력미터 Main Cable 미연결
--상부 Main 전원 Down후 R,S,T상에 연결 
--기존 출하 시 연결 되어 왔으나 5,6,7호기 미연결 우익 전장팀에선 해줄일 아니다, 우리쪽에선 결선 메뉴얼에 해당되어 있는 내용이다 의견 충돌로 영업팀과 우익쪽 협의 필요.
+2026-04-17,SLH1,최염광,"SLH1 #4
+ - T-Tray 입고품 검증 시양산 진행
+  -> Lot 진행간 Cap Damage 외관검사시 특이사항 없음
+  -> Tray 4매 Hole Damage 발생여부 확인시 특이사항 없음
+  -> Tray 5번 Insert 1ea Open 동작 이상, 조립 불량으로 재조립 후 정상.
+  -> Moving Buffer Loading 위치 이동시에 Mask Cylinder 바브 Fitting 간섭 발생
+  -> Shock Absorber, Hard Stop Block 위치 조정 후 X Teaching 조정.
+  -> LD Hand Y축 Motor 동작간 떨림 발생
+   -> Y축 Rail 고정 Block Bolt 4ea중 3ea 70프로 이상 풀림, 1ea 유실
+   -> Loctiie 도포 후 Rejoint 진행, 재풀림 발생여부 Monitoring 필요. ULD Hand 이상 없음.
 
-ㄴFlow Cylinder Tack Time 조정
--Input Output Lift cylinder 속도 조절
--middle feeder Lift cylinder Damper 조절
--Test Tray Teaching값 Safety 값이랑 동일 변경
+SLH1 #5,#6,#7
+1. Main Power 부 상시활선 미연결 상태 확인
+ - 우익측 Utility Power Off 요청 후 재연결
+  -> 해당 내용 관련하여 우익 Utility 팀 Manual 미확인 후 작업 & 본사 Main Power Cable 해제시 주황색 상시활선 미연결 상태로 입고
+  -> 추후 장비 입고시에 상시활선 고정상태로 입고 요청.
+2. LD/ULD Middle Rail Up 동작 관련 조정
+  -> 후면부 공압 0.52Mpa Setting 후 Up 동작시 Air Damper 조정
 
-ㄴTray Flow 확인 후 Dry Run 진행
+3. In/Out Put Front/Rear Lifter 동작간 소음 발생
+  -> Up/Down Cylinder Take Time 1050~1100 Setting 완료.
 
-SLH1 7호기
-ㄴUnload Tray Lift Front Top Check Sensor 미인식
--Sensor BRK 조정
+4. Test Site Tray Lock Pin 동작 시 Rail 쳐짐
+  -> Safety Pos' Tray Pos' Teaching 동일하게 변경.
 
-ㄴUnload Middle Feeder Docking Sensor 및 Sorber 조정 ",,
+5. 내부망 Lan Cable 정리 완료.
+
+6. Tray 2매 삽입 후 Dry Run 진행 중.",,
