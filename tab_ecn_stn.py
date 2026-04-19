@@ -57,7 +57,8 @@ class ECNSTNTab:
 
             h_idx = -1
             for i, row in df_raw.head(20).iterrows():
-                row_str = "".join(row.astype(str)).replace(" ", "").lower()
+                # ★ 에러 해결: 빈칸/숫자가 섞여 있어도 문자로 강제 변환
+                row_str = "".join(map(str, row.tolist())).replace(" ", "").lower()
                 if '날짜' in row_str and ('발행' in row_str or '장비호기' in row_str or '내용' in row_str or 'as-is' in row_str):
                     h_idx = i
                     break
@@ -218,7 +219,6 @@ class ECNSTNTab:
                 if "특이사항" in filtered_df.columns: col_cfg["특이사항"] = st.column_config.TextColumn("특이사항", width="medium")
                 if "조치현황" in filtered_df.columns: col_cfg["조치현황"] = st.column_config.TextColumn("조치현황", width="small")
                 
-                # 안전장치
                 if "첨부(파일명)" in filtered_df.columns: 
                     col_cfg["첨부(파일명)"] = st.column_config.TextColumn("첨부(파일명 입력)", width="medium")
 
@@ -231,7 +231,6 @@ class ECNSTNTab:
                     key=f"ecn_editor_safe_{equipment}_{unit}_{search_keyword}"
                 )
                 
-                # ★ 하단 복사기
                 st.markdown("---")
                 st.markdown("#### 🚀 원본 파일 바로 열기 (1초 복사기)")
                 st.info("웹 표에서 복사하면 따옴표가 늘어나는 버그가 있어 만든 전용 복사기입니다. 위 표에서 **파일명만 복사**해서 아래에 붙여넣어 주세요.")
