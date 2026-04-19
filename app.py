@@ -1,7 +1,9 @@
 import streamlit as st
 from github import Github
 
-# 만들어둔 모듈(파일)에서 클래스들을 수입해옵니다!
+# ==========================================
+# ★ 이 부분이 없으면 NameError 에러가 납니다! (절대 누락 금지)
+# ==========================================
 from config import DataManager
 from tab_work_log import WorkLogTab
 from tab_cs_check import CSCheckSheetTab
