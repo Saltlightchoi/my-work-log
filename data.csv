@@ -181,6 +181,17 @@ SLH1 #5
 SLH1 #6,#7
  - LD/ULD Hand 공압 Line 포설 및 Cable 정리.
  - Utility 연결 완료. 명일 Middle Rail 조정 예정.",,
+2026-04-15,SLH1,윤창섭,"SLH1 
+
+5호기
+->  Init 진행 완료 후 Long run 진행
+   ㄴ  LD/UD Middle feeder Y motor error 발생으로 main power 재부팅 및 servo drive 재연결 후 정상 작동 확인
+->  Input/Output t-tray lock shaft 임시 장착
+   ㄴ Input/Output t-tray unlock시 걸림 현상으로 미인식 발생으로 임시 장착 진행 (error 미 발생)
+
+6호기 7호기 공통
+-> LD/UD Hand 공압 Line 포설 및 Cable 정리.
+-> Utility 연결 완료. 명일 Turn on 예정",,
 2026-04-14,SLH1,김범규,"SLH1
 
 4호기
@@ -4246,14 +4257,8 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-15,SLH1,윤창섭,"SLH1 
-
-5호기
-->  Init 진행 완료 후 Long run 진행
-   ㄴ  LD/UD Middle feeder Y motor error 발생으로 main power 재부팅 및 servo drive 재연결 후 정상 작동 확인
-->  Input/Output t-tray lock shaft 임시 장착
-   ㄴ Input/Output t-tray unlock시 걸림 현상으로 미인식 발생으로 임시 장착 진행 (error 미 발생)
+2026-04-16,SLH1,윤창섭,"SLH1
 
 6호기 7호기 공통
--> LD/UD Hand 공압 Line 포설 및 Cable 정리.
--> Utility 연결 완료. 명일 Turn on 예정",,
+-> 금일 Trun On 완료
+     ㄴ LD/UD Middle feeder docking 완료",,
