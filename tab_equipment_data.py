@@ -40,7 +40,7 @@ class EquipmentDataTab:
         for y, m in ym_list:
             eng_month = month_dict.get(m, "January")
             
-            # ★ 4단계 스마트 탐색 복구
+            # ★ 4단계 스마트 탐색
             file_candidates = [
                 f"data/{equipment}/{equipment}_{unit} - {eng_month} {y}.xlsx",
                 f"data/{equipment}/{equipment} - {eng_month} {y}.xlsx",
@@ -67,22 +67,20 @@ class EquipmentDataTab:
                 excel_data = io.BytesIO(file_content.decoded_content)
                 xls = pd.read_excel(excel_data, sheet_name=None, header=None, engine='openpyxl')
                 
-                df_raw = None
+                # ★ 해결 1: 특정 글자를 못 찾아도 에러 안 나게, 무조건 첫 번째 시트를 강제 기본값으로 설정!
+                df_raw = list(xls.values())[0] 
                 for _, data in xls.items():
                     if data.astype(str).apply(lambda r: r.str.contains('Unit|Output', case=False).any(), axis=1).any():
                         df_raw = data; break
                 
-                if df_raw is None: 
-                    missing_files.append(target_file)
-                    continue
-
                 def get_sum_row(keywords):
                     for _, row in df_raw.iterrows():
-                        rs = "".join(row.astype(str)).lower().replace(" ", "").replace("#", "").replace("_", "")
-                        if any(k in rs for k in keywords) and not any(x in rs for x in ['%', '발생률']):
+                        # ★ 해결 2: join 에러 방지를 위해 map(str) 사용
+                        rs = "".join(map(str, row.tolist())).lower().replace(" ", "").replace("#", "").replace("_", "")
+                        if any(k in rs for k in keywords) and not any(x in rs for x in ['%', '발생률', 'rate']):
                             vals = row.tolist()
                             for i, v in enumerate(vals):
-                                if str(v).replace('.','').isdigit(): return (vals[i:i+31]+[0]*31)[:31]
+                                if str(v).replace('.','').isdigit() or str(v) in ['비가동', '미가동']: return (vals[i:i+31]+[0]*31)[:31]
                     return [0]*31
 
                 u_vals = get_sum_row(['totalunit', 'output'])
@@ -103,7 +101,8 @@ class EquipmentDataTab:
 
                 h_idx = -1
                 for i, r in df_raw.iterrows():
-                    rs = "".join(r.astype(str)).lower().replace(" ", "")
+                    # ★ 해결 3: join 에러 완벽 차단
+                    rs = "".join(map(str, r.tolist())).lower().replace(" ", "")
                     if 'errorcode' in rs or '에러코드' in rs or '코드' in rs:
                         h_idx = i
                         break
@@ -160,10 +159,14 @@ class EquipmentDataTab:
                     time_val = clean_val(r.iloc[m_col['T']] if m_col['T'] != -1 else None)
                     if ':' not in time_val and '.' in time_val: time_val = time_val.split('.')[0]
 
+                    code_val = clean_val(raw_c)
+                    if code_val.endswith('.0'): code_val = code_val[:-2]
+
                     all_cl.append({
                         "DateObj": current_dt_obj,
                         "Date": current_dt_obj.strftime('%Y-%m-%d'), 
                         "Time": time_val,
+                        "Code": code_val,
                         "PPJ": current_ppj_val, 
                         "Msg": clean_val(raw_m), 
                         "Act": clean_val(r.iloc[m_col['A']] if m_col['A'] != -1 else None), 
@@ -179,7 +182,7 @@ class EquipmentDataTab:
             st.warning(f"⚠️ 선택하신 기간 중 깃허브에 존재하지 않는 파일이 있습니다:\n" + "\n".join([f"- {f}" for f in missing_files]))
 
         if not all_cdf:
-            st.error("데이터를 찾지 못했습니다. 깃허브에 해당 월의 파일이 있는지, 또는 선택한 날짜에 데이터가 있는지 확인해주세요.")
+            st.error("데이터를 찾지 못했습니다. 깃허브에 해당 월의 엑셀 파일이 있는지 다시 한 번 확인해 주세요.")
             return
 
         final_cdf = pd.concat(all_cdf).reset_index(drop=True)
@@ -194,7 +197,7 @@ class EquipmentDataTab:
             final_cdf[c] = pd.to_numeric(final_cdf[c].astype(str).str.replace(',', '').replace(['nan','비가동','None',''], '0'), errors='coerce').fillna(0)
         
         final_cdf['Cum_PPJ'] = final_cdf.apply(lambda r: round(final_cdf.loc[:r.name, 'Unit'].sum() / final_cdf.loc[:r.name, 'Jam'].sum(), 1) if final_cdf.loc[:r.name, 'Jam'].sum() > 0 else 0, axis=1)
-
+        
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.15, 
                             subplot_titles=("Unit 및 Jam 건수 (보조축 적용)", "생산 효율(PPJ)"), 
                             specs=[[{"secondary_y": True}], [{"secondary_y": False}]])
@@ -225,7 +228,7 @@ class EquipmentDataTab:
             fdf['Date'] = fdf['Date'].ffill()
             fdf['PPJ'] = fdf['PPJ'].ffill().fillna("0")
             
-            html = "".join([f"<tr><td>{r['Date'] if not pd.isna(r['Date']) else ''}</td><td>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td>{r['Time']}</td><td>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
-            st.markdown(f"<table class='final-report-table'><thead><tr><th style='width:90px;'>날짜</th><th style='width:60px;'>PPJ</th><th>에러내용</th><th>조치내용</th><th style='width:70px;'>시간</th><th style='width:90px;'>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
+            html = "".join([f"<tr><td style='width:75px;'>{r['Date'] if not pd.isna(r['Date']) else ''}</td><td style='width:60px;'>{r.get('Code', '')}</td><td style='width:60px;'>{r['PPJ']}</td><td class='t-left'>{r['Msg']}</td><td class='t-left'>{r['Act']}</td><td style='width:65px;'>{r['Time']}</td><td style='width:90px;'>{r['Loc']}</td></tr>" for _, r in fdf.iterrows()])
+            st.markdown(f"<table class='final-report-table'><thead><tr><th style='width:75px;'>날짜</th><th style='width:60px;'>코드</th><th style='width:60px;'>PPJ</th><th>에러내용</th><th>조치내용</th><th style='width:65px;'>시간</th><th style='width:90px;'>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
         else:
             st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
