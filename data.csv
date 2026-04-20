@@ -121,6 +121,11 @@ SLH1 #7
  - 전면부 Connector Pannel 위치 E-Con 빠짐 재연결
  - Init 진행시 Hand 정상 Motor Power On, LD Transfer T축 이후부터 On 안됨.
  - Handler Power Off, 명일 재확인 예정. ",,
+2026-04-16,SLH1,윤창섭,"SLH1
+
+6호기 7호기 공통
+-> 금일 Trun On 완료
+     ㄴ LD/UD Middle feeder docking 완료",,
 2026-04-15,SLH1,김범규,"SLH1
 
 1호기
@@ -4257,8 +4262,26 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-16,SLH1,윤창섭,"SLH1
+2026-04-20,SLH1,김범규,"SLH1
 
-6호기 7호기 공통
--> 금일 Trun On 완료
-     ㄴ LD/UD Middle feeder docking 완료",,
+1호기
+- ULD SET PLATE 2 Z-Axis UP ERR.
+> REJECT REAR STACKER ALIGN GUIDE POS 조정
+
+4호기
+- LD HAND LD2 SET PLATE Z-Axis TEACHING
+- LD HAND MOV BUFFER Z-Axis TEACHING
+- 엔비디아 내방하여 AUDIT 대응 진행.
+> 대응 간 특이사항 없음.
+- SET PLATE PIN 6.8*10 확산 요청분 입고 일정 확인
+> 명일 본사 입고 예정.
+
+6,7호기
+- 후면부 공압 조정(5.2Mpa)
+- LD, ULD PRECIZER PITCH UP/DOWN AIR SPEED CONTROLLER 장착 및 AIR 조절.
+- MOV BUFFER STOPPER BLOCK 재원 관련 시정조치서 상신.
+> FIX,MOV BUFFER SENSOR BRK 체결 간 BOLT에 따라 STOPPER 정상 기능 유/무 차이 확인됨
+> 기존 STOPPER BLOCK 재원 20mm -> 28~30mm로 변경 요청.
+
+
+ ",,
