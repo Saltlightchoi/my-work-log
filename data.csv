@@ -1,4 +1,27 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-20,SLH1,김범규,"SLH1
+
+1호기
+- ULD SET PLATE 2 Z-Axis UP ERR.
+> REJECT REAR STACKER ALIGN GUIDE POS 조정
+
+4호기
+- LD HAND LD2 SET PLATE Z-Axis TEACHING
+- LD HAND MOV BUFFER Z-Axis TEACHING
+- 엔비디아 내방하여 AUDIT 대응 진행.
+> 대응 간 특이사항 없음.
+- SET PLATE PIN 6.8*10 확산 요청분 입고 일정 확인
+> 명일 본사 입고 예정.
+
+6,7호기
+- 후면부 공압 조정(5.2Mpa)
+- LD, ULD PRECIZER PITCH UP/DOWN AIR SPEED CONTROLLER 장착 및 AIR 조절.
+- MOV BUFFER STOPPER BLOCK 재원 관련 시정조치서 상신.
+> FIX,MOV BUFFER SENSOR BRK 체결 간 BOLT에 따라 STOPPER 정상 기능 유/무 차이 확인됨
+> 기존 STOPPER BLOCK 재원 20mm -> 28~30mm로 변경 요청.
+
+
+ ",,
 2026-04-17,SLH1,김범규,"SLH1
 
 4호기
@@ -4262,26 +4285,17 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-20,SLH1,김범규,"SLH1
+2026-04-20,SLH1,김기혁,"*SLH1 4호기
+ ㄴ엔비디아 내방 AUDIT 대응
 
-1호기
-- ULD SET PLATE 2 Z-Axis UP ERR.
-> REJECT REAR STACKER ALIGN GUIDE POS 조정
+*SLH1 1호기
+ㄴ주말간 발생한 JAM LIST 정리
+-ULD SET PLATE 2 Z-Axis UP ERR 발생 
+-REJECK에서 Align guide가 C-TRAY를 치면서 틀어져 발생
+-Align Guide 재 조정 작업
 
-4호기
-- LD HAND LD2 SET PLATE Z-Axis TEACHING
-- LD HAND MOV BUFFER Z-Axis TEACHING
-- 엔비디아 내방하여 AUDIT 대응 진행.
-> 대응 간 특이사항 없음.
-- SET PLATE PIN 6.8*10 확산 요청분 입고 일정 확인
-> 명일 본사 입고 예정.
+ㄴhuman Err 발생
 
-6,7호기
-- 후면부 공압 조정(5.2Mpa)
-- LD, ULD PRECIZER PITCH UP/DOWN AIR SPEED CONTROLLER 장착 및 AIR 조절.
-- MOV BUFFER STOPPER BLOCK 재원 관련 시정조치서 상신.
-> FIX,MOV BUFFER SENSOR BRK 체결 간 BOLT에 따라 STOPPER 정상 기능 유/무 차이 확인됨
-> 기존 STOPPER BLOCK 재원 20mm -> 28~30mm로 변경 요청.
-
-
- ",,
+*SLH1 5,6,7호기
+ㄴLD, ULD PRECIZER PITCH UP/DOWN Air Speed 피팅 CONTROLLER 장착 및 Tack time 조절
+",,
