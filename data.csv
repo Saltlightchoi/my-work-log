@@ -263,6 +263,19 @@ SLH1 #6,#7
 6호기 7호기 공통
 -> LD/UD Hand 공압 Line 포설 및 Cable 정리.
 -> Utility 연결 완료. 명일 Turn on 예정",,
+2026-04-15,SLH1,김승수,"SLH1 
+
+1호기
+Test front rear  평탄도 측정 진행
+
+4호기
+L,R gripper align 틀어짐으로 loader transfer base  교체 진행
+-> L,R gripper 에러 코드 40.0으로 인해 다회전 클리어 진행
+ㄴ교체 후 틀어진 Align 동일 현상
+명일 원인 분석 및 파트 구매 요청 예정
+
+6,7호기
+메인 공압라인 정리 및 재단 진행",,
 2026-04-14,SLH1,김범규,"SLH1
 
 4호기
@@ -4328,16 +4341,11 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-15,SLH1,김승수,"SLH1 
-
-1호기
-Test front rear  평탄도 측정 진행
-
-4호기
-L,R gripper align 틀어짐으로 loader transfer base  교체 진행
--> L,R gripper 에러 코드 40.0으로 인해 다회전 클리어 진행
-ㄴ교체 후 틀어진 Align 동일 현상
-명일 원인 분석 및 파트 구매 요청 예정
-
-6,7호기
-메인 공압라인 정리 및 재단 진행",,
+2026-04-20,SLH1,김승수,"SLH1 
+6호기
+ㄴTurn On 
+-MIDDEL FEEDER  DOCKING 및 LEVEL 작업 진행 완료
+7호기
+ INIT 동작 중 UNLOAD TRANSFER INIT 불가
+-TRANSFER +LIMIT 인식 불가로 INIT 불가
+-전장박스 COVER 장착시 E-CON 간섭으로 E-CON 접불로 확인 ",,
