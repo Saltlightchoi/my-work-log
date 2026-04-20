@@ -65,6 +65,14 @@
 6호기, 7호기 공통
 -> 이우철 프로 요청으로 L/D, U/D preciser mask up/down 및 Insert pitch up/down cylinder 속도 조정
 -> Insert pitch up/down cylinder speed con이 장착되어있지않아 공압 speed con 연결하여 재포설",,
+2026-04-16,SLH1,김승수,"SLH1 
+6호기
+ㄴTurn On 
+-MIDDEL FEEDER  DOCKING 및 LEVEL 작업 진행 완료
+7호기
+ INIT 동작 중 UNLOAD TRANSFER INIT 불가
+-TRANSFER +LIMIT 인식 불가로 INIT 불가
+-전장박스 COVER 장착시 E-CON 간섭으로 E-CON 접불로 확인 ",,
 2026-04-17,SLH1,김범규,"SLH1
 
 4호기
@@ -4341,11 +4349,3 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-20,SLH1,김승수,"SLH1 
-6호기
-ㄴTurn On 
--MIDDEL FEEDER  DOCKING 및 LEVEL 작업 진행 완료
-7호기
- INIT 동작 중 UNLOAD TRANSFER INIT 불가
--TRANSFER +LIMIT 인식 불가로 INIT 불가
--전장박스 COVER 장착시 E-CON 간섭으로 E-CON 접불로 확인 ",,
