@@ -36,6 +36,35 @@
 *SLH1 5,6,7호기
 ㄴLD, ULD PRECIZER PITCH UP/DOWN Air Speed 피팅 CONTROLLER 장착 및 Tack time 조절
 ",,
+2026-04-20,SLH1,윤창섭,"SLH1 
+
+1호기
+주말동안 발생한 error review 
+
+1. Testsite rear front rotation check error 
+    ㄴ 7번 Picker pick할때 두장을 pick 하면서 자재 끼임으로 인해 error 발생 (우익측에서 작업자 miss로 바코드 라벨이 같이 붙어있어 발생)
+    ㄴ 19일 18시 경에 재발생하여 CCTV로 확인해 보앗으나 아침에 발생한 문제와는 다른문제로 판단됨. 또한 해당 Insert 점검 해보았으나 특이사항이 없어 추후 장비 가동시 재확인 예정입니다. 
+
+2. U/D hand Module is not exist no.6 (tray no 01)
+    ㄴ Testsite rear front rotation check error 발생 후 barcode 문제로 정비사가 자재 제거했으나 OS data 상에는 남아있어 error 발생 
+
+3. L/D, U/D hand barcode error
+    ㄴ 자재 투입 miss error 
+
+4. Set-plate z축 up sensor 미인식 error
+    ㄴ Reject stacker에서 U/D transfer가 align이 맞지않은 상태로 pick하여 c-tray 안착 miss error 발생
+    ㄴ Reject stacker c-tray align guide cylinder position 조정 따른 U/D transfer x축 조정 
+
+5. L/D transfer c-tray 방향 Check Fail error 
+    ㄴ 자재 투입 miss error 
+
+6. U/D hand Module is not exist no.1 (tray no 01)
+    ㄴ CCTV 확인시 정비사가 확인 후 ReTry하여 바로 재가동 시작 단발성이라고 생각되어 추후 가동시 재확인 예정입니다.
+
+
+6호기, 7호기 공통
+-> 이우철 프로 요청으로 L/D, U/D preciser mask up/down 및 Insert pitch up/down cylinder 속도 조정
+-> Insert pitch up/down cylinder speed con이 장착되어있지않아 공압 speed con 연결하여 재포설",,
 2026-04-17,SLH1,김범규,"SLH1
 
 4호기
@@ -4299,32 +4328,16 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-20,SLH1,윤창섭,"SLH1 
+2026-04-15,SLH1,김승수,"SLH1 
 
 1호기
-주말동안 발생한 error review 
+Test front rear  평탄도 측정 진행
 
-1. Testsite rear front rotation check error 
-    ㄴ 7번 Picker pick할때 두장을 pick 하면서 자재 끼임으로 인해 error 발생 (우익측에서 작업자 miss로 바코드 라벨이 같이 붙어있어 발생)
-    ㄴ 19일 18시 경에 재발생하여 CCTV로 확인해 보앗으나 아침에 발생한 문제와는 다른문제로 판단됨. 또한 해당 Insert 점검 해보았으나 특이사항이 없어 추후 장비 가동시 재확인 예정입니다. 
+4호기
+L,R gripper align 틀어짐으로 loader transfer base  교체 진행
+-> L,R gripper 에러 코드 40.0으로 인해 다회전 클리어 진행
+ㄴ교체 후 틀어진 Align 동일 현상
+명일 원인 분석 및 파트 구매 요청 예정
 
-2. U/D hand Module is not exist no.6 (tray no 01)
-    ㄴ Testsite rear front rotation check error 발생 후 barcode 문제로 정비사가 자재 제거했으나 OS data 상에는 남아있어 error 발생 
-
-3. L/D, U/D hand barcode error
-    ㄴ 자재 투입 miss error 
-
-4. Set-plate z축 up sensor 미인식 error
-    ㄴ Reject stacker에서 U/D transfer가 align이 맞지않은 상태로 pick하여 c-tray 안착 miss error 발생
-    ㄴ Reject stacker c-tray align guide cylinder position 조정 따른 U/D transfer x축 조정 
-
-5. L/D transfer c-tray 방향 Check Fail error 
-    ㄴ 자재 투입 miss error 
-
-6. U/D hand Module is not exist no.1 (tray no 01)
-    ㄴ CCTV 확인시 정비사가 확인 후 ReTry하여 바로 재가동 시작 단발성이라고 생각되어 추후 가동시 재확인 예정입니다.
-
-
-6호기, 7호기 공통
--> 이우철 프로 요청으로 L/D, U/D preciser mask up/down 및 Insert pitch up/down cylinder 속도 조정
--> Insert pitch up/down cylinder speed con이 장착되어있지않아 공압 speed con 연결하여 재포설",,
+6,7호기
+메인 공압라인 정리 및 재단 진행",,
