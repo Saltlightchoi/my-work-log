@@ -30,6 +30,22 @@ S/W팀 김정욱 선임 내방하여 대응 진행
 5, 6, 7호기 
 ㄴ ULD Manual port와 stacker 사이 align 작업 진행 
 ㄴ 레벨 풋 고정 불량 확인, 재작업 진행",,
+2026-04-21,SLH1,김기혁,"SLH1 7호기
+ㄴDummy Run 진행 중
+ㄴC-tray Module position Double-deviation occurred error 발생
+  -L/D hand t-tray deviation position z축 값 수정
+  -L/D hand set-plate1,2 deviation  z축 수정
+  -U/D hand set-plate3,4 deviation z축 수정 
+
+ㄴU/D hand picker UP/DOWN시 떨림 현상 발생
+-HAND X,Y 축 리니어 볼트 풀려있는 경우가 있어 확인했으나 특이사항 없음
+-Up/Down cylinder damper 조정  
+-U/D hand z축 motor 고정 block 볼트가 풀려있어 재고정 문제동일
+   
+-리니어와 HAND 붙어있는 Block에 볼트가 풀려, 살짝 Hand가 기울어진거 같아 보여 명일 Hand 해체 예정
+
+SLH1 6호기
+ㄴDummy Run 진행",,
 2026-04-20,SLH1,김범규,"SLH1
 
 1호기
@@ -4439,19 +4455,16 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-21,SLH1,김기혁,"SLH1 7호기
-ㄴDummy Run 진행 중
-ㄴC-tray Module position Double-deviation occurred error 발생
-  -L/D hand t-tray deviation position z축 값 수정
-  -L/D hand set-plate1,2 deviation  z축 수정
-  -U/D hand set-plate3,4 deviation z축 수정 
+2026-04-21,SLH1,최염광,"SLH1 #6
+ - 전주 금요일 LD Hand 7번 Picker 임시고정으로 Running Check 중지 상태.
+ - LD Hand Z축 & Pitch 조정 후 Dry  Run
+ - 3H 진행 이후 Dummy Run 진행시점 LD Hand 6번 Cylinder 고정 Shaft 풀림확인되어 재고정
+ - Dummy Run 진행중.
 
-ㄴU/D hand picker UP/DOWN시 떨림 현상 발생
--HAND X,Y 축 리니어 볼트 풀려있는 경우가 있어 확인했으나 특이사항 없음
--Up/Down cylinder damper 조정  
--U/D hand z축 motor 고정 block 볼트가 풀려있어 재고정 문제동일
-   
--리니어와 HAND 붙어있는 Block에 볼트가 풀려, 살짝 Hand가 기울어진거 같아 보여 명일 Hand 해체 예정
+SLH1 #7
+ - ULD Hand Z Up/Down 동작간 떨림 발생
+ - Hand Align 기울어짐 확인되어 고정Bolt 전체적으로 확인간 특이사항 없음
+ - Hand Assy' Base Frame ㄷ자 Block 고정 Blot 풀림 확인되어 명일 Assy 탈거 후 조치 예정
 
-SLH1 6호기
-ㄴDummy Run 진행",,
+SLH1 #5
+ - 김정욱 선임 내방 17일자 OS 수정사항 Test 진행 완료.",,
