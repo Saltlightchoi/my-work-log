@@ -15,6 +15,21 @@ Dummy Run 진행 중
     ㄴ Hand가 쳐져있는 상태로 보여 리니어 볼트 및 hand 볼트를 확인했으나 특이사항 없음
     ㄴ U/D hand z축 motor 고정 block 볼트가 풀려있어 재고정하고 해봤으나 현상은 여전히 발생 중
     ㄴ 리니어에 고정block에 틈이있어 보니 볼트가 풀려 쳐진것으로 확인됨  명일 이어서 재작업 예정.",,
+2026-04-21,SLH1,조건희,"SLH1 
+
+4호기
+시 양산 대응 
+
+5호기 
+S/W팀 김정욱 선임 내방하여 대응 진행
+ㄴ 기존 C-tray 단 체크 시 적용되던 offset Auto Teaching 에서 단 체크를 사용하는 Sensor Pos 추가, Sensor Pos 측정 기능 추가 체크 시 센서 왕복 동작하며 감지 검
+ㄴ C-tray ULD 배출 시 count 개수 지정할 수 있도록 수정 검증
+ㄴ C-tray 투입 기존 28장에서 30장까지 투입하여 장비 가동 가능하게 변경 
+빈 C-tray로 검증 진행 완료 
+
+5, 6, 7호기 
+ㄴ ULD Manual port와 stacker 사이 align 작업 진행 
+ㄴ 레벨 풋 고정 불량 확인, 재작업 진행",,
 2026-04-20,SLH1,김범규,"SLH1
 
 1호기
@@ -81,7 +96,9 @@ Dummy Run 진행 중
 6호기, 7호기 공통
 -> 이우철 프로 요청으로 L/D, U/D preciser mask up/down 및 Insert pitch up/down cylinder 속도 조정
 -> Insert pitch up/down cylinder speed con이 장착되어있지않아 공압 speed con 연결하여 재포설",,
-2026-04-20,SLH1,조건희,"1호기
+2026-04-20,SLH1,조건희,"SLH1
+
+1호기
 
 주말 간 발생 한  에러리뷰 진행
 
@@ -4422,18 +4439,3 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-21,SLH1,조건희,"SLH1 
-
-4호기
-시 양산 대응 
-
-5호기 
-S/W팀 김정욱 선임 내방하여 대응 진행
-ㄴ 기존 C-tray 단 체크 시 적용되던 offset Auto Teaching 에서 단 체크를 사용하는 Sensor Pos 추가, Sensor Pos 측정 기능 추가 체크 시 센서 왕복 동작하며 감지 검
-ㄴ C-tray ULD 배출 시 count 개수 지정할 수 있도록 수정 검증
-ㄴ C-tray 투입 기존 28장에서 30장까지 투입하여 장비 가동 가능하게 변경 
-빈 C-tray로 검증 진행 완료 
-
-5, 6, 7호기 
-ㄴ ULD Manual port와 stacker 사이 align 작업 진행 
-ㄴ 레벨 풋 고정 불량 확인, 재작업 진행",,
