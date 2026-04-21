@@ -81,6 +81,37 @@ Dummy Run 진행 중
 6호기, 7호기 공통
 -> 이우철 프로 요청으로 L/D, U/D preciser mask up/down 및 Insert pitch up/down cylinder 속도 조정
 -> Insert pitch up/down cylinder speed con이 장착되어있지않아 공압 speed con 연결하여 재포설",,
+2026-04-20,SLH1,조건희,"1호기
+
+주말 간 발생 한  에러리뷰 진행
+
+1. Testsite rear front rotation check error 
+ㄴ 7번 Picker pick할때 자재 두장 동시  pick up  
+ㄴ 자재 끼임으로 인해 error 발생 원인은 전공정에서 라벨 부착 miss로 인해 발생
+ㄴ 19일 18시 경에 재발생 CCTV로 확인하였으나, 아침에 발생한 문제와는 다른 문제로 판단 또한 해당 Insert 점검 해보았으나 특이사항 없어 추후 장비 가동 시 재확인 예정
+
+2. U/D hand Module is not exist no.6 (tray no 01)
+ㄴ Testsite rear front rotation check error 발생 후 barcode 문제로 정비사가 자재 제거했으나 OS data 상에는 남아있어 error 발생
+ㄴ 당시에 정비사가 자재 메뉴얼 삽입 후 가동
+
+3. L/D, U/D hand barcode error
+ㄴ 자재 투입 시 발생한 휴먼 에러
+
+4. Set-plate z축 up sensor 미 인식 error
+ㄴ Reject stacker에서 U/D transfer가 align이 틀어진 상태로 pick up 하여 c-tray 안착 miss error 발생
+ㄴ Reject stacker c-tray align guide cylinder position 조정 따른 U/D transfer x축 조정
+
+5. L/D transfer c-tray 방향 Check Fail error 
+ㄴ 자재 투입 시 발생한 휴먼 에러
+
+6. U/D hand Module is not exist no.1 (tray no 01)
+ㄴ CCTV 확인 시 정비사가 확인 후 바로 재 가동 이후 미발생 및 추가 자재 투입 없어 추후 가동 시 재확인 예정
+
+
+6, 7호기
+이우철 프로 요청 사항 진행 
+ㄴ L/D, U/D preciser mask up/down 및 Insert pitch up/down cylinder 속도 조정
+ ㄴ insert pitch up/down cylinder speed con이 미장착 되어 speed con 연결하여 재포설",,
 2026-04-17,SLH1,김범규,"SLH1
 
 4호기
@@ -4391,34 +4422,18 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-20,SLH1,조건희,"1호기
+2026-04-21,SLH1,조건희,"SLH1 
 
-주말 간 발생 한  에러리뷰 진행
+4호기
+시 양산 대응 
 
-1. Testsite rear front rotation check error 
-ㄴ 7번 Picker pick할때 자재 두장 동시  pick up  
-ㄴ 자재 끼임으로 인해 error 발생 원인은 전공정에서 라벨 부착 miss로 인해 발생
-ㄴ 19일 18시 경에 재발생 CCTV로 확인하였으나, 아침에 발생한 문제와는 다른 문제로 판단 또한 해당 Insert 점검 해보았으나 특이사항 없어 추후 장비 가동 시 재확인 예정
+5호기 
+S/W팀 김정욱 선임 내방하여 대응 진행
+ㄴ 기존 C-tray 단 체크 시 적용되던 offset Auto Teaching 에서 단 체크를 사용하는 Sensor Pos 추가, Sensor Pos 측정 기능 추가 체크 시 센서 왕복 동작하며 감지 검
+ㄴ C-tray ULD 배출 시 count 개수 지정할 수 있도록 수정 검증
+ㄴ C-tray 투입 기존 28장에서 30장까지 투입하여 장비 가동 가능하게 변경 
+빈 C-tray로 검증 진행 완료 
 
-2. U/D hand Module is not exist no.6 (tray no 01)
-ㄴ Testsite rear front rotation check error 발생 후 barcode 문제로 정비사가 자재 제거했으나 OS data 상에는 남아있어 error 발생
-ㄴ 당시에 정비사가 자재 메뉴얼 삽입 후 가동
-
-3. L/D, U/D hand barcode error
-ㄴ 자재 투입 시 발생한 휴먼 에러
-
-4. Set-plate z축 up sensor 미 인식 error
-ㄴ Reject stacker에서 U/D transfer가 align이 틀어진 상태로 pick up 하여 c-tray 안착 miss error 발생
-ㄴ Reject stacker c-tray align guide cylinder position 조정 따른 U/D transfer x축 조정
-
-5. L/D transfer c-tray 방향 Check Fail error 
-ㄴ 자재 투입 시 발생한 휴먼 에러
-
-6. U/D hand Module is not exist no.1 (tray no 01)
-ㄴ CCTV 확인 시 정비사가 확인 후 바로 재 가동 이후 미발생 및 추가 자재 투입 없어 추후 가동 시 재확인 예정
-
-
-6, 7호기
-이우철 프로 요청 사항 진행 
-ㄴ L/D, U/D preciser mask up/down 및 Insert pitch up/down cylinder 속도 조정
- ㄴ insert pitch up/down cylinder speed con이 미장착 되어 speed con 연결하여 재포설",,
+5, 6, 7호기 
+ㄴ ULD Manual port와 stacker 사이 align 작업 진행 
+ㄴ 레벨 풋 고정 불량 확인, 재작업 진행",,
