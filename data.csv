@@ -300,6 +300,16 @@ L,R gripper align 틀어짐으로 loader transfer base  교체 진행
 
 6,7호기
 메인 공압라인 정리 및 재단 진행",,
+2026-04-15,SLH1,조건희,"SLH1 
+
+4호기
+LD Transfer 파손으로 인한 loader transfer base  교체 진행
+ ㄴ교체 후 틀어진 Align 동일 현상
+명일 원인 분석 및 파트 구매 요청 예정
+ㄴ L,R gripper 에러 코드 40.0으로 인해 다회전 클리어 진행
+
+6,7호기
+메인 공압라인 정리 및 재단 진행",,
 2026-04-14,SLH1,김범규,"SLH1
 
 4호기
@@ -4365,13 +4375,19 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-15,SLH1,조건희,"SLH1 
+2026-04-21,SLH1,윤창섭,"SLH1 
 
-4호기
-LD Transfer 파손으로 인한 loader transfer base  교체 진행
- ㄴ교체 후 틀어진 Align 동일 현상
-명일 원인 분석 및 파트 구매 요청 예정
-ㄴ L,R gripper 에러 코드 40.0으로 인해 다회전 클리어 진행
+5호기, 6호기, 7호기 공통
+-> Manual port와 stacker align 작업 진행 
 
-6,7호기
-메인 공압라인 정리 및 재단 진행",,
+7호기
+Dummy Run 진행 중
+-> L/D, U/D hand Deviation check error 발생
+    ㄴ L/D hand t-tray position z축 값 수정
+    ㄴ L/D hand set-plate1,2 position z축 수정
+    ㄴ U/D hand set-plate3,4 position z축 수정 
+
+-> U/D hand picker에서 떨림 현상 발생
+    ㄴ Hand가 쳐져있는 상태로 보여 리니어 볼트 및 hand 볼트를 확인했으나 특이사항 없음
+    ㄴ U/D hand z축 motor 고정 block 볼트가 풀려있어 재고정하고 해봤으나 현상은 여전히 발생 중
+    ㄴ 리니어에 고정block에 틈이있어 보니 볼트가 풀려 쳐진것으로 확인됨  명일 이어서 재작업 예정.",,
