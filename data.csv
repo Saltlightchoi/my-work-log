@@ -4365,3 +4365,13 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
+2026-04-15,SLH1,조건희,"SLH1 
+
+4호기
+LD Transfer 파손으로 인한 loader transfer base  교체 진행
+ ㄴ교체 후 틀어진 Align 동일 현상
+명일 원인 분석 및 파트 구매 요청 예정
+ㄴ L,R gripper 에러 코드 40.0으로 인해 다회전 클리어 진행
+
+6,7호기
+메인 공압라인 정리 및 재단 진행",,
