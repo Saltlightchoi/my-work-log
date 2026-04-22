@@ -20,6 +20,20 @@
 ㄴ TEST TIME 50s -> INDEX TIME 20s
 > 삼성 이우철 프로 - 기준은 TESTTIME 50s -> INDEX TIME 10s 이내.
 > 명일 S/W 이성배 수석 내방하여 LD HAND DEVIATION DELAY 등 INDEX TIME 영향 POINT 확인 예정.",,
+2026-04-22,SLH1,김기혁,"SLH1 7호기
+ㄴ작일 ULD Hand Z Up/Down 동작간 떨림 발생
+-Hand 탈거 후 Assy Base Frame 상 하부 Bolt 풀림 확인
+-록타이트 추가 고정 후 Hand 장착
+
+ㄴindex Time 측정 진행
+-EST TIME 120s -> INDEX TIME 7.8s 
+-TEST TIME 50s -> INDEX TIME 20s
+-삼성 이우철 프로 - 기준은 TESTTIME 50s -> INDEX TIME 10s 이내.
+-명일 S/W 이성배 수석 내방하여 LD HAND DEVIATION DELAY 등 INDEX TIME 영향 POINT 확인 예정.
+
+SLH1 5,6,7 호기
+ㄴDummy Run 진행
+",,
 2026-04-21,SLH1,윤창섭,"SLH1 
 
 5호기, 6호기, 7호기 공통
@@ -4507,17 +4521,17 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-22,SLH1,김기혁,"SLH1 7호기
-ㄴ작일 ULD Hand Z Up/Down 동작간 떨림 발생
--Hand 탈거 후 Assy Base Frame 상 하부 Bolt 풀림 확인
--록타이트 추가 고정 후 Hand 장착
+2026-04-22,SLH1,윤창섭,"SLH1 
 
-ㄴindex Time 측정 진행
--EST TIME 120s -> INDEX TIME 7.8s 
--TEST TIME 50s -> INDEX TIME 20s
--삼성 이우철 프로 - 기준은 TESTTIME 50s -> INDEX TIME 10s 이내.
--명일 S/W 이성배 수석 내방하여 LD HAND DEVIATION DELAY 등 INDEX TIME 영향 POINT 확인 예정.
+7호기
+1. 작일 U/D hand 쳐짐 발생으로 볼트풀림 확인 진행
+-> U/D hand 탈거후 확인해보니 리니어와 joint 하는 block 볼트 풀림 및 z축 motor tension block 볼트 풀림 확인하여 록타이트 바른후 재조립 진행
+-> 쳐짐으로 발생한 U/D hand deviation check position 재티칭 
 
-SLH1 5,6,7 호기
-ㄴDummy Run 진행
-",,
+2. Index time 측정 진행
+-> Test time 119s로 진행시 7.8s 측정되며 test time 50s로 진행시 18s 측정으로 스펙아웃
+->  L/D hand deviation position z축 up 속도를 조절할수 있게 해달라고 SW 김정욱 선임에게 인폼하였고, L/D middle feeder up속도를 올려 명일 재측정 예정입니다. 
+
+3. Init 동작 중 L/D transfer x축 home check error 발생
+-> 확인해보니 x축 -limit sensor가 감지가 되지 않아 발생
+-> x축 -limit sensor position 이상으로 재장착 후 position 확인 완료 init동작 마무리 후 자재투입하여 가동 진행",,
