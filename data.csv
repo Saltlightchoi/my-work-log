@@ -1,4 +1,25 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-22,SLH1,김범규,"SLH1
+
+4호기
+- 시양산 진행중
+ㄴ LD PRECIZER MASK OPEN/CLOSE AIR BALANCE 조정
+ㄴ LD FLOW PITCH UP Err.
+> FRONT PITCH UP MAGNETIC SENSOR 위치 조정.
+ㄴ LD FLOW 가운데 ALIGN BAR PIN 쪽 갈림 확인되어 FLOW 부 쇼바 조정, OUT FEEDER  쇼바 조정.
+ㄴ LD HAND Z-Axis SET PLATE POS TEACHING
+> ALIGN PIN 타이트하여 C-TRAY BOW로 인해 지속 발생, 명일 SET PLATE ALIGN PIN 개선품 장착 예정.
+> 명일 오후 이우철 프로 내방하여 LD HAND DEVIATION SETTING 조정 예정.
+
+5,6,7호기
+- DRY RUNNING 및 DEVICE RUNNING 진행중.
+
+7호기
+- INDEX TIME 검증 진행.
+ㄴ TEST TIME 120s -> INDEX TIME 7.8s 
+ㄴ TEST TIME 50s -> INDEX TIME 20s
+> 삼성 이우철 프로 - 기준은 TESTTIME 50s -> INDEX TIME 10s 이내.
+> 명일 S/W 이성배 수석 내방하여 LD HAND DEVIATION DELAY 등 INDEX TIME 영향 POINT 확인 예정.",,
 2026-04-21,SLH1,윤창섭,"SLH1 
 
 5호기, 6호기, 7호기 공통
@@ -4486,24 +4507,17 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-22,SLH1,김범규,"SLH1
+2026-04-22,SLH1,김기혁,"SLH1 7호기
+ㄴ작일 ULD Hand Z Up/Down 동작간 떨림 발생
+-Hand 탈거 후 Assy Base Frame 상 하부 Bolt 풀림 확인
+-록타이트 추가 고정 후 Hand 장착
 
-4호기
-- 시양산 진행중
-ㄴ LD PRECIZER MASK OPEN/CLOSE AIR BALANCE 조정
-ㄴ LD FLOW PITCH UP Err.
-> FRONT PITCH UP MAGNETIC SENSOR 위치 조정.
-ㄴ LD FLOW 가운데 ALIGN BAR PIN 쪽 갈림 확인되어 FLOW 부 쇼바 조정, OUT FEEDER  쇼바 조정.
-ㄴ LD HAND Z-Axis SET PLATE POS TEACHING
-> ALIGN PIN 타이트하여 C-TRAY BOW로 인해 지속 발생, 명일 SET PLATE ALIGN PIN 개선품 장착 예정.
-> 명일 오후 이우철 프로 내방하여 LD HAND DEVIATION SETTING 조정 예정.
+ㄴindex Time 측정 진행
+-EST TIME 120s -> INDEX TIME 7.8s 
+-TEST TIME 50s -> INDEX TIME 20s
+-삼성 이우철 프로 - 기준은 TESTTIME 50s -> INDEX TIME 10s 이내.
+-명일 S/W 이성배 수석 내방하여 LD HAND DEVIATION DELAY 등 INDEX TIME 영향 POINT 확인 예정.
 
-5,6,7호기
-- DRY RUNNING 및 DEVICE RUNNING 진행중.
-
-7호기
-- INDEX TIME 검증 진행.
-ㄴ TEST TIME 120s -> INDEX TIME 7.8s 
-ㄴ TEST TIME 50s -> INDEX TIME 20s
-> 삼성 이우철 프로 - 기준은 TESTTIME 50s -> INDEX TIME 10s 이내.
-> 명일 S/W 이성배 수석 내방하여 LD HAND DEVIATION DELAY 등 INDEX TIME 영향 POINT 확인 예정.",,
+SLH1 5,6,7 호기
+ㄴDummy Run 진행
+",,
