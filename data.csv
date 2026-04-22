@@ -59,6 +59,24 @@ SLH1 #7
 
 SLH1 #5
  - 김정욱 선임 내방 17일자 OS 수정사항 Test 진행 완료.",,
+2026-04-21,SLH1,김범규,"4호기
+- SOCKET OFF 관련 대응 진행.
+> SOCKET, SOCKET GUIDE, TESTER BOARD SWAP 진행하였으나, DUT15 지속 DUT OFF 발생.
+> TESTER 쪽 문제로 추정되어 우익 측 어드반 문의 예정.
+> INDEX TIME 관련 7호기에 T-TRAY 8장 투입 후 TOTAL MOTOR SPEED 및 MOTOR PARAMETER에 따른 INDEX TIME 확인 예정.
+
+5호기,6호기
+- LD MANUAL PORT SIDE GUIDE 장착
+- ULD MANUAL PORT C-TRAY 걸림 관련 SETTING 진행.
+
+5호기
+- S/W PGM 검증 관련 김정욱 선임 내방하여 대응 진행.
+> C-TRAY 단 CHECK 관련 POS 추가, C-TRAY OFFSET 삭제.
+> ULD 배출 시 C-TRAY COUNT 기능 추가
+> POJECT RECIPE TRAY PITCH 수정 기능 추가
+> LOT 진행 중 OPTION(RETEST, TRAY FLOW) 조작 불가 변경
+> ALRAM, LOG 부분 수정 등
+> 해당 PGM 검증 진행 후 검증 완료시 횡전개 예정.",,
 2026-04-20,SLH1,김범규,"SLH1
 
 1호기
@@ -4468,21 +4486,24 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-21,SLH1,김범규,"4호기
-- SOCKET OFF 관련 대응 진행.
-> SOCKET, SOCKET GUIDE, TESTER BOARD SWAP 진행하였으나, DUT15 지속 DUT OFF 발생.
-> TESTER 쪽 문제로 추정되어 우익 측 어드반 문의 예정.
-> INDEX TIME 관련 7호기에 T-TRAY 8장 투입 후 TOTAL MOTOR SPEED 및 MOTOR PARAMETER에 따른 INDEX TIME 확인 예정.
+2026-04-22,SLH1,김범규,"SLH1
 
-5호기,6호기
-- LD MANUAL PORT SIDE GUIDE 장착
-- ULD MANUAL PORT C-TRAY 걸림 관련 SETTING 진행.
+4호기
+- 시양산 진행중
+ㄴ LD PRECIZER MASK OPEN/CLOSE AIR BALANCE 조정
+ㄴ LD FLOW PITCH UP Err.
+> FRONT PITCH UP MAGNETIC SENSOR 위치 조정.
+ㄴ LD FLOW 가운데 ALIGN BAR PIN 쪽 갈림 확인되어 FLOW 부 쇼바 조정, OUT FEEDER  쇼바 조정.
+ㄴ LD HAND Z-Axis SET PLATE POS TEACHING
+> ALIGN PIN 타이트하여 C-TRAY BOW로 인해 지속 발생, 명일 SET PLATE ALIGN PIN 개선품 장착 예정.
+> 명일 오후 이우철 프로 내방하여 LD HAND DEVIATION SETTING 조정 예정.
 
-5호기
-- S/W PGM 검증 관련 김정욱 선임 내방하여 대응 진행.
-> C-TRAY 단 CHECK 관련 POS 추가, C-TRAY OFFSET 삭제.
-> ULD 배출 시 C-TRAY COUNT 기능 추가
-> POJECT RECIPE TRAY PITCH 수정 기능 추가
-> LOT 진행 중 OPTION(RETEST, TRAY FLOW) 조작 불가 변경
-> ALRAM, LOG 부분 수정 등
-> 해당 PGM 검증 진행 후 검증 완료시 횡전개 예정.",,
+5,6,7호기
+- DRY RUNNING 및 DEVICE RUNNING 진행중.
+
+7호기
+- INDEX TIME 검증 진행.
+ㄴ TEST TIME 120s -> INDEX TIME 7.8s 
+ㄴ TEST TIME 50s -> INDEX TIME 20s
+> 삼성 이우철 프로 - 기준은 TESTTIME 50s -> INDEX TIME 10s 이내.
+> 명일 S/W 이성배 수석 내방하여 LD HAND DEVIATION DELAY 등 INDEX TIME 영향 POINT 확인 예정.",,
