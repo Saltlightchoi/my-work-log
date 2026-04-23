@@ -191,6 +191,18 @@ SLH1 #5
 > LOT 진행 중 OPTION(RETEST, TRAY FLOW) 조작 불가 변경
 > ALRAM, LOG 부분 수정 등
 > 해당 PGM 검증 진행 후 검증 완료시 횡전개 예정.",,
+2026-04-21,SLH1,김승수,"SLH1 7호기
+ㄴDummy Run 진행 중
+ㄴC-tray Module position Double-deviation occurred error 발생
+  -L/D hand t-tray deviation position z축 값 수정
+  -L/D hand set-plate1,2 deviation  z축 수정
+  -U/D hand set-plate3,4 deviation z축 수정 
+
+ㄴU/D hand motor UP/DOWN시 떨림 현상 발생
+-핸드 리니어 고정  Block에 볼트가 풀려, Hand가 기울어져 Hand 해체 예정
+
+SLH1 6호기
+ㄴDummy Run 진행",,
 2026-04-20,SLH1,김범규,"SLH1
 
 1호기
@@ -4600,15 +4612,19 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-21,SLH1,김승수,"SLH1 7호기
-ㄴDummy Run 진행 중
-ㄴC-tray Module position Double-deviation occurred error 발생
-  -L/D hand t-tray deviation position z축 값 수정
-  -L/D hand set-plate1,2 deviation  z축 수정
-  -U/D hand set-plate3,4 deviation z축 수정 
+2026-04-22,SLH1,김승수,"SLH1 7호기
+ㄴULD Hand Z motor Up/Down 동작시 떨림 발생
+-Hand 탈거 진행 핸드 고정 Base 상 하부 Bolt 풀림
+-록타이트 추가 고정 후 Hand 장착
 
-ㄴU/D hand motor UP/DOWN시 떨림 현상 발생
--핸드 리니어 고정  Block에 볼트가 풀려, Hand가 기울어져 Hand 해체 예정
+ㄴindex Time 측정 진행
+-TEST TIME 100s -> INDEX TIME 7.8s 
+-TEST TIME 50s -> INDEX TIME 20s
+측정 
+삼성 요청 기준 
+ TESTTIME 50s -> INDEX TIME 9s 이내.
+-명일 S/W 이성배 수석 내방하여INDEX TIME 확인 후 조치 예정
 
-SLH1 6호기
-ㄴDummy Run 진행",,
+SLH1 5,6,7 호기
+ㄴDummy Run 진행
+",,
