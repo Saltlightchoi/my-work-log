@@ -34,6 +34,20 @@
 SLH1 5,6,7 호기
 ㄴDummy Run 진행
 ",,
+2026-04-22,SLH1,윤창섭,"SLH1 
+
+7호기
+1. 작일 U/D hand 쳐짐 발생으로 볼트풀림 확인 진행
+-> U/D hand 탈거후 확인해보니 리니어와 joint 하는 block 볼트 풀림 및 z축 motor tension block 볼트 풀림 확인하여 록타이트 바른후 재조립 진행
+-> 쳐짐으로 발생한 U/D hand deviation check position 재티칭 
+
+2. Index time 측정 진행
+-> Test time 119s로 진행시 7.8s 측정되며 test time 50s로 진행시 18s 측정으로 스펙아웃
+->  L/D hand deviation position z축 up 속도를 조절할수 있게 해달라고 SW 김정욱 선임에게 인폼하였고, L/D middle feeder up속도를 올려 명일 재측정 예정입니다. 
+
+3. Init 동작 중 L/D transfer x축 home check error 발생
+-> 확인해보니 x축 -limit sensor가 감지가 되지 않아 발생
+-> x축 -limit sensor position 이상으로 재장착 후 position 확인 완료 init동작 마무리 후 자재투입하여 가동 진행",,
 2026-04-21,SLH1,윤창섭,"SLH1 
 
 5호기, 6호기, 7호기 공통
@@ -4521,17 +4535,25 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-22,SLH1,윤창섭,"SLH1 
+2026-04-23,SLH1,김범규,"SLH1
+
+4호기
+- 시양산 진행중.
+ㄴ LD 1,2 SET PLATE Y-Axis ALIGN PIN 개선품 장착
+> LD HAND LD2 SET PLATE Z-Axis TEACHING.
+ㄴ REJECT STACKER GUIDE BASE DOWN 시 REAR ARRIVAL STOPPER에 C-TRAY 걸림 확인
+> REJECT STACKER DOCING BLOCK 조정.
+
+5,6호기
+- CONTACT TEACHING 진행중.
+> 명일 이어서 진행 예정.
+- SET PLATE Y-Axis ALIGN PIN 개선품 장착.
+
+6호기
+- IN-FEEDER COVER 장착
 
 7호기
-1. 작일 U/D hand 쳐짐 발생으로 볼트풀림 확인 진행
--> U/D hand 탈거후 확인해보니 리니어와 joint 하는 block 볼트 풀림 및 z축 motor tension block 볼트 풀림 확인하여 록타이트 바른후 재조립 진행
--> 쳐짐으로 발생한 U/D hand deviation check position 재티칭 
-
-2. Index time 측정 진행
--> Test time 119s로 진행시 7.8s 측정되며 test time 50s로 진행시 18s 측정으로 스펙아웃
-->  L/D hand deviation position z축 up 속도를 조절할수 있게 해달라고 SW 김정욱 선임에게 인폼하였고, L/D middle feeder up속도를 올려 명일 재측정 예정입니다. 
-
-3. Init 동작 중 L/D transfer x축 home check error 발생
--> 확인해보니 x축 -limit sensor가 감지가 되지 않아 발생
--> x축 -limit sensor position 이상으로 재장착 후 position 확인 완료 init동작 마무리 후 자재투입하여 가동 진행",,
+- INDEX TIME 관련 S/W 김정욱 선임 내방하여 진행.
+> TESTTIME 60s 기준 INDEX 10s 이내 확인.
+> TOTAL MOTOR SPEED, MOTOR PARAMETER, PRESS CONTACT VALUE, DELAY VALUE 수정.
+> 해당 변경 값으로 횡전개 예정.",,
