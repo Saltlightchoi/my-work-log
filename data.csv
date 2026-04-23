@@ -1,4 +1,26 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-23,SLH1,김범규,"SLH1
+
+4호기
+- 시양산 진행중.
+ㄴ LD 1,2 SET PLATE Y-Axis ALIGN PIN 개선품 장착
+> LD HAND LD2 SET PLATE Z-Axis TEACHING.
+ㄴ REJECT STACKER GUIDE BASE DOWN 시 REAR ARRIVAL STOPPER에 C-TRAY 걸림 확인
+> REJECT STACKER DOCING BLOCK 조정.
+
+5,6호기
+- CONTACT TEACHING 진행중.
+> 명일 이어서 진행 예정.
+- SET PLATE Y-Axis ALIGN PIN 개선품 장착.
+
+6호기
+- IN-FEEDER COVER 장착
+
+7호기
+- INDEX TIME 관련 S/W 김정욱 선임 내방하여 진행.
+> TESTTIME 60s 기준 INDEX 10s 이내 확인.
+> TOTAL MOTOR SPEED, MOTOR PARAMETER, PRESS CONTACT VALUE, DELAY VALUE 수정.
+> 해당 변경 값으로 횡전개 예정.",,
 2026-04-22,SLH1,김범규,"SLH1
 
 4호기
@@ -4535,25 +4557,24 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-23,SLH1,김범규,"SLH1
+2026-04-22,SLH1,조건희,"SLH1
 
 4호기
-- 시양산 진행중.
-ㄴ LD 1,2 SET PLATE Y-Axis ALIGN PIN 개선품 장착
-> LD HAND LD2 SET PLATE Z-Axis TEACHING.
-ㄴ REJECT STACKER GUIDE BASE DOWN 시 REAR ARRIVAL STOPPER에 C-TRAY 걸림 확인
-> REJECT STACKER DOCING BLOCK 조정.
+시양산 진행대응
+ㄴ LD PRECIZER MASK OPEN/CLOSE AIR BALANCE 조정
+ㄴ LD FLOW PITCH UP Error
+- FRONT PITCH UP MAGNETIC SENSOR 위치 조정.
+ㄴ LD FLOW 가운데 ALIGN BAR PIN 쪽 갈림 확인되어 FLOW 부 쇼바 조정, OUT FEEDER  쇼바 조정.
+ㄴ LD HAND Z-Axis SET PLATE POS TEACHING
+- ALIGN PIN 타이트하여 C-TRAY BOW로 인해 지속 발생, 명일 SET PLATE ALIGN PIN 개선품 장착 예정.
+- 명일 오후 이우철 프로 내방하여 LD HAND DEVIATION SETTING 조정 예정.
 
-5,6호기
-- CONTACT TEACHING 진행중.
-> 명일 이어서 진행 예정.
-- SET PLATE Y-Axis ALIGN PIN 개선품 장착.
-
-6호기
-- IN-FEEDER COVER 장착
+5,6,7호기
+- DRY RUNNING 및 DEVICE RUNNING 진행중.
 
 7호기
-- INDEX TIME 관련 S/W 김정욱 선임 내방하여 진행.
-> TESTTIME 60s 기준 INDEX 10s 이내 확인.
-> TOTAL MOTOR SPEED, MOTOR PARAMETER, PRESS CONTACT VALUE, DELAY VALUE 수정.
-> 해당 변경 값으로 횡전개 예정.",,
+INDEX TIME 검증 진행.
+ㄴ TEST TIME 120s -> INDEX TIME 7.8s 
+ㄴ TEST TIME 50s -> INDEX TIME 20s
+- 삼성 이우철 프로 - 기준은 TESTTIME 50s -> INDEX TIME 10s 이내.
+- 명일 S/W 이성배 수석 내방하여 LD HAND DEVIATION DELAY 등 INDEX TIME 영향 POINT 확인 예정.",,
