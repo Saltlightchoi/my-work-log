@@ -43,6 +43,24 @@ INDEX TIME 관련 S/W 김정욱 선임 내방하여 진행.
 ㄴ TESTTIME 60s 기준 INDEX 10s 이내 확인.
 ㄴ TOTAL MOTOR SPEED, MOTOR PARAMETER, PRESS CONTACT VALUE, DELAY VALUE 수정.
 - 해당 변경 값으로 횡전개 예정.",,
+2026-04-23,SLH1,김승수,"SLH1
+
+5,6호기
+TESTER socket Guide 장착 후 CONTACT TEACHING 진행중.
+6호기 Front T-Tray Lock Pin이 부러져있어 
+명일 김지수 차장님에게 입고날 확인 예정
+> 명일 이어서 진행 예정.
+- SET PLATE Y-Axis ALIGN PIN 개선품 장착.
+
+6호기
+- IN-FEEDER COVER 장착
+
+
+7호기
+- INDEX TIME 관련 S/W 김정욱 선임 내방하여 진행.
+> TESTTIME 60s 기준 INDEX 10s 이내 확인.
+> TOTAL MOTOR SPEED, MOTOR PARAMETER, PRESS CONTACT VALUE, DELAY VALUE 수정.
+> 해당 변경 값으로 횡전개 예정.",,
 2026-04-22,SLH1,김범규,"SLH1
 
 4호기
@@ -4628,18 +4646,3 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-23,SLH1,김승수,"SLH1
-
-5,6호기
-TESTER socket Guide 장착 후 CONTACT TEACHING 진행중.
-> 명일 이어서 진행 예정.
-- SET PLATE Y-Axis ALIGN PIN 개선품 장착.
-
-6호기
-- IN-FEEDER COVER 장착
-
-7호기
-- INDEX TIME 관련 S/W 김정욱 선임 내방하여 진행.
-> TESTTIME 60s 기준 INDEX 10s 이내 확인.
-> TOTAL MOTOR SPEED, MOTOR PARAMETER, PRESS CONTACT VALUE, DELAY VALUE 수정.
-> 해당 변경 값으로 횡전개 예정.",,
