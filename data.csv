@@ -1,4 +1,18 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-24,SLH1,김기혁,"SLH1 5호기
+ㄴ작일 진행중이던 PRESS Teaching 정리 후 Dummy Run 진행
+-deviation Err 발생 하여 Teaching값 미세 수정
+
+SLH1 6호기
+ㄴPRESS Teaching 진행 중
+-1차 Rear Contact 완료 (13번 Socket 문제로 보여 명일 Socket 스왑 확인 예정)
+-1차 Front Contact 완료
+
+ㄴDummy Run 진행
+-deviation Err 발생 하여 Teaching값 미세 수정
+ 
+SLH1 7호기
+ㄴSet-Plate Y-Axis Align 압입 Pin 개선품 장착",,
 2026-04-23,SLH1,김범규,"SLH1
 
 4호기
@@ -4656,17 +4670,21 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-24,SLH1,김기혁,"SLH1 5호기
-ㄴ작일 진행중이던 PRESS Teaching 정리 후 Dummy Run 진행
--deviation Err 발생 하여 Teaching값 미세 수정
+2026-04-22,SLH1,최염광,"SLH1 #4
+ - 시양산 진행간 Jam 및 기구물 점검
+  -> LD Flow Mask Up/Down 동작 이상 발생, 좌우 Air Speedcon 조정
+  -> LD Flow Insert Pitch Up Error, Air 조정 및 Front Left Up Sensor 위치 조정
+  -> LD Flow Preciser Up 동작시 Center Pin 갈림 발생
+   -> Shock Absorber 조정 및 Out Feeder Absorber 위치 조정 후 정상
 
-SLH1 6호기
-ㄴPRESS Teaching 진행 중
--1차 Rear Contact 완료 (13번 Socket 문제로 보여 명일 Socket 스왑 확인 예정)
--1차 Front Contact 완료
+SLH1 #7
+ - 전일 ULD Hand 기울어짐 관련 점검
+  -> Assy' 탈거 후 상단 고정 Bolt 8ea 풀림, Loctite 도포 후 Rejoint
+ - Index Time 측정 요청
+  -> T-Tray 8매 삽입 후 Index Time 측정 진행
+  -> Test Time 120S , Index Time 8.9s
+  -> Test Time 50S , Index Time 19s
+  -> 삼성 기준 Test Time 50S, Index Time 10s 이내로 Soft 연락 후 명일 내방 예정
 
-ㄴDummy Run 진행
--deviation Err 발생 하여 Teaching값 미세 수정
- 
-SLH1 7호기
-ㄴSet-Plate Y-Axis Align 압입 Pin 개선품 장착",,
+SLH #5,6
+ - Dummy Running Check 진행 중.",,
