@@ -171,6 +171,24 @@ INDEX TIME 검증 진행.
 SLH1 5,6,7 호기
 ㄴDummy Run 진행
 ",,
+2026-04-22,SLH1,최염광,"SLH1 #4
+ - 시양산 진행간 Jam 및 기구물 점검
+  -> LD Flow Mask Up/Down 동작 이상 발생, 좌우 Air Speedcon 조정
+  -> LD Flow Insert Pitch Up Error, Air 조정 및 Front Left Up Sensor 위치 조정
+  -> LD Flow Preciser Up 동작시 Center Pin 갈림 발생
+   -> Shock Absorber 조정 및 Out Feeder Absorber 위치 조정 후 정상
+
+SLH1 #7
+ - 전일 ULD Hand 기울어짐 관련 점검
+  -> Assy' 탈거 후 상단 고정 Bolt 8ea 풀림, Loctite 도포 후 Rejoint
+ - Index Time 측정 요청
+  -> T-Tray 8매 삽입 후 Index Time 측정 진행
+  -> Test Time 120S , Index Time 8.9s
+  -> Test Time 50S , Index Time 19s
+  -> 삼성 기준 Test Time 50S, Index Time 10s 이내로 Soft 연락 후 명일 내방 예정
+
+SLH #5,6
+ - Dummy Running Check 진행 중.",,
 2026-04-21,SLH1,윤창섭,"SLH1 
 
 5호기, 6호기, 7호기 공통
@@ -4670,21 +4688,27 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-22,SLH1,최염광,"SLH1 #4
- - 시양산 진행간 Jam 및 기구물 점검
-  -> LD Flow Mask Up/Down 동작 이상 발생, 좌우 Air Speedcon 조정
-  -> LD Flow Insert Pitch Up Error, Air 조정 및 Front Left Up Sensor 위치 조정
-  -> LD Flow Preciser Up 동작시 Center Pin 갈림 발생
-   -> Shock Absorber 조정 및 Out Feeder Absorber 위치 조정 후 정상
+2026-04-23,SLH1,최염광,"SLH1 #4
+ - Set-Plate Y축 Pin 6.8파이 입고되어 LD Set-Plate 1,2 장착 완료
+  -> LD Hand Deviation Error 발생으로 Z Teaching 수정 완료.
 
 SLH1 #7
- - 전일 ULD Hand 기울어짐 관련 점검
-  -> Assy' 탈거 후 상단 고정 Bolt 8ea 풀림, Loctite 도포 후 Rejoint
- - Index Time 측정 요청
-  -> T-Tray 8매 삽입 후 Index Time 측정 진행
-  -> Test Time 120S , Index Time 8.9s
-  -> Test Time 50S , Index Time 19s
-  -> 삼성 기준 Test Time 50S, Index Time 10s 이내로 Soft 연락 후 명일 내방 예정
+ - Index Time 단축 관련 수정
+  1. LD Hand Deviation Sensor 측정 후 Delay Time 0.3s -> 0.0s 변경
+  2. LD Hand T-Tray Pos' Place 동작 후 Deviation Pos' Z축 Up 동작간 Slow Up 제거
+  3. Test Site Unpress 동작시 Slow Up 구간 10m, Motor Speed 10% -> 50% 변경
+  4. LD Hand All Pick Pos' Down 동작간 Slow Down 구간 적용
+  5. LD/ULD Hand Barcode Setting
+  6. ULD Vision Right 상시On, Off 변경
+ -> 최종 수정 후 Index Time
+ -> Test Time 50s, Index Time 12.8s
+ -> Test Time 60s, Index Time 8.7s
+ -> Transfer, Hand 동작으로 인한 Index Time Delay 없음.
+ -> T-Tray Flow 단 Speed Up 시 단축 가능하나 이우철 프로 장비 Condition 우선으로 60S 적용 상부 보고 예정.
 
 SLH #5,6
- - Dummy Running Check 진행 중.",,
+ - LD/ULD Set-Plate Y축 Pin 입고되어 All 교체 장착 완료.
+ - 6호기 우측 후면부 Level Foot 입고품 장착 완료.
+ - Socket 입고되어 장착 완료.
+ - Test Site Press Contact 값 조정 완료.
+ - Yield 저조 관련 Socket Swap 후 후속 담당부서 확인 대기중.",,
