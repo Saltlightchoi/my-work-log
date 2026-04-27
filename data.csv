@@ -37,6 +37,14 @@ SLH1 7호기
   - 배출 Alarm 후에 Close -> Lot배출 Button 누른 후 Front Base Down 동작 해야함
   - 현재 배출 Alarm 발생 Close 시 Front 부 Base 다운 동작 됨. Soft 팀 문의 후 Recovery Data 취득 송부.
   - OS 재부팅 1Weekly 미진행으로 재부팅 후 Init 동작하여 이후 정상 동작 여부 확인 필요. 차주 확인 예정.",,
+2026-04-24,SLH1,윤창섭,"SLH1
+
+7호기
+->  L/D U/D Set-plate Y align pin 장착
+   ㄴ 7파이 에서 6.9, 6.8 version 사용
+
+Dummy Run 진행 중
+-> 가동 중 발생하는 Error 클리어",,
 2026-04-23,SLH1,김범규,"SLH1
 
 4호기
@@ -4745,11 +4753,5 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-24,SLH1,윤창섭,"SLH1
-
-7호기
-->  L/D U/D Set-plate Y align pin 장착
-   ㄴ 7파이 에서 6.9, 6.8 version 사용
-
-Dummy Run 진행 중
--> 가동 중 발생하는 Error 클리어",,
+2026-04-27,SLH1,김기혁,"SLH1 5호기
+ㄴdeviation sensor 재설정",,
