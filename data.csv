@@ -8,6 +8,21 @@ SLH1 7호기
 ㄴdeviation sensor 재설정
 --이우철프로 요청으로 deviation 설정에 기준이 없어
 -Load hand > moving buffer, unload hand > fix buffer 기준에서 pick 값에서 10mm 올린 상태에서 재 설정(15mm 올릴시 hand z축 stopper에 간섭으로 불가능)",,
+2026-04-27,SLH1,최염광,"SLH1 #4
+ - 양산 진행간 Jam 발생 위치 확인시 LDPP Hand 6번, Deviation Sensor Error 간헐적 발생
+  -> Jam 조치미숙으로 인한 다량 발생
+ - Reject Stacker Rear 위치 C-Tray Sensor 감지 이상
+  -> Conveyor Belt Speed 조정 후 Rear 부 도착까지 총 3회 Jam 발생(C-Tray Align 틀어짐으로 Inverter Setting 수정)
+  -> Time Out 조정 후 미발생
+ - Insert 간헐적 열림 시작지점 걸림증상 관련 COK부서 내방
+  -> T-Tray ID:6번, Insert 3ea 열림 이상
+  -> Close Guide Pin 끼임으로 발생 확인
+  -> 좌우 조립 공차 or 제작 공차로 인한 발생. Counter Bow 로 인한 공차발생으로 Align 이상
+  -> Insert 3ea 탈거 후 추후 개선품 5ea 입고 예정.
+  -> Socket Off 위치로 탈거위치 Insert Swap 후 생산 중.
+
+SLH1 #5,6,7
+ - LD/ULD Hand Deviation Sensor 15mm Setting 중.",,
 2026-04-24,SLH1,김기혁,"SLH1 5호기
 ㄴ작일 진행중이던 PRESS Teaching 정리 후 Dummy Run 진행
 -deviation Err 발생 하여 Teaching값 미세 수정
@@ -4762,18 +4777,21 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-27,SLH1,최염광,"SLH1 #4
- - 양산 진행간 Jam 발생 위치 확인시 LDPP Hand 6번, Deviation Sensor Error 간헐적 발생
-  -> Jam 조치미숙으로 인한 다량 발생
- - Reject Stacker Rear 위치 C-Tray Sensor 감지 이상
-  -> Conveyor Belt Speed 조정 후 Rear 부 도착까지 총 3회 Jam 발생(C-Tray Align 틀어짐으로 Inverter Setting 수정)
-  -> Time Out 조정 후 미발생
- - Insert 간헐적 열림 시작지점 걸림증상 관련 COK부서 내방
-  -> T-Tray ID:6번, Insert 3ea 열림 이상
-  -> Close Guide Pin 끼임으로 발생 확인
-  -> 좌우 조립 공차 or 제작 공차로 인한 발생. Counter Bow 로 인한 공차발생으로 Align 이상
-  -> Insert 3ea 탈거 후 추후 개선품 5ea 입고 예정.
-  -> Socket Off 위치로 탈거위치 Insert Swap 후 생산 중.
+2026-04-27,SLH1,조건희,"SLH1
+1호기
+ERROR REVIEW
+LD BCR ERROR
+ㄴ 확인 결과 휴먼에러로 확인
 
-SLH1 #5,6,7
- - LD/ULD Hand Deviation Sensor 15mm Setting 중.",,
+ULD2 SET PLATE UP SENSOR 인식 실패 ERROR
+ㄴ 현재까지 SETTING 진행하여 안착 검증까지 진행하였으나 간헐적으로 발생
+ㄴ ULD TRANSFER GUIDE SHAFT 파손 이후 교체되지않고 임시조치 하여 사용중으며 이에따라 TRANSFER 동작 시 X축 불안정하다고 판단 실제로 SET PLATE에 올려놓을 때 한번씩 PIN을 타고 들어가는 현상이나옴 영업측 확인하여 GUIDE SHAFT 입고일정 확인 중 
+
+LD HAND 7번 PICKER UNCLAMP ERROR
+ㄴ PITCH 틀어짐 확인되어 ALIGN 재작업 진행
+
+6,7호기
+DEVIATION SENSOR 설정
+ㄴ 고객사 요청으로 DEVIATION 설정에 현재 기준이  모호하여 기준점 통일화 작업 진행
+ㄴ ULD HAND FIX BUFFER 기준에서 PICK 값에서 15mm 올린 상태에서 재 설정
+ㄴ 구간 별 검증 진행",,
