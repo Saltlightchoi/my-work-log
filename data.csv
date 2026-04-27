@@ -4,7 +4,10 @@
 -이우철프로 요청으로 deviation 설정에 기준이 없다 하여 
 -Load hand > moving buffer, unload hand > fix buffer 기준에서 pick 값에서 15mm 올린 상태에서 재 설정
 
-SLH1 7호기",,
+SLH1 7호기
+ㄴdeviation sensor 재설정
+--이우철프로 요청으로 deviation 설정에 기준이 없어
+-Load hand > moving buffer, unload hand > fix buffer 기준에서 pick 값에서 10mm 올린 상태에서 재 설정(15mm 올릴시 hand z축 stopper에 간섭으로 불가능)",,
 2026-04-24,SLH1,김기혁,"SLH1 5호기
 ㄴ작일 진행중이던 PRESS Teaching 정리 후 Dummy Run 진행
 -deviation Err 발생 하여 Teaching값 미세 수정
