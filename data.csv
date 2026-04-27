@@ -4762,3 +4762,18 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
+2026-04-27,SLH1,최염광,"SLH1 #4
+ - 양산 진행간 Jam 발생 위치 확인시 LDPP Hand 6번, Deviation Sensor Error 간헐적 발생
+  -> Jam 조치미숙으로 인한 다량 발생
+ - Reject Stacker Rear 위치 C-Tray Sensor 감지 이상
+  -> Conveyor Belt Speed 조정 후 Rear 부 도착까지 총 3회 Jam 발생(C-Tray Align 틀어짐으로 Inverter Setting 수정)
+  -> Time Out 조정 후 미발생
+ - Insert 간헐적 열림 시작지점 걸림증상 관련 COK부서 내방
+  -> T-Tray ID:6번, Insert 3ea 열림 이상
+  -> Close Guide Pin 끼임으로 발생 확인
+  -> 좌우 조립 공차 or 제작 공차로 인한 발생. Counter Bow 로 인한 공차발생으로 Align 이상
+  -> Insert 3ea 탈거 후 추후 개선품 5ea 입고 예정.
+  -> Socket Off 위치로 탈거위치 Insert Swap 후 생산 중.
+
+SLH1 #5,6,7
+ - LD/ULD Hand Deviation Sensor 15mm Setting 중.",,
