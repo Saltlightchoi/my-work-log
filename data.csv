@@ -87,6 +87,14 @@ SLH1 7호기
 
 Dummy Run 진행 중
 -> 가동 중 발생하는 Error 클리어",,
+2026-04-24,SLH1,조건희,"SLH1
+
+7호기
+ L/D U/D Set-plate Y align pin 장착
+ㄴ 7파이 에서 6.9, 6.8 version 사용
+
+Dummy Run 진행 중
+ㄴ 가동 중 발생하는 Error 클리어",,
 2026-04-23,SLH1,김범규,"SLH1
 
 4호기
@@ -4795,11 +4803,11 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-24,SLH1,조건희,"SLH1
+2026-04-27,SLH1,윤창섭,"SLH1 
 
-7호기
- L/D U/D Set-plate Y align pin 장착
-ㄴ 7파이 에서 6.9, 6.8 version 사용
+5호기, 6호기, 7호기 공통
+-> Deviation check sensor position 변경
+    ㄴ L/D hand는 Moving buffer pick position에서 15mm 올린값을 기준으로 setting
+    ㄴ U/D hand는 Fix buffer pick position에서 15mm 올린값을 기준으로 setting 
 
-Dummy Run 진행 중
-ㄴ 가동 중 발생하는 Error 클리어",,
+6호기, 7호기 L/D hand는 15mm -limit에 감지되어 올리는 것이 불가능하여 명일 sensor position 변경 작업 후 재작업 예정입니다.",,
