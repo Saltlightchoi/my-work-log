@@ -16,6 +16,14 @@ SLH1 #5,6,7
  - 기구물 및 Parameter 값 확인시 특이사항 없음
   -> Home Check Sensor 장착 Pos' 다름 의심
  - 10mm 기준 5,6,7호기 Setting 완료.",,
+2026-04-28,SLH1,김기혁,"SLH1 5,6,7호기
+ㄴdeviation sensor 재설정
+-이우철프로 요청으로 deviation 설정에 기준이 없어
+-Load hand > moving buffer, unload hand > fix buffer 기준에서 pick 값에서 15mm 올린 상태로 세팅
+ -6,7호기 LD Hand Soft Limit 감지 발생.
+ - 기구물 및 Parameter 값 확인시 특이사항 없음
+  -> Home Check Sensor 장착 Pos' 다름 의심
+ - 10mm 기준 5,6,7호기 Setting 완료.",,
 2026-04-27,SLH1,김기혁,"SLH1 5호기
 ㄴdeviation sensor 재설정
 -이우철프로 요청으로 deviation 설정에 기준이 없다 하여 
@@ -4828,11 +4836,3 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-28,SLH1,김기혁,"SLH1 #5,6,7
-ㄴdeviation sensor 재설정
--이우철프로 요청으로 deviation 설정에 기준이 없어
--Load hand > moving buffer, unload hand > fix buffer 기준에서 pick 값에서 15mm 올린 상태로 세팅
- -6,7호기 LD Hand Soft Limit 감지 발생.
- - 기구물 및 Parameter 값 확인시 특이사항 없음
-  -> Home Check Sensor 장착 Pos' 다름 의심
- - 10mm 기준 5,6,7호기 Setting 완료.",,
