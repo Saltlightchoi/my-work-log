@@ -41,6 +41,14 @@ DEVIATION SENSOR 설정
 ㄴ 고객사 요청으로 DEVIATION 설정에 현재 기준이  모호하여 기준점 통일화 작업 진행
 ㄴ ULD HAND FIX BUFFER 기준에서 PICK 값에서 15mm 올린 상태에서 재 설정
 ㄴ 구간 별 검증 진행",,
+2026-04-27,SLH1,윤창섭,"SLH1 
+
+5호기, 6호기, 7호기 공통
+-> Deviation check sensor position 변경
+    ㄴ L/D hand는 Moving buffer pick position에서 15mm 올린값을 기준으로 setting
+    ㄴ U/D hand는 Fix buffer pick position에서 15mm 올린값을 기준으로 setting 
+
+6호기, 7호기 L/D hand는 15mm -limit에 감지되어 올리는 것이 불가능하여 명일 sensor position 변경 작업 후 재작업 예정입니다.",,
 2026-04-24,SLH1,김기혁,"SLH1 5호기
 ㄴ작일 진행중이던 PRESS Teaching 정리 후 Dummy Run 진행
 -deviation Err 발생 하여 Teaching값 미세 수정
@@ -4803,11 +4811,20 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-27,SLH1,윤창섭,"SLH1 
+2026-04-28,SLH1,최염광,"SLH1 #4
+ - 양산 진행간 Error 발생 조치
+  -> Reject Stacker Rear Tray Arrival Error 다량 발생
+  -> Reject Stacker부 전체 Conveyor Inverter Setting P6번(저속) 10 -> 20 변경
+  -> Reject 투입부 Guide Align Setting 재조정
+  -> 정상 투입 및 배출 확인
+ - 작일 Open 동작 불량 Insert 5ea 입고되어 교체 진행
+  -> T-Tray ID: 5번 교체 후 생산 진행
+ - Yield 저조 T-Tray 관련 Insert Swap 완료
+  -> 바탕화면 금일 날짜 Yield 관련 조치 사항 생성
+  -> 명일 Yield 확인 후 Socket 교체 예정.
 
-5호기, 6호기, 7호기 공통
--> Deviation check sensor position 변경
-    ㄴ L/D hand는 Moving buffer pick position에서 15mm 올린값을 기준으로 setting
-    ㄴ U/D hand는 Fix buffer pick position에서 15mm 올린값을 기준으로 setting 
-
-6호기, 7호기 L/D hand는 15mm -limit에 감지되어 올리는 것이 불가능하여 명일 sensor position 변경 작업 후 재작업 예정입니다.",,
+SLH1 #5,6,7
+ - 이전 삼성협의 기준 Pick Pos' Z Up 15mm 위치 Deviation Setting 적용시 6,7호기 LD Hand Soft Limit 감지 발생.
+ - 기구물 및 Parameter 값 확인시 특이사항 없음
+  -> Home Check Sensor 장착 Pos' 다름 의심
+ - 10mm 기준 5,6,7호기 Setting 완료.",,
