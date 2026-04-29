@@ -24,6 +24,16 @@ SLH1 #5,6,7
  - 기구물 및 Parameter 값 확인시 특이사항 없음
   -> Home Check Sensor 장착 Pos' 다름 의심
  - 10mm 기준 5,6,7호기 Setting 완료.",,
+2026-04-28,SLH1,윤창섭,"SLH1 
+
+5호기, 6호기, 7호기 공통 
+
+작일 진행하였으나 6호기, 7호기가 15mm up이 불가능하여 hardware및 software 확인하였으나 특이사항없음.
+이우철프로께 인폼후 15mm가 아닌 10mm up상태를 기준으로 deviation check sensor position 수정 
+
+-> Deviation check sensor position 변경
+    ㄴ L/D hand는 Moving buffer pick position에서 10mm 올린값을 기준으로 setting
+    ㄴ U/D hand는 Fix buffer pick position에서 10mm 올린값을 기준으로 setting 완료",,
 2026-04-27,SLH1,김기혁,"SLH1 5호기
 ㄴdeviation sensor 재설정
 -이우철프로 요청으로 deviation 설정에 기준이 없다 하여 
@@ -4836,13 +4846,14 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-28,SLH1,윤창섭,"SLH1 
+2026-04-29,SLH1,김기혁,"SLH1 7호기
+ㄴDummy Run 진행
+-unload transfer R gripper moror err 발생
+-육안상으로 간섭 및 손상은 확인 되지 않음.
+-파라소닉 서보모터 알람 14.1 발생
+-통신 이상계열 알람으로 케이블 Reconnect 후 재부팅 
 
-5호기, 6호기, 7호기 공통 
-
-작일 진행하였으나 6호기, 7호기가 15mm up이 불가능하여 hardware및 software 확인하였으나 특이사항없음.
-이우철프로께 인폼후 15mm가 아닌 10mm up상태를 기준으로 deviation check sensor position 수정 
-
--> Deviation check sensor position 변경
-    ㄴ L/D hand는 Moving buffer pick position에서 10mm 올린값을 기준으로 setting
-    ㄴ U/D hand는 Fix buffer pick position에서 10mm 올린값을 기준으로 setting 완료",,
+ㄴ가동중 재 발생 하여 재점검
+-L,R gripper home check 진행 시 L gripper 수치가 7mm 편차 확인
+-특이 사항으로 home 값 틀어짐 외에는 없음
+-Home check 후 재 가동 err 미발생 ",,
