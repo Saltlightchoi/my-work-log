@@ -45,6 +45,21 @@ SLH1 #5,6,7
 -> Deviation check sensor position 변경
     ㄴ L/D hand는 Moving buffer pick position에서 10mm 올린값을 기준으로 setting
     ㄴ U/D hand는 Fix buffer pick position에서 10mm 올린값을 기준으로 setting 완료",,
+2026-04-28,SLH1,조건희,"SLH1 
+
+4호기 
+
+Open 동작 불량 Insert 5ea 입고되어 교체 진행
+ㄴ 6번 T-Tray에 교체 완료
+
+5,6,7호기
+
+deviation sensor 재설정
+ㄴ 고객사 요청으로 deviation 설정에 기준으로 15mm 설정으로 Setting 
+5호기는 이상없으나 6,7호기 LD Hand Soft Limit 감지 발생.
+- 기구물 확인 결과 특이사항 없음
+- Home check sensor 장착 상이함 확인
+ - 10mm 기준 5,6,7호기 Setting 완료.",,
 2026-04-27,SLH1,김기혁,"SLH1 5호기
 ㄴdeviation sensor 재설정
 -이우철프로 요청으로 deviation 설정에 기준이 없다 하여 
@@ -4857,18 +4872,17 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-28,SLH1,조건희,"SLH1 
+2026-04-29,SLH1,조건희,"SLH1 
 
 4호기 
 
-Open 동작 불량 Insert 5ea 입고되어 교체 진행
-ㄴ 6번 T-Tray에 교체 완료
+Main power 드랍 관련 대응
+ㄴ 야간 가동중 작업자 휴먼에러로 인해 main power 드랍 발생
+ㄴ Main power 초기화 후에도 motor on 불량하여 확인 결과 ULD Transfer CP Off 되어있어 On해주고
+pc 껏다키면서 초기화 다시 잡음
+ 
+5호기
 
-5,6,7호기
-
-deviation sensor 재설정
-ㄴ 고객사 요청으로 deviation 설정에 기준으로 15mm 설정으로 Setting 
-5호기는 이상없으나 6,7호기 LD Hand Soft Limit 감지 발생.
-- 기구물 확인 결과 특이사항 없음
-- Home check sensor 장착 상이함 확인
- - 10mm 기준 5,6,7호기 Setting 완료.",,
+press contact test 진행
+ㄴ 진행 간 socket swap, 자재 swap, inset swap 진행하며 
+test all pass 검증 진행",,
