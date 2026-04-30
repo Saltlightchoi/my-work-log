@@ -1,4 +1,16 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-30,SLH1,조건희,"입고물품
+
+무선마우스 4ea
+마우스 보관 BKT 4ea
+Moniter stopper 4ea
+Moniter cover 5ea
+Hand JIG 8ea
+Set plate JIG 1ea
+Transfer plate 01 1ea
+Transfer plate 02 1ea
+TF-MB-STOPPER 01 16ea
+Pusher tip 16ea",,
 2026-04-29,SLH1,김기혁,"SLH1 7호기
 ㄴDummy Run 진행
 -unload transfer R gripper moror err 발생
@@ -4886,15 +4898,18 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-30,SLH1,조건희,"입고물품
+2026-04-30,SLH1,김기혁,"SLH1 7호기
+ㄴDummy Run 진행
+-unload transfer R gripper moror err 재 발생
+-육안상으로 간섭 및 손상은 확인 되지 않음.
+-발생 포인트가 제가각 확인
+-파라소닉 서보모터 알람 14.1, 14.0 발생
+-통신 이상계열 알람으로 케이블 Reconnect 후 재부팅 
+-추후 재 발생시 파라메타 값 타 호기와 비교 및 서보모터 스왑 예정
 
-무선마우스 4ea
-마우스 보관 BKT 4ea
-Moniter stopper 4ea
-Moniter cover 5ea
-Hand JIG 8ea
-Set plate JIG 1ea
-Transfer plate 01 1ea
-Transfer plate 02 1ea
-TF-MB-STOPPER 01 16ea
-Pusher tip 16ea",,
+ㄴ정밀 Press Teaching 진행
+-ALL PASS 확인
+
+SLH1 6호기
+ㄴ정밀 Press Teaching 진행
+-ALL PASS 확인",,
