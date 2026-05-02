@@ -51,6 +51,21 @@ pc 껏다키면서 초기화 다시 잡음
 press contact test 진행
 ㄴ 진행 간 socket swap, 자재 swap, inset swap 진행하며 
 test all pass 검증 진행",,
+2026-04-29,SLH1,최염광,"SLH1 #5,6
+ - Test Site Yield 관련 Contact 검증 진행
+ - Fail 발생위치, Module, Socket, Insert Socket Guide Swap, Contact 값 조정 후 All Pass
+
+SLH1 #7
+ - 명일 추가 작업 예정.
+
+SLH1 #4
+ - 양산 진행간 야간 Motor Power Drop 발생
+  -> 후면부 Main Power Motor Power LED 불량의심, 정상 Motor On 상태에서 미정듬
+  -> Motor LED 점등안되어 야간 Power Rebooting 간 이상 발생 의심
+  -> Transfer AMP CP Drop 되어 On, PC Rebooting 후정상 Init, 양산 인계.
+ - Socket 상단 이물 & Life Time 저조 관련 TFE Socket Guide, Insert 반출 요청
+ - 명일 본사 퀵 발송시 불량 Socket 2ea 배송 예정.
+",,
 2026-04-28,SLH1,최염광,"SLH1 #4
  - 양산 진행간 Error 발생 조치
   -> Reject Stacker Rear Tray Arrival Error 다량 발생
@@ -4913,18 +4928,18 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-29,SLH1,최염광,"SLH1 #5,6
- - Test Site Yield 관련 Contact 검증 진행
- - Fail 발생위치, Module, Socket, Insert Socket Guide Swap, Contact 값 조정 후 All Pass
+2026-04-30,SLH1,최염광,"SLH1 #5,6
+ - Dummy Run 진행 중. 특이사항 없음
 
 SLH1 #7
- - 명일 추가 작업 예정.
+ - Yield 관련 검증 진행
+ - Contact 값, Socket Swap, 검증 후 정상 All Pass
 
 SLH1 #4
- - 양산 진행간 야간 Motor Power Drop 발생
-  -> 후면부 Main Power Motor Power LED 불량의심, 정상 Motor On 상태에서 미정듬
-  -> Motor LED 점등안되어 야간 Power Rebooting 간 이상 발생 의심
-  -> Transfer AMP CP Drop 되어 On, PC Rebooting 후정상 Init, 양산 인계.
- - Socket 상단 이물 & Life Time 저조 관련 TFE Socket Guide, Insert 반출 요청
- - 명일 본사 퀵 발송시 불량 Socket 2ea 배송 예정.
-",,
+ - 퀵  Socket 본사 반출.
+ - SLH1 LD/ULD Flow Dimm Change Sensor 관련 개선품 입고되어 장착 완료.
+  -> 장착 후 Sensor 광량 확연하게 저하, 추후 Init & Running 간 Jam 발생 여부 확인 후 횡전개 예정.
+ - Moving Buffer Stopper 4ea 장착 후 Teaching 조정 완료.
+
+입고품 중 Hand JIG 관련 Set-Plate JIG Pin Hole 가공 이상으로 끝까지 삽입 안됨
+ -> 기구 설계 인폼 후 Set-Plate Base 반출하여 수정가공 예정.",,
