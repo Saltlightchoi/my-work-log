@@ -86,6 +86,20 @@ SLH1 #4
  - 명일 본사 퀵 발송시 불량 Socket 2ea 배송 예정.
 
 ",,
+2026-04-29,SLH1,윤창섭,"SLH1
+
+7호기
+Dummy Run 진행
+-> U/D transfer gripper R motor 알람 발생으로 점검 진행
+    ㄴ gripper 동작 간 간섭 및 gripper 데미지 특이사항 없음
+      ㄴ 파라소닉 서보모터 알람 14.1 및 14.0 발생
+        ㄴ IPM 알람으로 Encoder cable Reconnect 후 재부팅 재가동 시작
+
+-> U/D transfer gripper R motor 알람 재발생
+    ㄴ L,R gripper home check 진행
+      ㄴ L gripper home check 진행시 home position에서 7mm 틀어짐 확인
+
+-> Home check 후 재가동 퇴근까지 추가 발생 없었습니다.",,
 2026-04-28,SLH1,최염광,"SLH1 #4
  - 양산 진행간 Error 발생 조치
   -> Reject Stacker Rear Tray Arrival Error 다량 발생
@@ -4948,17 +4962,17 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-29,SLH1,윤창섭,"SLH1
+2026-04-30,SLH1,윤창섭,"SLH1
+
+6호기
+Testsite Press Teaching 진행
+-> ALL pass 확인
 
 7호기
 Dummy Run 진행
--> U/D transfer gripper R motor 알람 발생으로 점검 진행
-    ㄴ gripper 동작 간 간섭 및 gripper 데미지 특이사항 없음
-      ㄴ 파라소닉 서보모터 알람 14.1 및 14.0 발생
-        ㄴ IPM 알람으로 Encoder cable Reconnect 후 재부팅 재가동 시작
-
 -> U/D transfer gripper R motor 알람 재발생
-    ㄴ L,R gripper home check 진행
-      ㄴ L gripper home check 진행시 home position에서 7mm 틀어짐 확인
+   ㄴ 파라소닉 서보모터 알람 14.1, 14.0 발생
+     ㄴ 추후 재 발생시 서보모터 swap 예정
 
--> Home check 후 재가동 퇴근까지 추가 발생 없었습니다.",,
+Testsite Press Teaching 진행
+-> ALL pass 확인",,
