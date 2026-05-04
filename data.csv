@@ -1576,6 +1576,10 @@ SLH1 #4
 
 -> U/D tray flow module guide type Actuator에서 Cylinder type으로 변경
 ㄴ Solve 장착 및 air line 포설 진행 stopper 사용하여 Cylinder load 길이 조정 ",,
+2026-04-01,SLH1,이태원,"1. SK Hynix 3208AT 개선 적용
+ - 1Line C-Tray , Board Flow부 개선 적용 완료
+ - S/W 적용 후 양산 제공 부족으로 정비사 측 대응 중 미비한 부분 추가 대응
+ - Stopper Bolt 길이 부족으로 인해 수정 요청",,
 2026-03-31,SLH1,김범규,"SLH1
 
 4호기 
@@ -4986,7 +4990,5 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-01,SLH1,이태원,"1. SK Hynix 3208AT 개선 적용
- - 1Line C-Tray , Board Flow부 개선 적용 완료
- - S/W 적용 후 양산 제공 부족으로 정비사 측 대응 중 미비한 부분 추가 대응
- - Stopper Bolt 길이 부족으로 인해 수정 요청",,
+2026-04-02,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 # 5~7 반입 및 LayOut 위치 이동 완료",,
