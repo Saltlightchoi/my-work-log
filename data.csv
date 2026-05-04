@@ -1,10 +1,4 @@
 날짜,장비,작성자,업무내용,비고,첨부
-2026-04-27,SLH1,김승수,"SLH1 
-5호기, 6호기, 7호기 
--> Deviation check sensor position 변경
- L/D hand는 Moving buffer pick position에서 15mm up상태로setting
- U/D hand는 Fix buffer pick position에서 15mm up한 상태로 setting 
-",,
 2026-04-30,SLH1,조건희,"입고물품
 
 무선마우스 4ea
@@ -180,6 +174,12 @@ deviation sensor 재설정
 2026-04-28,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
  - SLH1 #4~7 Deviation Sensor 15mm ,10mm Setting 검증
  - SLH1 #5~7 Dummy Offline Running",,
+2026-04-27,SLH1,김승수,"SLH1 
+5호기, 6호기, 7호기 
+-> Deviation check sensor position 변경
+ L/D hand는 Moving buffer pick position에서 15mm up상태로setting
+ U/D hand는 Fix buffer pick position에서 15mm up한 상태로 setting 
+",,
 2026-04-27,SLH1,김기혁,"SLH1 5호기
 ㄴdeviation sensor 재설정
 -이우철프로 요청으로 deviation 설정에 기준이 없다 하여 
@@ -5071,3 +5071,9 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
+2026-04-28,SLH1,김승수,"SLH1 
+
+5호기, 6호기, 7호기 
+Deviation check sensor position 변경
+    ㄴ L/D hand는 Moving buffer pick position에서 10mm  up상테로 setting
+    ㄴ U/D hand는 Fix buffer pick position에서 10mm up상테로 setting 완료",,
