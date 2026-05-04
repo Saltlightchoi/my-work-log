@@ -1498,6 +1498,9 @@ SLH1 #6
 SLH1 #4
  - LD Hand Z 평탄 측정시 최대 오차 0.7mm 발생, Floating Block 개선 후 조정으로 Inform 후 협조 요청.
 ",,
+2026-04-03,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #5 Docking 및 Levling 완료
+ - 부속 Part 장착 완료",,
 2026-04-02,SLH1,김범규,"SLH1
 
 -5,6,7호기 설비 반입 및 안착 완료.
@@ -4992,6 +4995,5 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-03,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
- - SLH1 #5 Docking 및 Levling 완료
- - 부속 Part 장착 완료",,
+2026-04-06,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #6,7 Docking 및 Leveling 완료",,
