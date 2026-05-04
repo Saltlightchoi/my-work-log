@@ -1,4 +1,10 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-04-27,SLH1,김승수,"SLH1 
+5호기, 6호기, 7호기 
+-> Deviation check sensor position 변경
+ L/D hand는 Moving buffer pick position에서 15mm up상태로setting
+ U/D hand는 Fix buffer pick position에서 15mm up한 상태로 setting 
+",,
 2026-04-30,SLH1,조건희,"입고물품
 
 무선마우스 4ea
@@ -5065,9 +5071,3 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-04,SLH1,김승수,"SLH1 
-5호기, 6호기, 7호기 
--> Deviation check sensor position 변경
- L/D hand는 Moving buffer pick position에서 15mm up상태로setting
- U/D hand는 Fix buffer pick position에서 15mm up한 상태로 setting 
-",,
