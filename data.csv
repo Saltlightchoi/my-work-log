@@ -1137,6 +1137,9 @@ SLH1 5,6,7 호기
 4. 7호기 어드반 테스트 업체 Docking 대응 
 
 5. 우익측 공조부서 작업 딜레이로 Turn On 일정 지연",,
+2026-04-09,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #5,6,7 개선 Part 전량 장착
+ - SLH1 #5 Advan Tester Docking",,
 2026-04-08,SLH1,김범규,"04.08
 
 SLH1
@@ -5001,6 +5004,5 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-09,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
- - SLH1 #5,6,7 개선 Part 전량 장착
- - SLH1 #5 Advan Tester Docking",,
+2026-04-10,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #6,7 Advan Tester Docking",,
