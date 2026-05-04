@@ -477,6 +477,9 @@ SLH1 #7
 
 SLH #5,6
  - Dummy Running Check 진행 중.",,
+2026-04-22,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #4 Damage 관련 수정 Insert 검수 및 검증용 제품 가동
+ - SLH1 #5~7 Dummy Running",,
 2026-04-21,SLH1,윤창섭,"SLH1 
 
 5호기, 6호기, 7호기 공통
@@ -5027,6 +5030,7 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-22,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
- - SLH1 #4 Damage 관련 수정 Insert 검수 및 검증용 제품 가동
- - SLH1 #5~7 Dummy Running",,
+2026-04-23,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #7 Index Time 검증 관련 S/W 수정 대응
+ - SLH1 #5~6 Dummy Running
+ - SLH1 #4 Damage 관련 Visual Pass 이후 검증 Lot 지속 가동 중",,
