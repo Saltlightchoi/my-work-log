@@ -164,6 +164,9 @@ deviation sensor 재설정
 - 기구물 확인 결과 특이사항 없음
 - Home check sensor 장착 상이함 확인
  - 10mm 기준 5,6,7호기 Setting 완료.",,
+2026-04-28,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #4~7 Deviation Sensor 15mm ,10mm Setting 검증
+ - SLH1 #5~7 Dummy Offline Running",,
 2026-04-27,SLH1,김기혁,"SLH1 5호기
 ㄴdeviation sensor 재설정
 -이우철프로 요청으로 deviation 설정에 기준이 없다 하여 
@@ -5041,6 +5044,6 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-28,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
- - SLH1 #4~7 Deviation Sensor 15mm ,10mm Setting 검증
+2026-04-29,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #5 Open&Short & All Pass 검증 完
  - SLH1 #5~7 Dummy Offline Running",,
