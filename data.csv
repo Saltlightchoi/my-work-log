@@ -268,6 +268,10 @@ Dummy Run 진행 중
 
 Dummy Run 진행 중
 ㄴ 가동 중 발생하는 Error 클리어",,
+2026-04-24,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #5~7 Dummy Running
+ - SLH1 #6 In/outPut Feeder Cover 장착 누락건 반입 및 장착 완료
+ - SLH1 #4~7 Setplate Align Pin 공차 수정 Part 검증 완료",,
 2026-04-23,SLH1,김범규,"SLH1
 
 4호기
@@ -5034,7 +5038,6 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-24,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
- - SLH1 #5~7 Dummy Running
- - SLH1 #6 In/outPut Feeder Cover 장착 누락건 반입 및 장착 완료
- - SLH1 #4~7 Setplate Align Pin 공차 수정 Part 검증 완료",,
+2026-04-27,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #4~7 Deviation Sensor 15mm ,10mm Setting 검증
+ - SLH1 #5~7 Unload Stacker Inverter Setting",,
