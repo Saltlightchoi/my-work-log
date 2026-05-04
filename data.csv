@@ -41,6 +41,20 @@ SLH1 #4
 
 입고품 중 Hand JIG 관련 Set-Plate JIG Pin Hole 가공 이상으로 끝까지 삽입 안됨
  -> 기구 설계 인폼 후 Set-Plate Base 반출하여 수정가공 예정.",,
+2026-04-30,SLH1,윤창섭,"SLH1
+
+6호기
+Testsite Press Teaching 진행
+-> ALL pass 확인
+
+7호기
+Dummy Run 진행
+-> U/D transfer gripper R motor 알람 재발생
+   ㄴ 파라소닉 서보모터 알람 14.1, 14.0 발생
+     ㄴ 추후 재 발생시 서보모터 swap 예정
+
+Testsite Press Teaching 진행
+-> ALL pass 확인",,
 2026-04-29,SLH1,김기혁,"SLH1 7호기
 ㄴDummy Run 진행
 -unload transfer R gripper moror err 발생
@@ -4962,17 +4976,6 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-30,SLH1,윤창섭,"SLH1
-
-6호기
-Testsite Press Teaching 진행
--> ALL pass 확인
-
-7호기
-Dummy Run 진행
--> U/D transfer gripper R motor 알람 재발생
-   ㄴ 파라소닉 서보모터 알람 14.1, 14.0 발생
-     ㄴ 추후 재 발생시 서보모터 swap 예정
-
-Testsite Press Teaching 진행
--> ALL pass 확인",,
+2026-03-29,SLH1,이태원,"1. SLH1 제작
+ - SLH1 #5,7호기 Hand 평탄화 검증 Fail 관련 재조정
+ - SLH1 #6호기 Transfer Align 재조정",,
