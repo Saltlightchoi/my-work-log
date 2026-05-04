@@ -4,11 +4,16 @@ from github import Github
 # ==========================================
 # ★ 모듈(클래스) 수입 (에러 방지용 완벽 연결)
 # ==========================================
-from config import DataManager
-from tab_work_log import WorkLogTab
-from tab_cs_check import CSCheckSheetTab
-from tab_equipment_data import EquipmentDataTab
-from tab_ecn_stn import ECNSTNTab
+try:
+    from config import DataManager
+    from tab_work_log import WorkLogTab
+    from tab_cs_check import CSCheckSheetTab
+    from tab_equipment_data import EquipmentDataTab
+    from tab_ecn_stn import ECNSTNTab
+except ModuleNotFoundError as e:
+    st.error(f"🚨 **모듈 로드 실패:** `{e.name}.py` 파일을 찾을 수 없습니다.")
+    st.info("app.py와 같은 폴더 안에 5개의 탭 파일들이 모두 정상적으로 저장되어 있는지 확인해주세요.")
+    st.stop()
 
 # ==========================================
 # 1. 환경 설정 및 전체 디자인 (CSS)
@@ -27,6 +32,15 @@ st.markdown("""
         .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; font-size: 15px; }
         .t-left { text-align: left !important; }
         div[data-testid="stSidebar"] button { width: 100% !important; font-weight: bold; font-size: 15px !important; }
+        
+        /* 대시보드 카드 디자인 */
+        .dash-card {
+            background-color: #ffffff; border-radius: 10px; padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 5px solid #4CAF50;
+            margin-bottom: 15px;
+        }
+        .dash-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .dash-stat { font-size: 24px; font-weight: bold; color: #4CAF50; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -34,17 +48,26 @@ st.markdown("""
 # 2. 메인 실행 (관제탑)
 # ==========================================
 def main():
-    # 깃허브 및 DB 초기화
     try:
-        g = Github(st.secrets["GITHUB_TOKEN"])
-        repo = g.get_repo(st.secrets["REPO_NAME"])
-        db_log = DataManager(repo, st.secrets["FILE_PATH"], ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"])
+        gh_token = st.secrets["GITHUB_TOKEN"]
+        repo_name = st.secrets["REPO_NAME"]
+        file_path = st.secrets["FILE_PATH"]
+    except FileNotFoundError:
+        st.error("🚨 **치명적 오류: `.streamlit/secrets.toml` 파일을 찾을 수 없습니다!**")
+        st.stop()
+    except KeyError as e:
+        st.error(f"🚨 **치명적 오류: secrets.toml 파일 안에 {e} 설정이 빠져 있습니다!**")
+        st.stop()
+
+    try:
+        g = Github(gh_token)
+        repo = g.get_repo(repo_name)
+        db_log = DataManager(repo, file_path, ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"])
         db_flow = DataManager(repo, "cs_flow_data.csv", ["프로젝트명", "대항목", "작업내용", "상태", "비고", "첨부", "업데이트일"])
     except Exception as e:
-        st.error(f"⚠️ 깃허브 연결 설정 오류: {e}")
-        return
+        st.error(f"⚠️ 깃허브 저장소 접근 오류 (권한 또는 저장소 이름 확인 필요): {e}")
+        st.stop()
 
-    # 로그인 세션 관리
     if 'logged_in' not in st.session_state: 
         st.session_state.update({'logged_in': False, 'user_name': ""})
 
@@ -55,15 +78,15 @@ def main():
                 st.session_state.update({'logged_in': True, 'user_name': name})
                 st.rerun()
     else:
-        # ★ 화면 상단 레이아웃 (글씨 짤림 차단 + 드롭다운 크기 절반 예쁘게 압축)
         st.markdown("<h4 style='margin-bottom: 5px; color: #1f2937;'>📂 대시보드 메뉴 이동</h4>", unsafe_allow_html=True)
         
         menu_col, logout_col, empty_col = st.columns([3.5, 1, 5.5])
         
         with menu_col:
+            # ★ 수정: 메뉴 이름 변경
             menu_selection = st.selectbox(
                 "메뉴선택",
-                ["📝 업무일지", "✅ CS 작업체크시트", "📊 장비가동데이터", "🛠️ ECN & STN"],
+                ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"],
                 label_visibility="collapsed"
             )
             
@@ -74,10 +97,10 @@ def main():
 
         st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
 
-        # ★ 선택된 메뉴에 따라 각 파일에 있는 클래스 모듈을 쏙쏙 뽑아와서 화면에 그려줍니다!
+        # ★ 수정: 메뉴 이름 변경 매핑
         if menu_selection == "📝 업무일지": 
             WorkLogTab(db_log).render()
-        elif menu_selection == "✅ CS 작업체크시트": 
+        elif menu_selection == "✅ 장비 제작 Flow": 
             CSCheckSheetTab(db_flow).render()
         elif menu_selection == "📊 장비가동데이터": 
             EquipmentDataTab(repo).render()
