@@ -911,6 +911,8 @@ LD Transfer 파손으로 인한 loader transfer base  교체 진행
 
 6,7호기
 메인 공압라인 정리 및 재단 진행",,
+2026-04-15,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #6,7 Turn On & Middle Feeder Docking",,
 2026-04-14,SLH1,김범규,"SLH1
 
 4호기
@@ -5008,5 +5010,8 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-15,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
- - SLH1 #6,7 Turn On & Middle Feeder Docking",,
+2026-04-16,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #5,6,7 Teaching & Dry Running
+
+2. 우익 반도체 SLH1 #4 Damage
+ - SLH1 #4 Damage 관련 수정 Insert 검수 및 검증용 제품 가동",,
