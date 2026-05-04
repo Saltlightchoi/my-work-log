@@ -114,6 +114,9 @@ Dummy Run 진행
       ㄴ L gripper home check 진행시 home position에서 7mm 틀어짐 확인
 
 -> Home check 후 재가동 퇴근까지 추가 발생 없었습니다.",,
+2026-04-29,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+ - SLH1 #5 Open&Short & All Pass 검증 完
+ - SLH1 #5~7 Dummy Offline Running",,
 2026-04-28,SLH1,최염광,"SLH1 #4
  - 양산 진행간 Error 발생 조치
   -> Reject Stacker Rear Tray Arrival Error 다량 발생
@@ -5044,6 +5047,7 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-29,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
+2026-04-30,SLH1,이태원,"1. 우익 반도체 SLH1 #5~7 Setup
  - SLH1 #5 Open&Short & All Pass 검증 完
- - SLH1 #5~7 Dummy Offline Running",,
+ - SLH1 #5~7 Dummy Offline Running
+ - 출장 종료 및 복귀",,
