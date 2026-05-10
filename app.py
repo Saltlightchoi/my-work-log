@@ -83,9 +83,9 @@ def main():
         menu_col, logout_col, empty_col = st.columns([3.5, 1, 5.5])
         
         with menu_col:
-            # ★ 수정: 메뉴 이름 변경
+            # ★ 핵심 해결 코드: 내부 라벨을 바꿔서 에러 강제 초기화!
             menu_selection = st.selectbox(
-                "메뉴선택",
+                "새로운_메뉴_인식표", 
                 ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"],
                 label_visibility="collapsed"
             )
@@ -97,7 +97,7 @@ def main():
 
         st.sidebar.markdown(f"👤 **{st.session_state['user_name']}** 님 환영합니다.")
 
-        # ★ 수정: 메뉴 이름 변경 매핑
+        # 모듈 렌더링
         if menu_selection == "📝 업무일지": 
             WorkLogTab(db_log).render()
         elif menu_selection == "✅ 장비 제작 Flow": 
