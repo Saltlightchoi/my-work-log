@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from config import CS_TEMPLATE, maintain_project_order, get_row_color
+from config import CS_TEMPLATE, maintain_project_order, get_row_color, EQUIPMENT_OPTIONS
 
 class CSCheckSheetTab:
     def __init__(self, db_flow):
@@ -192,22 +192,51 @@ class CSCheckSheetTab:
                         st.session_state['view_project_detail'] = new_proj # 생성 후 바로 진입
                         st.rerun()
 
+            # ★ 필터 UI 추가 (모델별 / 상태별)
+            filter_col1, filter_col2 = st.columns([1, 1.5])
+            with filter_col1:
+                model_filter = st.selectbox("📌 모델별 필터", ["전체"] + EQUIPMENT_OPTIONS)
+            with filter_col2:
+                st.markdown("<div style='font-size: 14px; color: #333; margin-bottom: 5px; font-weight: bold;'>📌 진행 상태 필터</div>", unsafe_allow_html=True)
+                sc1, sc2, sc3 = st.columns(3)
+                show_todo = sc1.checkbox("📍 예정(대기)", value=True)
+                show_prog = sc2.checkbox("🏃‍♂️ 진행중", value=True)
+                show_done = sc3.checkbox("✅ 완료", value=True)
+                
+            st.markdown("<hr style='margin-top: 15px; margin-bottom: 25px;'>", unsafe_allow_html=True)
+
             if not project_list:
                 st.info("현재 진행 중인 장비 제작 Flow가 없습니다. 위에서 새 장비를 추가해 주세요.")
                 return
             
-            # --- 장비 진행률 사전 계산 및 분류 ---
+            # --- 장비 진행률 사전 계산, 필터링 및 분류 ---
             in_progress_projects = []
             completed_projects = []
             
             for proj in project_list:
+                # 1. 모델 필터 적용
+                if model_filter != "전체" and model_filter.lower() not in proj.lower():
+                    continue
+
                 p_df = df_flow[df_flow["프로젝트명"] == proj]
                 total_items = len(p_df)
                 completed_items = len(p_df[p_df["상태"] == "✅ 완료"])
                 pct = int((completed_items / total_items) * 100) if total_items > 0 else 0
                 
+                # 상태 확인
+                if pct == 100: status_cat = "완료"
+                elif pct > 0: status_cat = "진행중"
+                else: status_cat = "대기"
+
+                # 2. 상태 필터 적용 (체크 해제된 항목은 건너뜀)
+                if status_cat == "완료" and not show_done: continue
+                if status_cat == "진행중" and not show_prog: continue
+                if status_cat == "대기" and not show_todo: continue
+
                 proj_data = {"name": proj, "total": total_items, "completed": completed_items, "pct": pct}
-                if pct == 100:
+                
+                # 분류
+                if status_cat == "완료":
                     completed_projects.append(proj_data)
                 else:
                     in_progress_projects.append(proj_data)
@@ -236,7 +265,7 @@ class CSCheckSheetTab:
                     else: color, bg = "#9e9e9e", "#f5f5f5"          # 회색 (대기)
 
                     with cols[idx % 3]:
-                        # 예쁜 카드 UI 렌더링 (진행률 바 제거, 배터리+블록 추가)
+                        # 예쁜 카드 UI 렌더링
                         st.markdown(f"""
                             <div style="background-color: {bg}; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 6px solid {color}; margin-bottom: 15px;">
                                 <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 5px;">{proj}</div>
@@ -252,8 +281,8 @@ class CSCheckSheetTab:
                             st.rerun()
                         st.markdown("<br>", unsafe_allow_html=True)
 
-            # 1. 진행 중인 장비 섹션 출력
-            st.markdown("### 🏃‍♂️ 진행 중인 장비 목록")
+            # 1. 진행 중/대기 장비 섹션 출력
+            st.markdown("### 🏃‍♂️ 진행 중 / 📍 예정 장비 목록")
             render_project_cards(in_progress_projects)
             
             # 구분선
