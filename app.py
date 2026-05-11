@@ -83,10 +83,11 @@ def main():
         menu_col, logout_col, empty_col = st.columns([3.5, 1, 5.5])
         
         with menu_col:
-            # ★ 핵심 해결 코드: 내부 라벨을 바꿔서 에러 강제 초기화!
+            # ★ 핵심 해결 코드: 완전히 새로운 'key'를 부여하여 기존 캐시와의 충돌을 원천 차단!
             menu_selection = st.selectbox(
-                "새로운_메뉴_인식표", 
+                "메뉴 선택", 
                 ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"],
+                key="main_menu_selectbox_v2",
                 label_visibility="collapsed"
             )
             
