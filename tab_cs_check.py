@@ -195,37 +195,70 @@ class CSCheckSheetTab:
             if not project_list:
                 st.info("현재 진행 중인 장비 제작 Flow가 없습니다. 위에서 새 장비를 추가해 주세요.")
                 return
-
-            st.markdown("### 📊 진행 중인 전체 장비 목록")
             
-            # 카드 레이아웃 구성 (3열)
-            cols = st.columns(3)
+            # --- 장비 진행률 사전 계산 및 분류 ---
+            in_progress_projects = []
+            completed_projects = []
             
-            for idx, proj in enumerate(project_list):
+            for proj in project_list:
                 p_df = df_flow[df_flow["프로젝트명"] == proj]
                 total_items = len(p_df)
                 completed_items = len(p_df[p_df["상태"] == "✅ 완료"])
                 pct = int((completed_items / total_items) * 100) if total_items > 0 else 0
-                pct_float = pct / 100.0
                 
-                # 색상 결정
-                if pct == 100: color, bg = "#4CAF50", "#e8f5e9" # 초록 (완료)
-                elif pct > 0: color, bg = "#2196F3", "#e3f2fd"  # 파랑 (진행중)
-                else: color, bg = "#9e9e9e", "#f5f5f5"          # 회색 (대기)
+                proj_data = {"name": proj, "total": total_items, "completed": completed_items, "pct": pct}
+                if pct == 100:
+                    completed_projects.append(proj_data)
+                else:
+                    in_progress_projects.append(proj_data)
 
-                with cols[idx % 3]:
-                    # 예쁜 카드 UI 렌더링
-                    st.markdown(f"""
-                        <div style="background-color: {bg}; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 6px solid {color}; margin-bottom: 15px;">
-                            <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 5px;">{proj}</div>
-                            <div style="font-size: 14px; color: #666; margin-bottom: 10px;">작업 현황: {completed_items} / {total_items} 건</div>
-                            <div style="font-size: 24px; font-weight: bold; color: {color};">{pct}%</div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    st.progress(pct_float)
+            # 카드 렌더링 함수
+            def render_project_cards(proj_data_list):
+                if not proj_data_list:
+                    st.info("해당하는 장비가 없습니다.")
+                    return
+                
+                cols = st.columns(3)
+                for idx, p_data in enumerate(proj_data_list):
+                    proj = p_data["name"]
+                    total_items = p_data["total"]
+                    completed_items = p_data["completed"]
+                    pct = p_data["pct"]
                     
-                    # 상세 보기로 이동하는 버튼
-                    if st.button(f"🔍 [{proj}] 상세 작업 및 체크하기", key=f"btn_{proj}", use_container_width=True):
-                        st.session_state['view_project_detail'] = proj
-                        st.rerun()
-                    st.markdown("<br>", unsafe_allow_html=True)
+                    # 배터리 및 게이지 블록 계산
+                    blocks = pct // 10
+                    bar = "🟩" * blocks + "⬜" * (10 - blocks)
+                    batt_icon = "🔋" if pct >= 20 else "🪫"
+                    
+                    # 상태별 색상
+                    if pct == 100: color, bg = "#4CAF50", "#e8f5e9" # 초록 (완료)
+                    elif pct > 0: color, bg = "#2196F3", "#e3f2fd"  # 파랑 (진행중)
+                    else: color, bg = "#9e9e9e", "#f5f5f5"          # 회색 (대기)
+
+                    with cols[idx % 3]:
+                        # 예쁜 카드 UI 렌더링 (진행률 바 제거, 배터리+블록 추가)
+                        st.markdown(f"""
+                            <div style="background-color: {bg}; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 6px solid {color}; margin-bottom: 15px;">
+                                <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 5px;">{proj}</div>
+                                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">작업 현황: {completed_items} / {total_items} 건</div>
+                                <div style="font-size: 26px; font-weight: bold; color: {color}; margin-bottom: 5px;">{pct}%</div>
+                                <div style="font-size: 14px; letter-spacing: 1.5px; color: #333;">{batt_icon} [{bar}]</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # 상세 보기 버튼
+                        if st.button(f"🔍 [{proj}] 상세 작업 및 체크하기", key=f"btn_{proj}", use_container_width=True):
+                            st.session_state['view_project_detail'] = proj
+                            st.rerun()
+                        st.markdown("<br>", unsafe_allow_html=True)
+
+            # 1. 진행 중인 장비 섹션 출력
+            st.markdown("### 🏃‍♂️ 진행 중인 장비 목록")
+            render_project_cards(in_progress_projects)
+            
+            # 구분선
+            st.markdown("<hr style='margin-top: 15px; margin-bottom: 25px;'>", unsafe_allow_html=True)
+            
+            # 2. 완료된 장비 섹션 출력
+            st.markdown("### ✅ 제작 완료된 장비 목록")
+            render_project_cards(completed_projects)
