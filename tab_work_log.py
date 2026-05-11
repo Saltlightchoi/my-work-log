@@ -30,9 +30,25 @@ class WorkLogTab:
                     st.rerun()
 
         elif mode == "✏️ 수정" and not df_log.empty:
-            idx = st.sidebar.selectbox("수정 대상", df_log.index, format_func=lambda x: f"{df_log.loc[x, '날짜']} | {df_log.loc[x, '업무내용'][:15]}...")
+            # ★ 목록에서 작성자 이름도 같이 보이도록 개선
+            idx = st.sidebar.selectbox(
+                "수정 대상", 
+                df_log.index, 
+                format_func=lambda x: f"{df_log.loc[x, '날짜']} | 👤{df_log.loc[x, '작성자']} | {df_log.loc[x, '업무내용'][:10]}..."
+            )
             with st.sidebar.form("edit_log"):
                 e_date = st.date_input("날짜 수정", pd.to_datetime(df_log.loc[idx, '날짜']))
+                
+                # ★ 장비 정보 확인/수정 기능 추가
+                current_equip = df_log.loc[idx, '장비'] if '장비' in df_log.columns and pd.notna(df_log.loc[idx, '장비']) else EQUIPMENT_OPTIONS[0]
+                if current_equip not in EQUIPMENT_OPTIONS: current_equip = EQUIPMENT_OPTIONS[0]
+                e_equip = st.selectbox("장비 수정", EQUIPMENT_OPTIONS, index=EQUIPMENT_OPTIONS.index(current_equip))
+                
+                # ★ 작성자 정보 확인/수정 기능 추가
+                val_author = df_log.loc[idx, '작성자'] if '작성자' in df_log.columns else ""
+                val_author = "" if pd.isna(val_author) else str(val_author)
+                e_author = st.text_input("작성자 확인 및 수정", value=val_author)
+                
                 e_content = st.text_area("내용 수정", value=df_log.loc[idx, '업무내용'], height=300)
                 
                 val_note = df_log.loc[idx, '비고'] if '비고' in df_log.columns else ""
@@ -44,12 +60,16 @@ class WorkLogTab:
                 e_attach = st.text_input("첨부 수정", value=val_attach)
                 
                 if st.form_submit_button("수정 완료"):
-                    df_log.loc[idx, ['날짜', '업무내용', '비고', '첨부']] = [str(e_date), e_content, e_note, e_attach]
+                    df_log.loc[idx, ['날짜', '장비', '작성자', '업무내용', '비고', '첨부']] = [str(e_date), e_equip, e_author, e_content, e_note, e_attach]
                     self.db_log.save(df_log, sha_log, "Edit Log")
                     st.rerun()
 
         elif mode == "❌ 삭제" and not df_log.empty:
-            idx = st.sidebar.selectbox("삭제 대상 선택", df_log.index, format_func=lambda x: f"{df_log.loc[x, '날짜']} | {df_log.loc[x, '업무내용'][:10]}")
+            idx = st.sidebar.selectbox(
+                "삭제 대상 선택", 
+                df_log.index, 
+                format_func=lambda x: f"{df_log.loc[x, '날짜']} | 👤{df_log.loc[x, '작성자']} | {df_log.loc[x, '업무내용'][:10]}"
+            )
             st.sidebar.warning(f"내용: {df_log.loc[idx, '업무내용'][:50]}...")
             if st.sidebar.button("🗑️ 최종 삭제 (복구 불가)", type="primary"):
                 self.db_log.save(df_log.drop(idx), sha_log, "Delete Log")
