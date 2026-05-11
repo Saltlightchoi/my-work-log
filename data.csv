@@ -30,6 +30,37 @@
  - 액츄에이터 3번 탈거 후 Multi Meter 측정시 Fuse 1ea 불량
  - Soft Loader Left부 미동작 및 Mask 후 진행
  - 액츄에이터 구매 후 교체 예정.",,
+2026-05-04,SLH1,윤창섭,"SLH1
+
+1호기
+05.01 ~ 05.03 까지 발생한 Error review
+
+1. L/D hand Module is not exist, check the exist sensor #1
+-> L/D hand picking error retry 후 재가동 이후 발생없음 단발성으로 보입니다. 주간 모니터링 하였으나 발생하지 않음
+2. L/D, U/D set-plate up sensor 미감지 error
+-> c-tray성으로 판단되며 다른 c-tray로 동작시 특이사항 없음 주간 모니터링 하였으나 발생하지 않음
+3. Empty stacker  manual c-tray R-dimm check error
+-> 정비사가 init동작 중 empty stacker에 있는 c-tray를 제거하지 않아 발생.
+4. Module barcode error
+-> barcode 라벨 미부착으로 발생.
+5. Reject stacker s-dimm stopper check error
+-> 작업자 휴먼에러로 재투입시 정상가동.
+6. U/D hand picker module unclamp sol 실패 error
+-> set-plate에 c-tray 잘못 안착되어 발생 c-tray성으로 판단되며 다른 c-tray를 놓을시 error발생 없었습니다.
+
+5호기, 6호기, 7호기 공통
+Dummy Run 진행 중
+
+5호기
+Dummy Run  진행 중
+-> L/D transfer x축 motor power 공급 불가 err 발생
+   ㄴ motor 알람 없이 그냥 power off 상태였어서 간섭되는 부분이 있나 check 및  home check 후 재가동 하였습니다.
+
+-> L/D transfer와 U/D transfer 충돌 발생
+   ㄴ 자재가 아직 가동 중인 상태에서 L/D transfer는 set-plate 1 position에서 대기 중이였으나 U/D transfer가 looping으로 U/D #1에있던 c-tray를 옴기기위해 이동하다 충돌 발생
+-> 이성배 수석님 통하여 looping 시퀀스 확인 진행 project에 Unload c-tray cnt가 10ea로 되어있고 L/D 2에 자재가없어 looping 시작하였고 또한 U/D transfer가 L/D 2로 이동시에 interlock이 적용되어있지않아 발생한것으로 추정됩니다.
+project에 Unload c-tray cnt 30ea 및 looping mode no use 후 재가동시 특이사항 없습니다.
+수요일 4,5,6,7 호기 bolt 아이마킹 작업 예정입니다.",,
 2026-04-30,SLH1,조건희,"입고물품
 
 무선마우스 4ea
@@ -5108,34 +5139,9 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-04,SLH1,윤창섭,"SLH1
+2026-05-06,SLH1,윤창섭,"SLH1
 
-1호기
-05.01 ~ 05.03 까지 발생한 Error review
-
-1. L/D hand Module is not exist, check the exist sensor #1
--> L/D hand picking error retry 후 재가동 이후 발생없음 단발성으로 보입니다. 주간 모니터링 하였으나 발생하지 않음
-2. L/D, U/D set-plate up sensor 미감지 error
--> c-tray성으로 판단되며 다른 c-tray로 동작시 특이사항 없음 주간 모니터링 하였으나 발생하지 않음
-3. Empty stacker  manual c-tray R-dimm check error
--> 정비사가 init동작 중 empty stacker에 있는 c-tray를 제거하지 않아 발생.
-4. Module barcode error
--> barcode 라벨 미부착으로 발생.
-5. Reject stacker s-dimm stopper check error
--> 작업자 휴먼에러로 재투입시 정상가동.
-6. U/D hand picker module unclamp sol 실패 error
--> set-plate에 c-tray 잘못 안착되어 발생 c-tray성으로 판단되며 다른 c-tray를 놓을시 error발생 없었습니다.
-
-5호기, 6호기, 7호기 공통
-Dummy Run 진행 중
-
-5호기
-Dummy Run  진행 중
--> L/D transfer x축 motor power 공급 불가 err 발생
-   ㄴ motor 알람 없이 그냥 power off 상태였어서 간섭되는 부분이 있나 check 및  home check 후 재가동 하였습니다.
-
--> L/D transfer와 U/D transfer 충돌 발생
-   ㄴ 자재가 아직 가동 중인 상태에서 L/D transfer는 set-plate 1 position에서 대기 중이였으나 U/D transfer가 looping으로 U/D #1에있던 c-tray를 옴기기위해 이동하다 충돌 발생
--> 이성배 수석님 통하여 looping 시퀀스 확인 진행 project에 Unload c-tray cnt가 10ea로 되어있고 L/D 2에 자재가없어 looping 시작하였고 또한 U/D transfer가 L/D 2로 이동시에 interlock이 적용되어있지않아 발생한것으로 추정됩니다.
-project에 Unload c-tray cnt 30ea 및 looping mode no use 후 재가동시 특이사항 없습니다.
-수요일 4,5,6,7 호기 bolt 아이마킹 작업 예정입니다.",,
+5,6,7호기 공통
+-> bolt 아이마킹 안되어있는 부분 작업 진행
+-> L/D, U/D Hand 리니어부 고정bolt 풀려있는지 점검 진행
+    ㄴ 특이사항 없습니다.",,
