@@ -128,6 +128,13 @@ SLH1
    MODULE TRACE, SOCKET HISTORY LOG 수정
    SMOKE ALRAM 수정.
 ",,
+2026-05-06,SLH1,김기혁,"SLH1 6,7호기
+ㄴ장비 전체 볼트 풀림 확인 및 아이마킹
+-Hand Linear 볼트 풀림 확인
+
+SLH1 5호기
+ㄴ소프트팀 김정욱 선임 내방하여 OS UPDATE 진행
+",,
 2026-05-04,SLH1,윤창섭,"SLH1
 
 1호기
@@ -5248,10 +5255,17 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-06,SLH1,김기혁,"SLH1 6,7호기
-ㄴ장비 전체 볼트 풀림 확인 및 아이마킹
--Hand Linear 볼트 풀림 확인
+2026-05-07,SLH1,김기혁,"SLH1 6,7호기
+ㄴDOE 관련하여 Part 이동장착
+-Press Lock Pin 파손으로 정상 part 6호기에 이동 설치
+-7호기 Front 파손 파트 장착(개선품 입고시 장착)
 
-SLH1 5호기
-ㄴ소프트팀 김정욱 선임 내방하여 OS UPDATE 진행
+ㄴ개선품 장착
+-Moving Buffer stopper block 장착
+
+SLH1 6호기
+ㄴOS Update 후 Test Run
+-Empty Guide1,2 jig 사용하여 재 조정
+-Moving Buffer, Fix Buffer 재 Teaching
+-Unload Hand X축 Home Sensor 고정 미흡으로 Sensor 이동 재고정 후 X축 Teaching 전체 수정
 ",,
