@@ -2,7 +2,9 @@ import pandas as pd
 import io
 
 BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
-EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "3208CM", "3208XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
+
+# ★ 요청하신 대로 3208CM -> 32CM, 3208XM -> 32XM 으로 변경했습니다!
+EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "32CM", "32XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
 
 CS_TEMPLATE = [
     {"대항목": "공통", "순서": 1, "작업내용": "I/O Check\n- Out Put으로 동작 후 In Put LED 확인\n- Cylinder 정상 동작 확인\n- Manual에서 Cylinder 동작 후 LED 점등 확인\n- 미비된 부분 I/O List, PC에 저장 후 전장 수정 요청 진행\n- 전장 수정 후 수정되었는지 동작, LED 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
