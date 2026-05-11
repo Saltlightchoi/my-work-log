@@ -30,6 +30,12 @@
  - 액츄에이터 3번 탈거 후 Multi Meter 측정시 Fuse 1ea 불량
  - Soft Loader Left부 미동작 및 Mask 후 진행
  - 액츄에이터 구매 후 교체 예정.",,
+2026-05-06,SLH1,윤창섭,"SLH1
+
+5,6,7호기 공통
+-> bolt 아이마킹 안되어있는 부분 작업 진행
+-> L/D, U/D Hand 리니어부 고정bolt 풀려있는지 점검 진행
+    ㄴ 특이사항 없습니다.",,
 2026-05-04,SLH1,윤창섭,"SLH1
 
 1호기
@@ -5139,9 +5145,11 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-06,SLH1,윤창섭,"SLH1
+2026-05-07,SLH1,윤창섭,"SLH1
 
-5,6,7호기 공통
--> bolt 아이마킹 안되어있는 부분 작업 진행
--> L/D, U/D Hand 리니어부 고정bolt 풀려있는지 점검 진행
-    ㄴ 특이사항 없습니다.",,
+5호기
+-> Transfer Reject stacker 및 Empty stacker position Jig 사용하여 teaching 재 진행
+-> Empty stacker Middle giude 밀림 현상으로 시정조치 진행하여 개선 예정
+-> Fix, Moving Reject buffer position teaching 재 진행
+
+이후 Dummy Run 진행하여 모니터링 진행",,
