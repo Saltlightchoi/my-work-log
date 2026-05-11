@@ -5,6 +5,16 @@
 ",,
 2026-05-11,32CM,김승수,"32CM 6,7,8호기 출하 준비 
 각종 커버 및 후면부 랩핑 완료.",,
+2026-05-11,SLH1,윤창섭,"SLH1
+
+5호기
+-> D.O.E 대비 Dummy Run 진행중
+  ㄴ Retest mode로 가동 중 hang-up  발생 Recovery Data 취득 후 김정욱 선임님께 전달 원인 파악 중
+  ㄴ U/D hand Unload #1 position x축 y축 teahing 수정
+
+6호기
+-> U/D transfer가 Reject stacker Unloading시에  rear stopper 간섭있어 Reject stacker unit position 조정 후 동작 확인 완료
+  ㄴ 아직 미세하게 간섭이있어 명일 추가 점검 예정",,
 2026-05-09,3208H,최염광,"Hynix 3208H 이전 관련 선작업
  - 3208H T-Tray All 제거 후 COK 박스 정리 완료.
  - LD/ULD Hand, Transfer 고정 완료.
@@ -5153,13 +5163,14 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-11,SLH1,윤창섭,"SLH1
+2026-04-30,SLH1,조건희,"SLH1 
 
 5호기
--> D.O.E 대비 Dummy Run 진행중
-  ㄴ Retest mode로 가동 중 hang-up  발생 Recovery Data 취득 후 김정욱 선임님께 전달 원인 파악 중
-  ㄴ U/D hand Unload #1 position x축 y축 teahing 수정
+Dummy Run 진행 중. 특이사항 없음
 
-6호기
--> U/D transfer가 Reject stacker Unloading시에  rear stopper 간섭있어 Reject stacker unit position 조정 후 동작 확인 완료
-  ㄴ 아직 미세하게 간섭이있어 명일 추가 점검 예정",,
+6,7호기
+Testsite Press Teaching 진행
+ㄴ ALL pass 확인
+
+Hand JIG 관련 Setplate JIG의 pin hole 가공 이상발견
+ㄴ 기구 설계 확인 결과 의도된 설계가 아닌것으로 확인되어 Set-Plate Base 반출하여 수정가공 예정",,
