@@ -70,15 +70,21 @@ def main():
     else:
         st.markdown("<h4 style='margin-bottom: 5px; color: #1f2937;'>📂 대시보드 메뉴 이동</h4>", unsafe_allow_html=True)
         
+        # ★ 추가된 기능: 다른 탭으로 넘어갈 때 '상세 보기' 기록을 지워주는 함수
+        def clear_project_detail():
+            if 'view_project_detail' in st.session_state:
+                st.session_state['view_project_detail'] = None
+
         menu_col, logout_col, empty_col = st.columns([3.5, 1, 5.5])
         
         with menu_col:
-            # ★ 핵심 해결: 완전히 새로운 key를 부여해 에러 원천 차단
+            # on_change 속성을 달아서 메뉴를 바꿀 때마다 clear_project_detail 함수가 실행됨!
             menu_selection = st.selectbox(
                 "메뉴 선택", 
                 ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"],
                 key="main_menu_selectbox_v3",
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                on_change=clear_project_detail
             )
             
         with logout_col:
