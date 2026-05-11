@@ -192,8 +192,8 @@ class CSCheckSheetTab:
                         st.session_state['view_project_detail'] = new_proj # 생성 후 바로 진입
                         st.rerun()
 
-            # ★ 필터 UI 추가 (모델별 / 상태별)
-            filter_col1, filter_col2 = st.columns([1, 1.5])
+            # ★ 필터 UI 추가 (우측 정렬 배치)
+            filter_col1, empty_col, filter_col2 = st.columns([2.5, 3, 4.5])
             with filter_col1:
                 model_filter = st.selectbox("📌 모델별 필터", ["전체"] + EQUIPMENT_OPTIONS)
             with filter_col2:
@@ -210,7 +210,8 @@ class CSCheckSheetTab:
                 return
             
             # --- 장비 진행률 사전 계산, 필터링 및 분류 ---
-            in_progress_projects = []
+            todo_projects = []
+            prog_projects = []
             completed_projects = []
             
             for proj in project_list:
@@ -228,25 +229,18 @@ class CSCheckSheetTab:
                 elif pct > 0: status_cat = "진행중"
                 else: status_cat = "대기"
 
-                # 2. 상태 필터 적용 (체크 해제된 항목은 건너뜀)
-                if status_cat == "완료" and not show_done: continue
-                if status_cat == "진행중" and not show_prog: continue
-                if status_cat == "대기" and not show_todo: continue
-
+                # 2. 상태 필터 적용 (선택된 항목만 각 리스트에 넣음)
                 proj_data = {"name": proj, "total": total_items, "completed": completed_items, "pct": pct}
                 
-                # 분류
-                if status_cat == "완료":
+                if status_cat == "완료" and show_done:
                     completed_projects.append(proj_data)
-                else:
-                    in_progress_projects.append(proj_data)
+                elif status_cat == "진행중" and show_prog:
+                    prog_projects.append(proj_data)
+                elif status_cat == "대기" and show_todo:
+                    todo_projects.append(proj_data)
 
             # 카드 렌더링 함수
             def render_project_cards(proj_data_list):
-                if not proj_data_list:
-                    st.info("해당하는 장비가 없습니다.")
-                    return
-                
                 cols = st.columns(3)
                 for idx, p_data in enumerate(proj_data_list):
                     proj = p_data["name"]
@@ -281,13 +275,26 @@ class CSCheckSheetTab:
                             st.rerun()
                         st.markdown("<br>", unsafe_allow_html=True)
 
-            # 1. 진행 중/대기 장비 섹션 출력
-            st.markdown("### 🏃‍♂️ 진행 중 / 📍 예정 장비 목록")
-            render_project_cards(in_progress_projects)
+            # 3. 화면 출력 (조건에 맞는 데이터가 있을 때만 껍데기 제목 출력!)
+            has_data = False
             
-            # 구분선
-            st.markdown("<hr style='margin-top: 15px; margin-bottom: 25px;'>", unsafe_allow_html=True)
-            
-            # 2. 완료된 장비 섹션 출력
-            st.markdown("### ✅ 제작 완료된 장비 목록")
-            render_project_cards(completed_projects)
+            if todo_projects:
+                st.markdown("### 📍 예정(대기) 장비 목록")
+                render_project_cards(todo_projects)
+                st.markdown("<hr style='margin-top: 5px; margin-bottom: 25px; border-top: 1px dashed #ccc;'>", unsafe_allow_html=True)
+                has_data = True
+                
+            if prog_projects:
+                st.markdown("### 🏃‍♂️ 진행 중인 장비 목록")
+                render_project_cards(prog_projects)
+                st.markdown("<hr style='margin-top: 5px; margin-bottom: 25px; border-top: 1px dashed #ccc;'>", unsafe_allow_html=True)
+                has_data = True
+                
+            if completed_projects:
+                st.markdown("### ✅ 제작 완료된 장비 목록")
+                render_project_cards(completed_projects)
+                has_data = True
+                
+            # 체크를 다 끄거나 검색 조건에 아예 안 맞을 때만 이 문구 하나 출력
+            if not has_data:
+                st.info("조건에 맞는 장비가 없습니다. 필터 옵션을 확인해 주세요.")
