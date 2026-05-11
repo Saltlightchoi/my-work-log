@@ -145,6 +145,17 @@ Testsite Press Teaching 진행
  - SLH1 #5 Open&Short & All Pass 검증 完
  - SLH1 #5~7 Dummy Offline Running
  - 출장 종료 및 복귀",,
+2026-04-30,SLH1,조건희,"SLH1 
+
+5호기
+Dummy Run 진행 중. 특이사항 없음
+
+6,7호기
+Testsite Press Teaching 진행
+ㄴ ALL pass 확인
+
+Hand JIG 관련 Setplate JIG의 pin hole 가공 이상발견
+ㄴ 기구 설계 확인 결과 의도된 설계가 아닌것으로 확인되어 Set-Plate Base 반출하여 수정가공 예정",,
 2026-04-29,SLH1,김기혁,"SLH1 7호기
 ㄴDummy Run 진행
 -unload transfer R gripper moror err 발생
@@ -5163,14 +5174,10 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-04-30,SLH1,조건희,"SLH1 
+2026-05-11,SLH1,조건희,"SLH1
 
-5호기
-Dummy Run 진행 중. 특이사항 없음
+5,6,7호기
 
-6,7호기
-Testsite Press Teaching 진행
-ㄴ ALL pass 확인
-
-Hand JIG 관련 Setplate JIG의 pin hole 가공 이상발견
-ㄴ 기구 설계 확인 결과 의도된 설계가 아닌것으로 확인되어 Set-Plate Base 반출하여 수정가공 예정",,
+고객사측 장비 blot 아이마킹 미흡한 부분 지적사항
+ㄴ bolt 아이마킹 안되어있는 부분 작업 진행
+ㄴ 아이마킹 작업하며 L/D, U/D Hand 리니어부 고정 bolt 풀려있는지 점검 진행 특이사항 없음",,
