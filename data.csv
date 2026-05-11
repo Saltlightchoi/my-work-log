@@ -5088,13 +5088,3 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-07,SLH1,최염광,"Hynix 3028AT Loader Cylinder 교체 작업
- - 작일 Soft 수정 후 AT 동작간 F사 Flow 동작 이상
- - 오전 중 CS 출입하여 확인시 Cylinder Sensor 이상감지로 인한 동작 불가로 조치 완료
- - 추가로 R-Dimm 진행간 액츄에이터 고정상태로 진행됨 확인
-  -> Loader Left부 액츄에이터 Stopper 위치 조정하여 고정상태 Align 확인
- - 생산 진행간 정밀 위치 조정 및 정상 Loading 확인 후 자재 Damage 검증 예정
- - Right 부 Dimm 삽입 간헐적 삽입안됨
-  -> Press For/Back Cylinder 위치 Align 이상
-  -> Maint Cylinder Load 부 Nut가 아닌 Washer 삽입되어 Stroke 길이 상이하여 Align 맞지 않은 상태 Press 동작
-  -> Spring Wahser 제거 후 Align 정상 확인, 추가 Loading 간 정상 삽입 확인.",,
