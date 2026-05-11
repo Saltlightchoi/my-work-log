@@ -47,6 +47,16 @@ Recovery Data S/W팀 전달 원인 파악 중
 -> Fix, Moving Reject buffer position teaching 재 진행
 
 이후 Dummy Run 진행하여 모니터링 진행",,
+2026-05-07,SLH1,조건희,"SLH1
+
+5호기
+
+D.O.E 진행 전 가동 시 문제사항 check
+ㄴ Transfer Reject stacker 및 Empty stacker position Jig 사용하여 teaching 재 진행
+ㄴ Empty stacker Middle giude 밀림 현상으로 확인 결과 giude 고정 부 보강필요 할 것으로 판단되어 기구설계팀 인폼 후 시정조치 진행하여 개선 예정
+ㄴ Fix, Moving Reject buffer position teaching 재 진행
+
+이후 Dummy Run 진행하여 모니터링 진행",,
 2026-05-06,SLH1,조건희,"SLH1
 
 5,6,7호기
@@ -5191,13 +5201,18 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-07,SLH1,조건희,"SLH1
+2026-05-11,SLH1,김범규,"6호기
+- D.O.E 대비 CONDITIONING 진행중.
+- LD TRANSFER T-Axis TEACHING.
+- LD HAND DEVATION ±1.3 -> ±2.0 변경.
+- REJECT STACKER FRONT/REAR LEVELING.
+- ULD TRANSFER가 REJECT STACKER REAR BASE에 놓을 시 C-TRAY 끝단과 STOPPER 간섭.
+> REJECT STACKER UNIT POS 조정, STOPPER ASS'Y 미세 조정 진행. 
 
-5호기
+4호기
+- 8번 T-TRAY DUT11 INSET COVER CLOSE 동작 간 끝까지 닫히지 못함.
+> 해당 INSERT 탈거 및 8번 T-TRAY DUT11 MANUAL OFF 
+> 해당 INSERT 반출하여 기구설계 손지은 선임 전달 예정.
 
-D.O.E 진행 전 가동 시 문제사항 check
-ㄴ Transfer Reject stacker 및 Empty stacker position Jig 사용하여 teaching 재 진행
-ㄴ Empty stacker Middle giude 밀림 현상으로 확인 결과 giude 고정 부 보강필요 할 것으로 판단되어 기구설계팀 인폼 후 시정조치 진행하여 개선 예정
-ㄴ Fix, Moving Reject buffer position teaching 재 진행
-
-이후 Dummy Run 진행하여 모니터링 진행",,
+* 05.12~05.13 예정되어 있던 D.O.E 차주 진행 예정.
+ㄴ 개선 T-TRAY 금주 내 입고 예정으로 미개선 INSERT 사용 시 MODULE CAP DAMAGE 우려되어 우익 측 일정 연기.",,
