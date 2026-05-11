@@ -2,7 +2,7 @@ import streamlit as st
 from github import Github
 
 # ==========================================
-# ★ 모듈(클래스) 수입 (에러 방지용 완벽 연결)
+# ★ 모듈(클래스) 수입
 # ==========================================
 try:
     from config import DataManager
@@ -12,7 +12,6 @@ try:
     from tab_ecn_stn import ECNSTNTab
 except ModuleNotFoundError as e:
     st.error(f"🚨 **모듈 로드 실패:** `{e.name}.py` 파일을 찾을 수 없습니다.")
-    st.info("app.py와 같은 폴더 안에 5개의 탭 파일들이 모두 정상적으로 저장되어 있는지 확인해주세요.")
     st.stop()
 
 # ==========================================
@@ -32,15 +31,6 @@ st.markdown("""
         .final-report-table th { background-color: #d9e1f2 !important; font-weight: bold; font-size: 15px; }
         .t-left { text-align: left !important; }
         div[data-testid="stSidebar"] button { width: 100% !important; font-weight: bold; font-size: 15px !important; }
-        
-        /* 대시보드 카드 디자인 */
-        .dash-card {
-            background-color: #ffffff; border-radius: 10px; padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 5px solid #4CAF50;
-            margin-bottom: 15px;
-        }
-        .dash-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
-        .dash-stat { font-size: 24px; font-weight: bold; color: #4CAF50; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -83,11 +73,11 @@ def main():
         menu_col, logout_col, empty_col = st.columns([3.5, 1, 5.5])
         
         with menu_col:
-            # ★ 핵심 해결 코드: 완전히 새로운 'key'를 부여하여 기존 캐시와의 충돌을 원천 차단!
+            # ★ 핵심 해결: 완전히 새로운 key를 부여해 에러 원천 차단
             menu_selection = st.selectbox(
                 "메뉴 선택", 
                 ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"],
-                key="main_menu_selectbox_v2",
+                key="main_menu_selectbox_v3",
                 label_visibility="collapsed"
             )
             
