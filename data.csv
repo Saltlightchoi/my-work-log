@@ -19,6 +19,14 @@
   -> Press For/Back Cylinder 위치 Align 이상
   -> Maint Cylinder Load 부 Nut가 아닌 Washer 삽입되어 Stroke 길이 상이하여 Align 맞지 않은 상태 Press 동작
   -> Spring Wahser 제거 후 Align 정상 확인, 추가 Loading 간 정상 삽입 확인.",,
+2026-05-07,SLH1,윤창섭,"SLH1
+
+5호기
+-> Transfer Reject stacker 및 Empty stacker position Jig 사용하여 teaching 재 진행
+-> Empty stacker Middle giude 밀림 현상으로 시정조치 진행하여 개선 예정
+-> Fix, Moving Reject buffer position teaching 재 진행
+
+이후 Dummy Run 진행하여 모니터링 진행",,
 2026-05-06,3208AT,최염광,"Hynix 3028AT Loader Cylinder 교체 작업
  - LD Press Cylinder All 교체 완료.
   -> Cylinder Type 3종류, 1종류 수량 부족으로 Delay, 2호기 작업분 출고 받아 교체 완료.
@@ -5145,11 +5153,13 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-07,SLH1,윤창섭,"SLH1
+2026-05-11,SLH1,윤창섭,"SLH1
 
 5호기
--> Transfer Reject stacker 및 Empty stacker position Jig 사용하여 teaching 재 진행
--> Empty stacker Middle giude 밀림 현상으로 시정조치 진행하여 개선 예정
--> Fix, Moving Reject buffer position teaching 재 진행
+-> D.O.E 대비 Dummy Run 진행중
+  ㄴ Retest mode로 가동 중 hang-up  발생 Recovery Data 취득 후 김정욱 선임님께 전달 원인 파악 중
+  ㄴ U/D hand Unload #1 position x축 y축 teahing 수정
 
-이후 Dummy Run 진행하여 모니터링 진행",,
+6호기
+-> U/D transfer가 Reject stacker Unloading시에  rear stopper 간섭있어 Reject stacker unit position 조정 후 동작 확인 완료
+  ㄴ 아직 미세하게 간섭이있어 명일 추가 점검 예정",,
