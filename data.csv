@@ -15,6 +15,16 @@
 6호기
 -> U/D transfer가 Reject stacker Unloading시에  rear stopper 간섭있어 Reject stacker unit position 조정 후 동작 확인 완료
   ㄴ 아직 미세하게 간섭이있어 명일 추가 점검 예정",,
+2026-05-11,SLH1,조건희,"SLH1
+
+5호기
+
+D.O.E 진행 전 가동 시 문제사항 check
+ㄴ 전주 S/W팀 Update 관련 검증을 위해 가동 중 Retest 기존 3회에서 5회로 변경 및 off-line dut off 총 32ea 중 26ea 로 진행 시 hang-up 발생하여  
+Recovery Data S/W팀 전달 원인 파악 중
+ㄴ U/D hand Unload #1 position x축 y축 teahing 수정
+ㄴ test site front top mask front rotation sensor check error 발생하여 T-tray 들뜸 확인 후 AMP 값 조정
+",,
 2026-05-09,3208H,최염광,"Hynix 3208H 이전 관련 선작업
  - 3208H T-Tray All 제거 후 COK 박스 정리 완료.
  - LD/ULD Hand, Transfer 고정 완료.
@@ -5181,13 +5191,13 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-11,SLH1,조건희,"SLH1
+2026-05-07,SLH1,조건희,"SLH1
 
 5호기
 
 D.O.E 진행 전 가동 시 문제사항 check
-ㄴ 전주 S/W팀 Update 관련 검증을 위해 가동 중 Retest 기존 3회에서 5회로 변경 및 off-line dut off 총 32ea 중 26ea 로 진행 시 hang-up 발생하여  
-Recovery Data S/W팀 전달 원인 파악 중
-ㄴ U/D hand Unload #1 position x축 y축 teahing 수정
-ㄴ test site front top mask front rotation sensor check error 발생하여 T-tray 들뜸 확인 후 AMP 값 조정
-",,
+ㄴ Transfer Reject stacker 및 Empty stacker position Jig 사용하여 teaching 재 진행
+ㄴ Empty stacker Middle giude 밀림 현상으로 확인 결과 giude 고정 부 보강필요 할 것으로 판단되어 기구설계팀 인폼 후 시정조치 진행하여 개선 예정
+ㄴ Fix, Moving Reject buffer position teaching 재 진행
+
+이후 Dummy Run 진행하여 모니터링 진행",,
