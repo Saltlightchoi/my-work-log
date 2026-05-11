@@ -79,6 +79,20 @@ D.O.E 진행 전 가동 시 문제사항 check
 - ULD HAND X-Axis HOME SENSOR BRK 미고정되어 고정 후 전 구간 TEACHING 진행.
 - MOVING BUFFER ULD HAND X,Y,Z-Axis TEACHING 및 DEVATION POS TEACHING.
 - DEVICE RUNNING 진행. ",,
+2026-05-07,SLH1,김기혁,"SLH1 6,7호기
+ㄴDOE 관련하여 Part 이동장착
+-Press Lock Pin 파손으로 정상 part 6호기에 이동 설치
+-7호기 Front 파손 파트 장착(개선품 입고시 장착)
+
+ㄴ개선품 장착
+-Moving Buffer stopper block 장착
+
+SLH1 6호기
+ㄴOS Update 후 Test Run
+-Empty Guide1,2 jig 사용하여 재 조정
+-Moving Buffer, Fix Buffer 재 Teaching
+-Unload Hand X축 Home Sensor 고정 미흡으로 Sensor 이동 재고정 후 X축 Teaching 전체 수정
+",,
 2026-05-06,SLH1,조건희,"SLH1
 
 5,6,7호기
@@ -5255,17 +5269,10 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-07,SLH1,김기혁,"SLH1 6,7호기
-ㄴDOE 관련하여 Part 이동장착
--Press Lock Pin 파손으로 정상 part 6호기에 이동 설치
--7호기 Front 파손 파트 장착(개선품 입고시 장착)
-
-ㄴ개선품 장착
--Moving Buffer stopper block 장착
-
-SLH1 6호기
-ㄴOS Update 후 Test Run
--Empty Guide1,2 jig 사용하여 재 조정
--Moving Buffer, Fix Buffer 재 Teaching
--Unload Hand X축 Home Sensor 고정 미흡으로 Sensor 이동 재고정 후 X축 Teaching 전체 수정
+2026-05-11,SLH1,김기혁,"SLH1 6호기
+ㄴDOE 대비 Condition Check 중(명일 DOE 예정이였으나 T-Tray 입고시 진행으로 변경)
+-U/D transfer가 Reject stacker Unloading시에  rear stopper 간섭발생
+-Reject stacker unit 조정 및 Stopper cylinder 면밀착 진행
+-미세하게 간섭 남아있어 명일 추가 진행 예정
+-Load Transfer SetPlate에 Unloading시 Gripper 미세 간섭으로 T축 미세 조정 진행
 ",,
