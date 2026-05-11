@@ -1,4 +1,15 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-05-06,3208AT,최염광,"Hynix 3028AT Loader Cylinder 교체 작업
+ - LD Press Cylinder All 교체 완료.
+  -> Cylinder Type 3종류, 1종류 수량 부족으로 Delay, 2호기 작업분 출고 받아 교체 완료.
+ - 교체 후 OS 수정 , Init 진행간 4번 액츄에이터 동작 안됨
+  -> Connector Reconnect 후 정상인식, 3번 액츄에이터 동작 안됨
+  -> 2,3번 Cable Swap 시 3번 동일하게 동작 안됨
+  -> 액츄에이터 유휴품, 다른 Model 연결시 On 안됨
+  -> Soft 상 ID 설정 완료되야 정상 인식되나 해당 진행 방법 Soft 및 가능자 없음
+ - 액츄에이터 3번 탈거 후 Multi Meter 측정시 Fuse 1ea 불량
+ - Soft Loader Left부 미동작 및 Mask 후 진행
+ - 액츄에이터 구매 후 교체 예정.",,
 2026-04-30,SLH1,조건희,"입고물품
 
 무선마우스 4ea
@@ -5077,14 +5088,13 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-06,3208AT,최염광,"Hynix 3028AT Loader Cylinder 교체 작업
- - LD Press Cylinder All 교체 완료.
-  -> Cylinder Type 3종류, 1종류 수량 부족으로 Delay, 2호기 작업분 출고 받아 교체 완료.
- - 교체 후 OS 수정 , Init 진행간 4번 액츄에이터 동작 안됨
-  -> Connector Reconnect 후 정상인식, 3번 액츄에이터 동작 안됨
-  -> 2,3번 Cable Swap 시 3번 동일하게 동작 안됨
-  -> 액츄에이터 유휴품, 다른 Model 연결시 On 안됨
-  -> Soft 상 ID 설정 완료되야 정상 인식되나 해당 진행 방법 Soft 및 가능자 없음
- - 액츄에이터 3번 탈거 후 Multi Meter 측정시 Fuse 1ea 불량
- - Soft Loader Left부 미동작 및 Mask 후 진행
- - 액츄에이터 구매 후 교체 예정.",,
+2026-05-07,SLH1,최염광,"Hynix 3028AT Loader Cylinder 교체 작업
+ - 작일 Soft 수정 후 AT 동작간 F사 Flow 동작 이상
+ - 오전 중 CS 출입하여 확인시 Cylinder Sensor 이상감지로 인한 동작 불가로 조치 완료
+ - 추가로 R-Dimm 진행간 액츄에이터 고정상태로 진행됨 확인
+  -> Loader Left부 액츄에이터 Stopper 위치 조정하여 고정상태 Align 확인
+ - 생산 진행간 정밀 위치 조정 및 정상 Loading 확인 후 자재 Damage 검증 예정
+ - Right 부 Dimm 삽입 간헐적 삽입안됨
+  -> Press For/Back Cylinder 위치 Align 이상
+  -> Maint Cylinder Load 부 Nut가 아닌 Washer 삽입되어 Stroke 길이 상이하여 Align 맞지 않은 상태 Press 동작
+  -> Spring Wahser 제거 후 Align 정상 확인, 추가 Loading 간 정상 삽입 확인.",,
