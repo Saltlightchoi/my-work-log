@@ -40,6 +40,13 @@ Recovery Data S/W팀 전달 원인 파악 중
 
 * 05.12~05.13 예정되어 있던 D.O.E 차주 진행 예정.
 ㄴ 개선 T-TRAY 금주 내 입고 예정으로 미개선 INSERT 사용 시 MODULE CAP DAMAGE 우려되어 우익 측 일정 연기.",,
+2026-05-11,SLH1,김기혁,"SLH1 6호기
+ㄴDOE 대비 Condition Check 중(명일 DOE 예정이였으나 T-Tray 입고시 진행으로 변경)
+-U/D transfer가 Reject stacker Unloading시에  rear stopper 간섭발생
+-Reject stacker unit 조정 및 Stopper cylinder 면밀착 진행
+-미세하게 간섭 남아있어 명일 추가 진행 예정
+-Load Transfer SetPlate에 Unloading시 Gripper 미세 간섭으로 T축 미세 조정 진행
+",,
 2026-05-09,3208H,최염광,"Hynix 3208H 이전 관련 선작업
  - 3208H T-Tray All 제거 후 COK 박스 정리 완료.
  - LD/ULD Hand, Transfer 고정 완료.
@@ -5269,10 +5276,16 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-11,SLH1,김기혁,"SLH1 6호기
-ㄴDOE 대비 Condition Check 중(명일 DOE 예정이였으나 T-Tray 입고시 진행으로 변경)
--U/D transfer가 Reject stacker Unloading시에  rear stopper 간섭발생
--Reject stacker unit 조정 및 Stopper cylinder 면밀착 진행
--미세하게 간섭 남아있어 명일 추가 진행 예정
--Load Transfer SetPlate에 Unloading시 Gripper 미세 간섭으로 T축 미세 조정 진행
-",,
+2026-05-12,SLH1,김기혁,"SLH1 6호기
+ㄴDOE 관련 Part 교체
+-In Flow/Out Flow Top Guide Lock Cylinder Shaft및 Pin
+-재질변경건으로 Shaft 교체 Pin 기존품 사용
+
+ㄴReject belt 텐션 조절
+
+ㄴUnload 1,2 Stacker Manual C-tray Front Stopper Check Sensor 위치 조정
+
+SLH1 7호기
+ㄴDOE 관련 Part 교체
+-In Flow/Out Flow Top Guide Lock Cylinder Shaft및 Pin
+-재질변경건으로 Shaft 교체 Pin 기존품 사용",,
