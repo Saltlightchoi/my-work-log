@@ -1,4 +1,17 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-05-12,SLH1,김기혁,"SLH1 6호기
+ㄴDOE 관련 Part 교체
+-In Flow/Out Flow Top Guide Lock Cylinder Shaft및 Pin
+-재질변경건으로 Shaft 교체 Pin 기존품 사용
+
+ㄴReject belt 텐션 조절
+
+ㄴUnload 1,2 Stacker Manual C-tray Front Stopper Check Sensor 위치 조정
+
+SLH1 7호기
+ㄴDOE 관련 Part 교체
+-In Flow/Out Flow Top Guide Lock Cylinder Shaft및 Pin
+-재질변경건으로 Shaft 교체 Pin 기존품 사용",,
 2026-05-11,32CM,최염광,"32CM 6,7,8호기 출하 준비
  - Cover 미흡 장착 및 랩핑 완료.
  - 전장 Box Fan Cover 조립 후 장착 완료.
@@ -5276,16 +5289,20 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-12,SLH1,김기혁,"SLH1 6호기
-ㄴDOE 관련 Part 교체
--In Flow/Out Flow Top Guide Lock Cylinder Shaft및 Pin
--재질변경건으로 Shaft 교체 Pin 기존품 사용
+2026-05-12,SLH1,윤창섭,"SLH1
 
-ㄴReject belt 텐션 조절
+5호기
+D.O.E 대비 Dummy Run 가동 중
+-> L/D, U/D hand blow air 조정
+-> U/D hand deviation check error 발생하여 U/D hand UnLoader #1 position y축 미세 티칭 진행
 
-ㄴUnload 1,2 Stacker Manual C-tray Front Stopper Check Sensor 위치 조정
+지속적으로 모니터링 진행 중
 
-SLH1 7호기
-ㄴDOE 관련 Part 교체
--In Flow/Out Flow Top Guide Lock Cylinder Shaft및 Pin
--재질변경건으로 Shaft 교체 Pin 기존품 사용",,
+Input/Output t-tray lock cylinder shaft 개선품 및 고정 Head pin 장착
+
+6호기
+D.O.E 대비 Dummy Run 가동 중
+-> Reject Stacker base 다운시 c-tray가 rear stopper에 간섭이있어 Reject stacker unit position 조정 및 stopper position 조정
+
+7호기
+Input/Output t-tray lock cylinder shaft 개선품 및 기존 고정 Head pin 장착",,
