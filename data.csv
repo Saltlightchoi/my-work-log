@@ -1,4 +1,15 @@
 날짜,장비,작성자,업무내용,비고,첨부
+2026-05-14,SLH1,김기혁,"SLH1 5호기
+ㄴDOE 검증 진행
+-DOE전 TEST 자재 PASS
+-DOE 자재 PASS 확인
+
+SLH1 6호기
+ㄴDOE 검증 진행
+-DOE전 TEST 자재 PASS
+-DOE 자재 PASS 확인
+-자재 ALL PASS 하였으나 TESTER PGM(SAMSUNG UI) 문제로 DOE는 통과 하였느나 명일 추가 가동 예정
+",,
 2026-05-13,3208H,김기혁,"3208H 3호기
 ㄴ장비 이설로 해체 작업 진행
 -전면부 후면부 도킹 해제
@@ -5337,14 +5348,12 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-14,SLH1,김기혁,"SLH1 5호기
-ㄴDOE 검증 진행
--DOE전 TEST 자재 PASS
--DOE 자재 PASS 확인
+2026-05-12,SLH1,조건희,"SLH1
 
-SLH1 6호기
-ㄴDOE 검증 진행
--DOE전 TEST 자재 PASS
--DOE 자재 PASS 확인
--자재 ALL PASS 하였으나 TESTER PGM(SAMSUNG UI) 문제로 DOE는 통과 하였느나 명일 추가 가동 예정
-",,
+5호기
+D.O.E 대비 Dummy Run 가동 중 ULD hand deviation check error 발생
+ㄴ ULD hand ULD1 pos Y축 Teaching 진행
+
+
+5,6,7호기
+In,Output T-tray lock cylinder shaft 개선품 및 고정 Head pin 장착",,
