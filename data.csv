@@ -10,6 +10,19 @@ SLH1 6호기
 -DOE 자재 PASS 확인
 -자재 ALL PASS 하였으나 TESTER PGM(SAMSUNG UI) 문제로 DOE는 통과 하였느나 명일 추가 가동 예정
 ",,
+2026-05-14,SLH1,조건희,"SLH1 
+
+5,6호기
+D.O.E 검증 진행
+ㄴ TEST 자재 PASS
+ㄴ D.O.E 자재 PASS 확인
+ㄴ RNR은 Skip 하기로 하여 보지않음
+ 
+6호기
+
+TEST 자재 TEST중 SAMSUNG UI 문제발생
+ㄴ PASS이후 다음 투입되는 자재는 ALL FAIL ㄴ TEST TIME 약8초 가량나옴 
+ㄴ D.O.E는 RETEST 하며 모두 PASS나와서 그대로 진행하였느나 명일 추가로 점검필요하여 대응예정",,
 2026-05-13,3208H,김기혁,"3208H 3호기
 ㄴ장비 이설로 해체 작업 진행
 -전면부 후면부 도킹 해제
@@ -5364,16 +5377,18 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-14,SLH1,조건희,"SLH1 
+2026-05-15,SLH1,조건희,"SLH1 
 
-5,6호기
-D.O.E 검증 진행
-ㄴ TEST 자재 PASS
-ㄴ D.O.E 자재 PASS 확인
-ㄴ RNR은 Skip 하기로 하여 보지않음
- 
+5,6호기 
+
+Rotation check sensor setting 진행
+ㄴ 4,7호기는 추후 진행하기로 협의
+ㄴ 6호기 setting중 block이 7호기와 바뀌어 장착되어 sensor값 이상발생 7호기와 swap하여 장착 후 setting 완료
+
+전호기 공통
+LD Hand deviation sensor 값 2.0/-2.0으로 수정
+
 6호기
 
-TEST 자재 TEST중 SAMSUNG UI 문제발생
-ㄴ PASS이후 다음 투입되는 자재는 ALL FAIL ㄴ TEST TIME 약8초 가량나옴 
-ㄴ D.O.E는 RETEST 하며 모두 PASS나와서 그대로 진행하였느나 명일 추가로 점검필요하여 대응예정",,
+작일 발생한 SAMSUNG UI 문제 대응
+ㄴ 오전까지 대응 진행하였으나 해결이 안되고  이후 진행이 더뎌져 우익 측 정비사에게 조치후 결과인폼 요청",,
