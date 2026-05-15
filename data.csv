@@ -41,6 +41,13 @@ SLH1
        -> RFID 재장착 및 position 변경하였으나 지속적으로 발생 다른 원인 파악중 동일한 t-tray에서만 발생하여 금일 입고된 신규 t-tray 4ea장 RFID 장착하여 삽입이후 추가 발생 없습니다.
 
 -> 금일 D.O.E 진행한다고 하였으나 상위통신이 연결되어있지 않아 다음에 재진행 condition check까지만 진행하였습니다",,
+2026-05-13,SLH1,조건희,"SLH1
+
+5,6호기
+D.O.E 진행
+ㄴ 신규 T-tray 4ea장 RFID 장착하여 삽입
+ㄴ T-tray flow 가동하면서 RFID condition check 
+ㄴ D.O.E 진행 중 상위통신 삼성측과 연결 원할하지 않아 오전부터 승인요청하였으나 담당자 부재로 Test 자재로 수율 Check만 진행 명일 D.O.E.이어서 진행 예정 ",,
 2026-05-12,SLH1,김기혁,"SLH1 6호기
 ㄴDOE 관련 Part 교체
 -In Flow/Out Flow Top Guide Lock Cylinder Shaft및 Pin
@@ -5357,10 +5364,16 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-13,SLH1,조건희,"SLH1
+2026-05-14,SLH1,조건희,"SLH1 
 
 5,6호기
-D.O.E 진행
-ㄴ 신규 T-tray 4ea장 RFID 장착하여 삽입
-ㄴ T-tray flow 가동하면서 RFID condition check 
-ㄴ D.O.E 진행 중 상위통신 삼성측과 연결 원할하지 않아 오전부터 승인요청하였으나 담당자 부재로 Test 자재로 수율 Check만 진행 명일 D.O.E.이어서 진행 예정 ",,
+D.O.E 검증 진행
+ㄴ TEST 자재 PASS
+ㄴ D.O.E 자재 PASS 확인
+ㄴ RNR은 Skip 하기로 하여 보지않음
+ 
+6호기
+
+TEST 자재 TEST중 SAMSUNG UI 문제발생
+ㄴ PASS이후 다음 투입되는 자재는 ALL FAIL ㄴ TEST TIME 약8초 가량나옴 
+ㄴ D.O.E는 RETEST 하며 모두 PASS나와서 그대로 진행하였느나 명일 추가로 점검필요하여 대응예정",,
