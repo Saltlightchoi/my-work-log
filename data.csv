@@ -71,6 +71,15 @@ D.O.E 대비 Dummy Run 가동 중
 
 7호기
 Input/Output t-tray lock cylinder shaft 개선품 및 기존 고정 Head pin 장착",,
+2026-05-12,SLH1,조건희,"SLH1
+
+5호기
+D.O.E 대비 Dummy Run 가동 중 ULD hand deviation check error 발생
+ㄴ ULD hand ULD1 pos Y축 Teaching 진행
+
+
+5,6,7호기
+In,Output T-tray lock cylinder shaft 개선품 및 고정 Head pin 장착",,
 2026-05-11,32CM,최염광,"32CM 6,7,8호기 출하 준비
  - Cover 미흡 장착 및 랩핑 완료.
  - 전장 Box Fan Cover 조립 후 장착 완료.
@@ -5348,12 +5357,10 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-12,SLH1,조건희,"SLH1
+2026-05-13,SLH1,조건희,"SLH1
 
-5호기
-D.O.E 대비 Dummy Run 가동 중 ULD hand deviation check error 발생
-ㄴ ULD hand ULD1 pos Y축 Teaching 진행
-
-
-5,6,7호기
-In,Output T-tray lock cylinder shaft 개선품 및 고정 Head pin 장착",,
+5,6호기
+D.O.E 진행
+ㄴ 신규 T-tray 4ea장 RFID 장착하여 삽입
+ㄴ T-tray flow 가동하면서 RFID condition check 
+ㄴ D.O.E 진행 중 상위통신 삼성측과 연결 원할하지 않아 오전부터 승인요청하였으나 담당자 부재로 Test 자재로 수율 Check만 진행 명일 D.O.E.이어서 진행 예정 ",,
