@@ -14,6 +14,20 @@ LD Hand deviation sensor 값 2.0/-2.0으로 수정
 
 작일 발생한 SAMSUNG UI 문제 대응
 ㄴ 오전까지 대응 진행하였으나 해결이 안되고  이후 진행이 더뎌져 우익 측 정비사에게 조치후 결과인폼 요청",,
+2026-05-15,SLH1,김기혁,"SLH1 6,7호기
+ㄴ제작 과정 기구물 장착 오류
+-Rotation check cylinder 고정 BRK 장착 Miss로 6호기 < - >7호기 스왑 교체 장착
+-6호기 Sensor 앰프값 조정
+-7호기 추후진행
+
+ㄴ6호기 Tester PGM (SAMSUNG UI) 문제 대응 작일과 동일 증상 
+
+
+SLH1 5호기
+ㄴRotation check Sensor 앰프값 조정
+
+
+",,
 2026-05-14,SLH1,김기혁,"SLH1 5호기
 ㄴDOE 검증 진행
 -DOE전 TEST 자재 PASS
@@ -5392,17 +5406,13 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-15,SLH1,김기혁,"SLH1 6,7호기
-ㄴ제작 과정 기구물 장착 오류
--Rotation check cylinder 고정 BRK 장착 Miss로 6호기 < - >7호기 스왑 교체 장착
--6호기 Sensor 앰프값 조정
--7호기 추후진행
+2026-05-14,SLH1,윤창섭,"SLH1
+5호기
+D.O.E 검증 진행
+-> D.O.E 전 TEST 자재 PASS 검증 후 D.O.E 자재 PASS
+  ㄴ D.O.E 완료
 
-ㄴ6호기 Tester PGM (SAMSUNG UI) 문제 대응 작일과 동일 증상 
-
-
-SLH1 5호기
-ㄴRotation check Sensor 앰프값 조정
-
-
-",,
+6호기
+D.O.E 검증 진행
+-> D.O.E 전 TEST 자재 PASS 검증 후 D.O.E 자재 PASS
+  ㄴ  ALL PASS로 D.O.E 완료하였으나 PGM 쪽 문제로 추후 재진행 예정입니다",,
