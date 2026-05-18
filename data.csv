@@ -1,5 +1,4 @@
 날짜,장비,작성자,업무내용,비고,첨부
-2026-05-17,SLH1,윤창섭,,,
 2026-05-15,SLH1,조건희,"SLH1 
 
 5,6호기 
@@ -29,6 +28,19 @@ SLH1 5호기
 
 
 ",,
+2026-05-15,SLH1,윤창섭,"SLH1 
+
+5,6호기 
+Rotation check sensor setting 진행
+->  4호기는 가동 예정이고 7호기는 press lock pin이 없어 추후 진행
+-> 6호기 와 7호기에서 Rotation check cylinder brk 바뀌어 장착되어있어 탈거 후 재조립 및 sensor 값 setting 진행
+
+6호기
+작일 발생한 PGM 문제로 인해 D.O.E가 제대로 진행하지 못함.
+-> 우익 측에서 조치를 취해 보았지만 해결이 안되고 이후 대응이 늦어져 우익 정비사에게 결과나오면 인폼달라고 하였습니다
+
+전호기 공통
+LD Hand deviation sensor 값 2.0/-2.0으로 수정",,
 2026-05-14,SLH1,김기혁,"SLH1 5호기
 ㄴDOE 검증 진행
 -DOE전 TEST 자재 PASS
@@ -5417,16 +5429,3 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-15,SLH1,윤창섭,"SLH1 
-
-5,6호기 
-Rotation check sensor setting 진행
-->  4호기는 가동 예정이고 7호기는 press lock pin이 없어 추후 진행
--> 6호기 와 7호기에서 Rotation check cylinder brk 바뀌어 장착되어있어 탈거 후 재조립 및 sensor 값 setting 진행
-
-6호기
-작일 발생한 PGM 문제로 인해 D.O.E가 제대로 진행하지 못함.
--> 우익 측에서 조치를 취해 보았지만 해결이 안되고 이후 대응이 늦어져 우익 정비사에게 결과나오면 인폼달라고 하였습니다
-
-전호기 공통
-LD Hand deviation sensor 값 2.0/-2.0으로 수정",,
