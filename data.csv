@@ -41,6 +41,18 @@ Rotation check sensor setting 진행
 
 전호기 공통
 LD Hand deviation sensor 값 2.0/-2.0으로 수정",,
+2026-05-15,SLH1,김범규,"SLH1 
+6,7호기
+-제작 과정 기구물 장착 오류.
+> Rotation check cylinder 고정 BRK 장착 오장착으로 
+   6호기<->7호기 SWAP 진행.
+-6호기 Rptation Sensor Amp Value 조정
+-7호기 추후진행
+- 6호기 Tester PGM 대응 진행하였으나 동일 증상 지속 발생중.
+> 우익 측 삼성 문의 예정.
+
+5호기
+- Rotation check Sensor Amp Value 조정",,
 2026-05-14,SLH1,김기혁,"SLH1 5호기
 ㄴDOE 검증 진행
 -DOE전 TEST 자재 PASS
@@ -5452,15 +5464,26 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-15,SLH1,김범규,"SLH1 
-6,7호기
--제작 과정 기구물 장착 오류.
-> Rotation check cylinder 고정 BRK 장착 오장착으로 
-   6호기<->7호기 SWAP 진행.
--6호기 Rptation Sensor Amp Value 조정
--7호기 추후진행
-- 6호기 Tester PGM 대응 진행하였으나 동일 증상 지속 발생중.
-> 우익 측 삼성 문의 예정.
+2026-05-18,SLH1,윤창섭,"SLH1
 
-5호기
-- Rotation check Sensor Amp Value 조정",,
+1호기
+E.E.G 중단되어있다가 다시 시작한다고 인폼받음
+-> 4/15 ~ 5/15일 생산 DATA로 E.E.G 진행
+   ㄴ T-tray index time 측정을 위해 추가 4장 투입
+      ㄴ Y-tray inert 고정 block bolt 넓은 타입으로 교체후 투입 완료
+
+4호기
+Lot end miss 및 6호기와 동일하게 test 결과 pass fail 반복 증상 발생
+-> Tester PGM이 기존 5호기 6호기와 동일하여 동일한 문제로 판단
+   ㄴ PGM 수정 후 가동 진행 재발생 없습니다.
+-> Lot end miss 문제는 Recovery data 취득 후 김정욱 선임님께 전달
+   ㄴ 특정하게 발생하는 문제였고 S/W 수정 진행
+
+금일 t-tray 8ea 입고되어 4호기 기존 B type 2ea 제거후 6ea 투입하여 8ea으로 가동 중입니다.
+-> t-tray 1장 조립 불량으로 재조립 진행
+
+5, 6호기 공통
+-> Device 10ea로 RNR 진행
+   ㄴ 진행 시 특이사항없었습니다.
+
+명일 추가 test 진행 예정입니다.",,
