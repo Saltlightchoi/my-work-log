@@ -215,6 +215,16 @@ D.O.E 진행
 ㄴ 신규 T-tray 4ea장 RFID 장착하여 삽입
 ㄴ T-tray flow 가동하면서 RFID condition check 
 ㄴ D.O.E 진행 중 상위통신 삼성측과 연결 원할하지 않아 오전부터 승인요청하였으나 담당자 부재로 Test 자재로 수율 Check만 진행 명일 D.O.E.이어서 진행 예정 ",,
+2026-05-13,3208H,최염광,"SK Hynix 3208H 해체 작업 
+ - 3208H 3호기
+  -> 전면부 좌우, 청랩은 미사용 하도록 안내(포장 외관 식별 불가로 미사용)
+  ->  3호기 상단 Utility Main Power Cable 제거 완료 후 공압 Line 정리
+
+ - 3208H 6호기
+  -> 전면부 좌우 Rapping 완료.
+ - Advantest 6호기 Cable 탈거 완료.
+  -> 6호기 MB 케이블베어 탈거 완료.
+",,
 2026-05-12,SLH1,김기혁,"SLH1 6호기
 ㄴDOE 관련 Part 교체
 -In Flow/Out Flow Top Guide Lock Cylinder Shaft및 Pin
@@ -5549,13 +5559,11 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-13,3208H,최염광,"SK Hynix 3208H 해체 작업 
+2026-05-18,3208H,최염광,"SK Hynix 3208H 해체 작업 
  - 3208H 3호기
-  -> 전면부 좌우, 청랩은 미사용 하도록 안내(포장 외관 식별 불가로 미사용)
-  ->  3호기 상단 Utility Main Power Cable 제거 완료 후 공압 Line 정리
+  -> 전면부, 후면부 Rapping 완료.
 
  - 3208H 6호기
-  -> 전면부 좌우 Rapping 완료.
- - Advantest 6호기 Cable 탈거 완료.
-  -> 6호기 MB 케이블베어 탈거 완료.
+  -> 전면부, 후면부 Rapping 완료.
+ - 부속품 호기별 정리 및 Rapping 완료.
 ",,
