@@ -61,6 +61,23 @@ T-TRAY 4EA 토션 스프링 고정 블럭 볼트 교체
 D.O.E 관련 RNR삼성측 요청으로 진행
 Device 20ea로 RNR 진행
 ㄴ 진행 시 특이사항 없으며 명일 추가항목 점검진행 예정",,
+2026-05-18,SLH1,김기혁,"SLH1 1호기
+ㄴTRAY Insert Ass'y 힌지 부 고정 Block 기존 육각 우산머리볼트 -> 십자 우산머리볼트로 교체.
+ -힌지 부 고정 Block 형상 잘못되어 기구설계 손지은 선임 Inform (1쌍 입고예정)
+ -삼성 이우철 프로 요청으로기존 육각 우산머리볼트 체결하여 사용하며 해당 Block Damage 발견되어 해당 부분 Monitoring 요청.
+
+SLH1 4호기
+ㄴLot End 정상적으로 되지 않는 문제 발생.
+ -S/W 김정욱 선임 Log 반출하여 분석 요청.
+ -마지막 Retest 시 모두 Fail 판정으로 단독 Reject Tray 배출 시 해당 문제 발생 확인.
+
+ㄴTESTER All Fail 관련 Samsung PGM 수정 
+-OS Update 가동 정상적으로 Testing 진행 및 Bin 결과 확인 완료
+
+SLH1 5,6호기
+ㄴ우익 측 D.O.E 간 RNR 미진행 건 진행 대응.
+ -명일 Module 낙하 검증 및 BCR 검증 진행 대응 예정.
+",,
 2026-05-15,SLH1,조건희,"SLH1 
 
 5,6호기 
@@ -5526,20 +5543,9 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-18,SLH1,김기혁,"SLH1 1호기
-ㄴTRAY Insert Ass'y 힌지 부 고정 Block 기존 육각 우산머리볼트 -> 십자 우산머리볼트로 교체.
- -힌지 부 고정 Block 형상 잘못되어 기구설계 손지은 선임 Inform (1쌍 입고예정)
- -삼성 이우철 프로 요청으로기존 육각 우산머리볼트 체결하여 사용하며 해당 Block Damage 발견되어 해당 부분 Monitoring 요청.
+2026-05-12,3208H,최염광,"SK Hynix 3208H 해체 작업 
+ - 3208H 3호기 
+  -> Cable 전장팀 제거 후 좌우, 전면부 해체 완료.
 
-SLH1 4호기
-ㄴLot End 정상적으로 되지 않는 문제 발생.
- -S/W 김정욱 선임 Log 반출하여 분석 요청.
- -마지막 Retest 시 모두 Fail 판정으로 단독 Reject Tray 배출 시 해당 문제 발생 확인.
-
-ㄴTESTER All Fail 관련 Samsung PGM 수정 
--OS Update 가동 정상적으로 Testing 진행 및 Bin 결과 확인 완료
-
-SLH1 5,6호기
-ㄴ우익 측 D.O.E 간 RNR 미진행 건 진행 대응.
- -명일 Module 낙하 검증 및 BCR 검증 진행 대응 예정.
-",,
+ - 3208H 6호기 
+  -> Cable 정리 중.",,
