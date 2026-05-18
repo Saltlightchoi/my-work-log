@@ -152,6 +152,18 @@ D.O.E 대비 Dummy Run 가동 중 ULD hand deviation check error 발생
 
 5,6,7호기
 In,Output T-tray lock cylinder shaft 개선품 및 고정 Head pin 장착",,
+2026-05-12,SLH1,김범규,"SLH1 
+6호기
+-DOE 관련 Conditioning 진행중.
+-IN/OUTPUT T-Tray Lock Cylinder Shaft 개선품 교체
+> Pin Head 파손 건 Spare 장착.
+-Reject belt 텐션 조절
+-Unload 1,2 Stacker Manual C-tray Front Stopper Check Sensor 위치 조정
+
+7호기
+-IN/OUTPUT T-Tray Lock Cylinder Shaft 개선품 교체
+> Pin Head 파손 건 Spare 장착.
+",,
 2026-05-11,32CM,최염광,"32CM 6,7,8호기 출하 준비
  - Cover 미흡 장착 및 랩핑 완료.
  - 전장 Box Fan Cover 조립 후 장착 완료.
@@ -5429,15 +5441,14 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-12,SLH1,김범규,"SLH1 
-6호기
--DOE 관련 Conditioning 진행중.
--IN/OUTPUT T-Tray Lock Cylinder Shaft 개선품 교체
-> Pin Head 파손 건 Spare 장착.
--Reject belt 텐션 조절
--Unload 1,2 Stacker Manual C-tray Front Stopper Check Sensor 위치 조정
+2026-05-14,SLH1,김범규,"SLH1 
+5호기
+-우익 측 D.O.E 진행 대응. 
+-D.O.E 전 TEST 자재 PASS
+-D.O.E 자재 PASS 확인
 
-7호기
--IN/OUTPUT T-Tray Lock Cylinder Shaft 개선품 교체
-> Pin Head 파손 건 Spare 장착.
-",,
+6호기
+-우익 측 D.O.E 진행 대응. 
+-D.O.E 전 TEST 자재 PASS
+-D.O.E 자재 PASS 확인
+-자재 ALL PASS 하였으나 TESTER PGM(SAMSUNG UI) 문제로 명일 PGM 검증 대응 예정.",,
