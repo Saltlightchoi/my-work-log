@@ -3,7 +3,6 @@ import pandas as pd
 import io
 import re
 from datetime import datetime
-import openpyxl
 from config import EQUIPMENT_OPTIONS
 
 class ECNSTNTab:
@@ -13,9 +12,6 @@ class ECNSTNTab:
     def render(self):
         st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
-
-        ecn_base_path = r"\\192.168.0.100\500 생산\550 국내CS\ECN&STN"
-        bad_base_path = r"\\192.168.0.100\500 생산\550 국내CS\ECT&STN"
 
         col1, col2, col3, col_search = st.columns([1.5, 1.5, 2.5, 4.5])
         with col1: equipment = st.selectbox("장비 선택", EQUIPMENT_OPTIONS, key="ecn_equip")
@@ -31,13 +27,10 @@ class ECNSTNTab:
 
         if show_help:
             st.info("**이용 안내:** 구글 시트 **`ECN_STN`** 탭을 기반으로 목록을 출력합니다.\n\n"
-                    "표의 **'조치현황'**, **'특이사항'**, **'첨부(파일명 입력)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
-                    "**📁 첨부파일/원본 열기 팁:**\n"
-                    "웹 브라우저 표에서 복사할 때 따옴표가 3개(`\"\"\"`)로 증식하는 버그를 완벽히 피하기 위해 화면 하단에 **[1초 복사기]**를 만들었습니다.\n"
-                    "1. 표의 **'첨부(파일명 입력)'** 칸에는 **확장자 없이 파일명만** 적으셔도 자동으로 PDF로 연결됩니다.\n"
-                    "2. 열고 싶은 항목의 파일 이름을 복사(`Ctrl+C`)합니다.\n"
-                    "3. 표 밑에 있는 **'1초 복사기'** 칸에 붙여넣기 하시면 완벽한 주소가 생성됩니다!\n"
-                    "4. 키보드에서 **`[윈도우키 + R]`**을 눌러 붙여넣고 엔터를 치면 파일이 바로 열립니다.")
+                    "1. 표의 **'조치현황'**, **'특이사항'**, **'첨부(G-Drive 링크)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다.\n"
+                    "2. **첨부파일 넣기:** 구글 드라이브에 올려둔 사진이나 PDF의 '공유 링크'를 복사해서 **'첨부'** 칸에 붙여넣으세요.\n"
+                    "3. 파란색으로 변한 링크를 클릭하면 즉시 파일이 열립니다!\n"
+                    "4. 수정한 뒤엔 반드시 하단의 **[💾 변경사항 구글 시트에 저장하기]** 버튼을 눌러주세요.")
 
         try:
             df_raw, _ = self.db_ecn.load()
@@ -67,7 +60,7 @@ class ECNSTNTab:
                 elif '조치' in c_clean or '진행' in c_clean: 
                     base_col = '조치현황'
                     col_idx_map['조치현황'] = base_col
-                elif '첨부' in c_clean: 
+                elif '첨부' in c_clean or '링크' in c_clean: 
                     base_col = '첨부'
                     col_idx_map['첨부'] = base_col
 
@@ -77,10 +70,10 @@ class ECNSTNTab:
                 new_cols.append(base_col)
             
             df_raw.columns = new_cols
-            
             df_raw['Original_Index'] = df_raw.index
             df = df_raw.copy()
             
+            # ★ 장비 필터링 (구글 시트의 '장비호기' 칸에 해당 장비 이름이 있어야 출력됨)
             if '장비호기' in df.columns:
                 df = df[df['장비호기'].astype(str).str.contains(equipment, case=False, na=False)].copy()
 
@@ -140,7 +133,6 @@ class ECNSTNTab:
                 filtered_df['TempDate'] = filtered_df['날짜'].apply(parse_date_robust)
                 filtered_df = filtered_df.dropna(subset=['TempDate'])
                 
-                # ★ 에러 수정: 데이터가 있을 때만 datetime 변환을 실행하도록 방어
                 if not filtered_df.empty:
                     filtered_df['TempDate'] = pd.to_datetime(filtered_df['TempDate'])
                     filtered_df = filtered_df.sort_values(by='TempDate', ascending=False)
@@ -151,19 +143,8 @@ class ECNSTNTab:
             filtered_df = filtered_df.astype(str).replace(['nan', 'NaN', 'None', 'nat', 'NaT', '0.0'], '')
             filtered_df.reset_index(drop=True, inplace=True)
             
-            if '첨부' in filtered_df.columns:
-                def clean_attachment(val):
-                    if pd.isna(val): return ""
-                    val_str = str(val).strip().replace('"', '') 
-                    if val_str.startswith(bad_base_path):
-                        val_str = val_str[len(bad_base_path):].lstrip("\\")
-                    if val_str.startswith(ecn_base_path):
-                        return val_str[len(ecn_base_path):].lstrip("\\")
-                    return val_str
-                
-                filtered_df['첨부(파일명)'] = filtered_df['첨부'].apply(clean_attachment)
-            
             st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+            
             if not filtered_df.empty:
                 total_cnt = len(filtered_df)
                 done_cnt = 0
@@ -182,7 +163,7 @@ class ECNSTNTab:
             st.markdown("<br>", unsafe_allow_html=True)
 
             if not filtered_df.empty:
-                disabled_cols = [c for c in filtered_df.columns if c not in ['특이사항', '조치현황', '첨부(파일명)']]
+                disabled_cols = [c for c in filtered_df.columns if c not in ['특이사항', '조치현황', '첨부']]
                 
                 def highlight_status(val):
                     val_str = str(val).strip()
@@ -197,14 +178,14 @@ class ECNSTNTab:
                     styled_df = filtered_df
 
                 col_cfg = {"Original_Index": None}
-                if "첨부" in filtered_df.columns: col_cfg["첨부"] = None
                 if "AS-IS" in filtered_df.columns: col_cfg["AS-IS"] = st.column_config.TextColumn("AS-IS", width="large")
                 if "TO-BE" in filtered_df.columns: col_cfg["TO-BE"] = st.column_config.TextColumn("TO-BE", width="large")
                 if "특이사항" in filtered_df.columns: col_cfg["특이사항"] = st.column_config.TextColumn("특이사항", width="medium")
                 if "조치현황" in filtered_df.columns: col_cfg["조치현황"] = st.column_config.SelectboxColumn("조치현황", options=["대기", "진행중", "완료"], width="small")
                 
-                if "첨부(파일명)" in filtered_df.columns: 
-                    col_cfg["첨부(파일명)"] = st.column_config.TextColumn("첨부(파일명 입력)", width="medium")
+                # ★ 첨부 열을 구글 드라이브 링크를 열 수 있는 LinkColumn으로 셋팅!
+                if "첨부" in filtered_df.columns: 
+                    col_cfg["첨부"] = st.column_config.LinkColumn("첨부 (G-Drive 링크 입력)", width="medium")
 
                 edited_df = st.data_editor(
                     styled_df, 
@@ -215,35 +196,18 @@ class ECNSTNTab:
                     key=f"ecn_editor_safe_{equipment}_{unit}_{search_keyword}"
                 )
                 
-                st.markdown("---")
-                st.markdown("#### 🚀 원본 파일 바로 열기 (1초 복사기)")
-                st.info("웹 표에서 복사하면 따옴표가 늘어나는 버그가 있어 만든 전용 복사기입니다. 위 표에서 **파일명만 복사**해서 아래에 붙여넣어 주세요.")
-                
-                run_target = st.text_input("여기에 파일명을 붙여넣으세요:", placeholder="예: SLH1-PP-260306-01(5건)", label_visibility="collapsed")
-                if run_target:
-                    clean_target = run_target.strip().replace('"', '')
-                    if clean_target.startswith(bad_base_path):
-                        clean_target = clean_target[len(bad_base_path):].lstrip("\\")
-                    if clean_target.startswith(ecn_base_path):
-                        clean_target = clean_target[len(ecn_base_path):].lstrip("\\")
-                    
-                    if clean_target and not clean_target.lower().endswith('.pdf') and not clean_target.startswith("http"):
-                        clean_target += ".pdf"
-                        
-                    final_run_path = f"{ecn_base_path}\\{clean_target}"
-                    
-                    st.success("✨ 변환 완료! 아래 회색 박스 우측 상단의 **[복사 아이콘(📋)]**을 클릭하고 `[Win + R]` 창에 붙여넣기 하세요.")
-                    st.code(final_run_path, language="text")
-                
+                st.markdown("<br>", unsafe_allow_html=True)
                 action_col1, action_col2, action_col3 = st.columns([2, 2, 6])
                 
                 with action_col1:
                     save_btn = st.button("💾 변경사항 구글 시트에 저장하기", type="primary", use_container_width=True)
                 
                 with action_col2:
+                    # 엑셀 다운로드를 위한 openpyxl 라이브러리 연동
+                    import openpyxl
                     output_excel = io.BytesIO()
                     with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
-                        cols_to_drop = ['Original_Index', '첨부(파일명)']
+                        cols_to_drop = ['Original_Index']
                         filtered_df.drop(columns=cols_to_drop, errors='ignore').to_excel(writer, index=False, sheet_name='ECN_Data')
                     st.download_button(
                         label="📥 현재 리스트 엑셀 다운로드",
@@ -270,7 +234,7 @@ class ECNSTNTab:
                         f_col7, f_col8, f_col9 = st.columns([2, 1, 2])
                         n_note = f_col7.text_input("특이사항")
                         n_status = f_col8.selectbox("조치현황", ["대기", "진행중", "완료"])
-                        n_attach = f_col9.text_input("첨부 (파일명만 입력)", placeholder="예: SLH1-PP-260306-01")
+                        n_attach = f_col9.text_input("첨부 (구글 드라이브 링크)", placeholder="예: https://drive.google.com/...")
                         
                         if st.form_submit_button("새 항목 등록하기"):
                             new_row_dict = {}
@@ -286,17 +250,7 @@ class ECNSTNTab:
                                 elif 'TO-BE' in c_clean or 'TOBE' in c_clean or '변경' in c_clean: new_row_dict[c] = n_tobe
                                 elif '특이사항' in c_clean or '비고' in c_clean: new_row_dict[c] = n_note
                                 elif '조치' in c_clean or '진행' in c_clean: new_row_dict[c] = n_status
-                                elif '첨부' in c_clean: 
-                                    n_attach_clean = n_attach.strip().replace('"', '')
-                                    if n_attach_clean and not n_attach_clean.lower().endswith('.pdf') and not n_attach_clean.startswith("http") and not n_attach_clean.startswith("\\\\"):
-                                        n_attach_clean += ".pdf"
-                                        
-                                    if n_attach_clean.startswith(bad_base_path):
-                                        n_attach_clean = n_attach_clean[len(bad_base_path):].lstrip("\\")
-                                    if n_attach_clean and not n_attach_clean.startswith("\\\\") and not n_attach_clean.startswith("http"):
-                                        new_row_dict[c] = f"{ecn_base_path}\\{n_attach_clean}"
-                                    else:
-                                        new_row_dict[c] = n_attach_clean
+                                elif '첨부' in c_clean or '링크' in c_clean: new_row_dict[c] = n_attach.strip()
                                 else:
                                     new_row_dict[c] = ""
                             
@@ -327,20 +281,9 @@ class ECNSTNTab:
                                     
                             if '첨부' in col_idx_map:
                                 col_name = col_idx_map['첨부']
-                                fname = str(row.get('첨부(파일명)', '')).strip().replace('"', '')
-                                if fname.startswith(bad_base_path):
-                                    fname = fname[len(bad_base_path):].lstrip("\\")
-                                    
-                                if fname and not fname.lower().endswith('.pdf') and not fname.startswith("http") and not fname.startswith("\\\\"):
-                                    fname += ".pdf"
-                                    
-                                if fname and not fname.startswith("\\\\") and not fname.startswith("http"):
-                                    full_path = f"{ecn_base_path}\\{fname}"
-                                else:
-                                    full_path = fname
-                                    
-                                if str(df_raw.at[orig_idx, col_name]) != str(full_path):
-                                    df_raw.at[orig_idx, col_name] = full_path
+                                new_val = str(row.get('첨부', '')).strip()
+                                if str(df_raw.at[orig_idx, col_name]) != new_val:
+                                    df_raw.at[orig_idx, col_name] = new_val
                                     changes_made = True
                                     
                         if changes_made:
@@ -353,7 +296,7 @@ class ECNSTNTab:
                         st.error(f"구글 시트 저장 중 오류가 발생했습니다: {save_err}")
 
             else:
-                st.warning(f"선택하신 조건에 해당하는 데이터가 없습니다. (또는 시트가 비어있습니다)")
+                st.warning(f"선택하신 장비({equipment})에 해당하는 ECN 내역이 없거나, 구글 시트가 비어있습니다. 새 항목을 추가해주세요.")
                 
         except Exception as e:
             st.error(f"⚠️ 데이터를 읽는 중 오류가 발생했습니다: {e}")
