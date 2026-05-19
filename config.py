@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 # Google Sheets API 인증 범위
 SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-CREDS_FILE = 'credentials.json'
+CREDS_FILE = 'service-account.json'
 
 class DataManager:
     def __init__(self, spreadsheet_id, sheet_name, text_columns=None):
