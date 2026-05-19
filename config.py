@@ -63,6 +63,7 @@ class DataManager:
         self.sheet_name = sheet_name
         self.text_columns = text_columns or []
         
+        # 로컬(PC) 환경이면 파일을 찾고, 웹(Streamlit Cloud)이면 Secrets를 찾음
         if os.path.exists(CREDS_FILE):
             self.creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
         else:
@@ -85,3 +86,17 @@ class DataManager:
         self.sheet.clear()
         data_to_save = [df.columns.values.tolist()] + df.values.tolist()
         self.sheet.update(data_to_save)
+
+# ========================================================
+# 3. 유틸리티 함수 (여기가 빠져서 발생한 에러입니다!)
+# ========================================================
+def maintain_project_order(df, original_order):
+    df['__proj_cat__'] = pd.Categorical(df['프로젝트명'], categories=original_order, ordered=True)
+    return df.sort_values(by=['__proj_cat__'], kind='stable').drop(columns=['__proj_cat__']).reset_index(drop=True)
+
+def get_row_color(row):
+    val = row.get('상태', '')
+    if val == '✅ 완료': return ['background-color: rgba(76, 175, 80, 0.2)'] * len(row)
+    elif val == '⏳ 작업중': return ['background-color: rgba(255, 193, 7, 0.2)'] * len(row)
+    elif val == '🚨 보류': return ['background-color: rgba(244, 67, 54, 0.2)'] * len(row)
+    return [''] * len(row)
