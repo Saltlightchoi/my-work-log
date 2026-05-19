@@ -2,10 +2,10 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
-import streamlit as st
+import io
 
 # ========================================================
-# 1. 율무 아빠님의 소중한 원본 데이터 (완벽 복구)
+# 율무 아빠님 원본 설정 데이터 (단 하나도 수정하지 않음)
 # ========================================================
 BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 
@@ -50,7 +50,7 @@ CS_TEMPLATE = [
 ]
 
 # ========================================================
-# 2. 구글 시트 연동 로직
+# 구글 시트 연동 로직 (GitHub 로직 완벽 대체)
 # ========================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CREDS_FILE = os.path.join(BASE_DIR, 'service-account.json')
@@ -61,21 +61,24 @@ class DataManager:
         self.spreadsheet_id = spreadsheet_id
         self.sheet_name = sheet_name
         self.text_columns = text_columns or []
+        
         self.creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
         self.client = gspread.authorize(self.creds)
         self.sheet = self.client.open_by_key(self.spreadsheet_id).worksheet(self.sheet_name)
 
-    @st.cache_data(ttl=600)
     def load(self):
+        """구글 시트에서 데이터를 가져옵니다."""
         data = self.sheet.get_all_records()
         df = pd.DataFrame(data)
         for col in self.text_columns:
             if col in df.columns:
                 df[col] = df[col].fillna("").astype(str)
-        return df
+        return df, None # SHA 불필요
 
-    def save(self, df):
+    def save(self, df, sha=None, message=None):
+        """구글 시트에 데이터를 저장합니다."""
         self.sheet.clear()
+        # 데이터프레임을 리스트로 변환하여 업데이트
         data_to_save = [df.columns.values.tolist()] + df.values.tolist()
         self.sheet.update(data_to_save)
 
