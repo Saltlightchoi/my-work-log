@@ -73,9 +73,15 @@ class ECNSTNTab:
             df_raw['Original_Index'] = df_raw.index
             df = df_raw.copy()
             
-            # ★ 장비 필터링 (구글 시트의 '장비호기' 칸에 해당 장비 이름이 있어야 출력됨)
+            # ★ 핵심 업그레이드: 장비명 스마트 필터링!
+            # '장비호기' 칸에 장비명이 없어도, 'ECN No' 칸을 읽고 자동으로 찾아냅니다.
+            mask_equip = pd.Series(False, index=df.index)
             if '장비호기' in df.columns:
-                df = df[df['장비호기'].astype(str).str.contains(equipment, case=False, na=False)].copy()
+                mask_equip = mask_equip | df['장비호기'].astype(str).str.contains(equipment, case=False, na=False)
+            if 'ECN No' in df.columns:
+                mask_equip = mask_equip | df['ECN No'].astype(str).str.contains(equipment, case=False, na=False)
+            
+            df = df[mask_equip].copy()
 
             if '장비호기' in df.columns:
                 if unit == "전체":
@@ -183,9 +189,8 @@ class ECNSTNTab:
                 if "특이사항" in filtered_df.columns: col_cfg["특이사항"] = st.column_config.TextColumn("특이사항", width="medium")
                 if "조치현황" in filtered_df.columns: col_cfg["조치현황"] = st.column_config.SelectboxColumn("조치현황", options=["대기", "진행중", "완료"], width="small")
                 
-                # ★ 첨부 열을 구글 드라이브 링크를 열 수 있는 LinkColumn으로 셋팅!
                 if "첨부" in filtered_df.columns: 
-                    col_cfg["첨부"] = st.column_config.LinkColumn("첨부 (G-Drive 링크 입력)", width="medium")
+                    col_cfg["첨부"] = st.column_config.LinkColumn("첨부 (G-Drive 링크)", width="medium")
 
                 edited_df = st.data_editor(
                     styled_df, 
@@ -203,7 +208,6 @@ class ECNSTNTab:
                     save_btn = st.button("💾 변경사항 구글 시트에 저장하기", type="primary", use_container_width=True)
                 
                 with action_col2:
-                    # 엑셀 다운로드를 위한 openpyxl 라이브러리 연동
                     import openpyxl
                     output_excel = io.BytesIO()
                     with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
