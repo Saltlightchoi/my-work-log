@@ -7,7 +7,6 @@ import openpyxl
 from config import EQUIPMENT_OPTIONS
 
 class ECNSTNTab:
-    # 깃허브(repo) 대신 구글시트(db_ecn)를 받도록 수정되었습니다!
     def __init__(self, db_ecn):
         self.db_ecn = db_ecn
 
@@ -41,14 +40,11 @@ class ECNSTNTab:
                     "4. 키보드에서 **`[윈도우키 + R]`**을 눌러 붙여넣고 엔터를 치면 파일이 바로 열립니다.")
 
         try:
-            # ★ 구글 시트에서 데이터 불러오기
             df_raw, _ = self.db_ecn.load()
             
-            # 시트가 텅 비어있을 경우를 위한 방어 코드 (기본 양식 제공)
             if df_raw.empty or len(df_raw.columns) == 0:
                 df_raw = pd.DataFrame(columns=['날짜', '발행부서', '발행자', '장비호기', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부'])
 
-            # 컬럼명 유연하게 매핑하기
             orig_cols = df_raw.columns.tolist()
             new_cols = []
             col_idx_map = {} 
@@ -82,11 +78,9 @@ class ECNSTNTab:
             
             df_raw.columns = new_cols
             
-            # 수정한 데이터를 원본 위치에 정확히 저장하기 위해 인덱스 기억
             df_raw['Original_Index'] = df_raw.index
             df = df_raw.copy()
             
-            # 장비 선택 필터 (선택한 장비가 포함된 데이터만 출력)
             if '장비호기' in df.columns:
                 df = df[df['장비호기'].astype(str).str.contains(equipment, case=False, na=False)].copy()
 
@@ -145,9 +139,14 @@ class ECNSTNTab:
                         
                 filtered_df['TempDate'] = filtered_df['날짜'].apply(parse_date_robust)
                 filtered_df = filtered_df.dropna(subset=['TempDate'])
-                filtered_df = filtered_df.sort_values(by='TempDate', ascending=False)
-                filtered_df['날짜'] = filtered_df['TempDate'].dt.strftime('%Y-%m-%d')
-                filtered_df = filtered_df.drop(columns=['TempDate'])
+                
+                # ★ 에러 수정: 데이터가 있을 때만 datetime 변환을 실행하도록 방어
+                if not filtered_df.empty:
+                    filtered_df['TempDate'] = pd.to_datetime(filtered_df['TempDate'])
+                    filtered_df = filtered_df.sort_values(by='TempDate', ascending=False)
+                    filtered_df['날짜'] = filtered_df['TempDate'].dt.strftime('%Y-%m-%d')
+                
+                filtered_df = filtered_df.drop(columns=['TempDate'], errors='ignore')
                 
             filtered_df = filtered_df.astype(str).replace(['nan', 'NaN', 'None', 'nat', 'NaT', '0.0'], '')
             filtered_df.reset_index(drop=True, inplace=True)
@@ -238,7 +237,6 @@ class ECNSTNTab:
                 
                 action_col1, action_col2, action_col3 = st.columns([2, 2, 6])
                 
-                # ★ 저장 로직: 구글 시트용으로 완벽 교체
                 with action_col1:
                     save_btn = st.button("💾 변경사항 구글 시트에 저장하기", type="primary", use_container_width=True)
                 
@@ -355,7 +353,7 @@ class ECNSTNTab:
                         st.error(f"구글 시트 저장 중 오류가 발생했습니다: {save_err}")
 
             else:
-                st.warning(f"선택하신 장비({equipment})에 해당하는 ECN 내역이 없거나, 구글 시트가 비어있습니다. 새 항목을 추가해주세요.")
+                st.warning(f"선택하신 조건에 해당하는 데이터가 없습니다. (또는 시트가 비어있습니다)")
                 
         except Exception as e:
             st.error(f"⚠️ 데이터를 읽는 중 오류가 발생했습니다: {e}")
