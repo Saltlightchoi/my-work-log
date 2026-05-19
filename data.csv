@@ -140,6 +140,13 @@ LD Hand deviation sensor 값 2.0/-2.0으로 수정",,
 
 5호기
 - Rotation check Sensor Amp Value 조정",,
+2026-05-15,SLH1,최염광,"SK Hynix 3208H 해체 작업 
+ - 3208H 3호기
+  -> Advantest Cable 연결 해제 후 케이블베어 탈거 및 정리 완료.
+ - MB Rapping 관련 차주 20일(수)에 추가 진행 예정.
+
+ - 3208H 6호기
+  -> Advantest Cable 정리 완료 후 MB Rapping 완료. ",,
 2026-05-14,SLH1,김기혁,"SLH1 5호기
 ㄴDOE 검증 진행
 -DOE전 TEST 자재 PASS
@@ -5567,10 +5574,5 @@ LPCAMM2 SIDE 이물 관련 검증용 DUMMY 및 설비대여 요청.
 2026-02-01,SLH1,이태원,"1. 본사 SLH1 제작
  - SLH1 #4 Dummy Running
  - SLH1 #5 Side Door 장착",,
-2026-05-15,SLH1,최염광,"SK Hynix 3208H 해체 작업 
- - 3208H 3호기
-  -> Advantest Cable 연결 해제 후 케이블베어 탈거 및 정리 완료.
- - MB Rapping 관련 차주 20일(수)에 추가 진행 예정.
-
- - 3208H 6호기
-  -> Advantest Cable 정리 완료 후 MB Rapping 완료. ",,
+2026-05-18,SLH1,조건희,"입고 물품
+T-tray 개선품 8ea",,
