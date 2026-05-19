@@ -7,8 +7,9 @@ import openpyxl
 from config import EQUIPMENT_OPTIONS
 
 class ECNSTNTab:
-    def __init__(self, repo):
-        self.repo = repo
+    # 깃허브(repo) 대신 구글시트(db_ecn)를 받도록 수정되었습니다!
+    def __init__(self, db_ecn):
+        self.db_ecn = db_ecn
 
     def render(self):
         st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
@@ -30,54 +31,32 @@ class ECNSTNTab:
             search_keyword = st.text_input("🔍 내용/ECN No. 검색", placeholder="예: ECN-005, 실린더 교체 등", label_visibility="collapsed")
 
         if show_help:
-            st.info(f"**이용 안내:** 깃허브 `data/ECN/` 폴더 안의 **`ECN_STN_Master({equipment}).xlsx`** 파일을 기반으로 목록을 출력합니다.\n\n"
-                    f"표의 **'조치현황'**, **'특이사항'**, **'첨부(파일명 입력)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
+            st.info("**이용 안내:** 구글 시트 **`ECN_STN`** 탭을 기반으로 목록을 출력합니다.\n\n"
+                    "표의 **'조치현황'**, **'특이사항'**, **'첨부(파일명 입력)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다. 수정한 뒤엔 하단의 **저장 버튼**을 눌러주세요.\n\n"
                     "**📁 첨부파일/원본 열기 팁:**\n"
                     "웹 브라우저 표에서 복사할 때 따옴표가 3개(`\"\"\"`)로 증식하는 버그를 완벽히 피하기 위해 화면 하단에 **[1초 복사기]**를 만들었습니다.\n"
-                    f"1. 표의 **'첨부(파일명 입력)'** 칸에는 **확장자 없이 파일명만** 적으셔도 자동으로 PDF로 연결됩니다.\n"
+                    "1. 표의 **'첨부(파일명 입력)'** 칸에는 **확장자 없이 파일명만** 적으셔도 자동으로 PDF로 연결됩니다.\n"
                     "2. 열고 싶은 항목의 파일 이름을 복사(`Ctrl+C`)합니다.\n"
                     "3. 표 밑에 있는 **'1초 복사기'** 칸에 붙여넣기 하시면 완벽한 주소가 생성됩니다!\n"
                     "4. 키보드에서 **`[윈도우키 + R]`**을 눌러 붙여넣고 엔터를 치면 파일이 바로 열립니다.")
 
-        target_file = f"data/ECN/ECN_STN_Master({equipment}).xlsx"
-
         try:
-            file_content = self.repo.get_contents(target_file)
-            raw_bytes = file_content.decoded_content
-            excel_data = io.BytesIO(raw_bytes)
+            # ★ 구글 시트에서 데이터 불러오기
+            df_raw, _ = self.db_ecn.load()
             
-            xls_dict = pd.read_excel(excel_data, engine='openpyxl', header=None, sheet_name=None)
-            sheet_names = list(xls_dict.keys())
-            first_sheet = sheet_names[0]
-            df_raw = xls_dict[first_sheet]
-            
-            if df_raw.empty:
-                st.warning("⚠️ 선택하신 엑셀 파일이 비어있습니다. 양식을 먼저 채워주세요.")
-                return
+            # 시트가 텅 비어있을 경우를 위한 방어 코드 (기본 양식 제공)
+            if df_raw.empty or len(df_raw.columns) == 0:
+                df_raw = pd.DataFrame(columns=['날짜', '발행부서', '발행자', '장비호기', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부'])
 
-            h_idx = -1
-            for i, row in df_raw.head(20).iterrows():
-                # ★ 에러 해결: 빈칸/숫자가 섞여 있어도 문자로 강제 변환
-                row_str = "".join(map(str, row.tolist())).replace(" ", "").lower()
-                if '날짜' in row_str and ('발행' in row_str or '장비호기' in row_str or '내용' in row_str or 'as-is' in row_str):
-                    h_idx = i
-                    break
-            
-            if h_idx != -1:
-                df = df_raw.iloc[h_idx + 1:].reset_index(drop=True)
-                orig_cols = df_raw.iloc[h_idx].tolist()
-                df['Original_Index'] = range(h_idx + 1, len(df_raw))
-            else:
-                df = df_raw.iloc[1:].reset_index(drop=True)
-                orig_cols = df_raw.iloc[0].tolist()
-                df['Original_Index'] = range(1, len(df_raw))
-                
-            seen_cols = set()
+            # 컬럼명 유연하게 매핑하기
+            orig_cols = df_raw.columns.tolist()
             new_cols = []
             col_idx_map = {} 
+            seen_cols = set()
+            
             for i, c in enumerate(orig_cols):
                 c_clean = str(c).replace(" ", "").upper()
-                base_col = ""
+                base_col = str(c).strip()
                 
                 if '날짜' in c_clean or '일자' in c_clean: base_col = '날짜'
                 elif '발행부서' in c_clean: base_col = '발행부서'
@@ -88,23 +67,29 @@ class ECNSTNTab:
                 elif 'TO-BE' in c_clean or 'TOBE' in c_clean or '변경' in c_clean: base_col = 'TO-BE'
                 elif '특이사항' in c_clean or '비고' in c_clean: 
                     base_col = '특이사항'
-                    col_idx_map['특이사항'] = i
+                    col_idx_map['특이사항'] = base_col
                 elif '조치' in c_clean or '진행' in c_clean: 
                     base_col = '조치현황'
-                    col_idx_map['조치현황'] = i
+                    col_idx_map['조치현황'] = base_col
                 elif '첨부' in c_clean: 
                     base_col = '첨부'
-                    col_idx_map['첨부'] = i
-                else: base_col = str(c).strip()
+                    col_idx_map['첨부'] = base_col
 
                 if base_col in seen_cols:
                     base_col = f"{base_col}_{i}"
                 seen_cols.add(base_col)
                 new_cols.append(base_col)
             
-            new_cols.append('Original_Index')
-            df.columns = new_cols
+            df_raw.columns = new_cols
             
+            # 수정한 데이터를 원본 위치에 정확히 저장하기 위해 인덱스 기억
+            df_raw['Original_Index'] = df_raw.index
+            df = df_raw.copy()
+            
+            # 장비 선택 필터 (선택한 장비가 포함된 데이터만 출력)
+            if '장비호기' in df.columns:
+                df = df[df['장비호기'].astype(str).str.contains(equipment, case=False, na=False)].copy()
+
             if '장비호기' in df.columns:
                 if unit == "전체":
                     filtered_df = df.copy()
@@ -128,7 +113,7 @@ class ECNSTNTab:
             elif '발행부서' in df.columns: 
                 filtered_df = df.copy()
             else:
-                st.error("⚠️ 엑셀 파일 컬럼을 인식할 수 없습니다. 양식을 다시 확인해주세요.")
+                st.error("⚠️ 시트 컬럼을 인식할 수 없습니다. 구글 시트 1행의 양식을 확인해주세요.")
                 return
 
             if search_keyword:
@@ -217,7 +202,7 @@ class ECNSTNTab:
                 if "AS-IS" in filtered_df.columns: col_cfg["AS-IS"] = st.column_config.TextColumn("AS-IS", width="large")
                 if "TO-BE" in filtered_df.columns: col_cfg["TO-BE"] = st.column_config.TextColumn("TO-BE", width="large")
                 if "특이사항" in filtered_df.columns: col_cfg["특이사항"] = st.column_config.TextColumn("특이사항", width="medium")
-                if "조치현황" in filtered_df.columns: col_cfg["조치현황"] = st.column_config.TextColumn("조치현황", width="small")
+                if "조치현황" in filtered_df.columns: col_cfg["조치현황"] = st.column_config.SelectboxColumn("조치현황", options=["대기", "진행중", "완료"], width="small")
                 
                 if "첨부(파일명)" in filtered_df.columns: 
                     col_cfg["첨부(파일명)"] = st.column_config.TextColumn("첨부(파일명 입력)", width="medium")
@@ -252,8 +237,11 @@ class ECNSTNTab:
                     st.code(final_run_path, language="text")
                 
                 action_col1, action_col2, action_col3 = st.columns([2, 2, 6])
+                
+                # ★ 저장 로직: 구글 시트용으로 완벽 교체
                 with action_col1:
-                    save_btn = st.button("💾 변경사항 엑셀에 자동 저장하기", type="primary", use_container_width=True)
+                    save_btn = st.button("💾 변경사항 구글 시트에 저장하기", type="primary", use_container_width=True)
+                
                 with action_col2:
                     output_excel = io.BytesIO()
                     with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
@@ -267,9 +255,9 @@ class ECNSTNTab:
                         use_container_width=True
                     )
                     
-                with st.expander("➕ 새 ECN 항목 엑셀에 바로 등록하기 (웹 기반)"):
+                with st.expander("➕ 새 ECN 항목 구글 시트에 바로 등록하기"):
                     with st.form("add_new_ecn_form", clear_on_submit=True):
-                        st.write("아래 내용을 작성하여 등록하면 엑셀 파일 맨 아래에 자동으로 추가됩니다.")
+                        st.write("아래 내용을 작성하여 등록하면 구글 시트 맨 아래에 자동으로 추가됩니다.")
                         f_col1, f_col2, f_col3, f_col4 = st.columns(4)
                         n_date = f_col1.date_input("날짜")
                         n_dept = f_col2.text_input("발행부서")
@@ -287,20 +275,19 @@ class ECNSTNTab:
                         n_attach = f_col9.text_input("첨부 (파일명만 입력)", placeholder="예: SLH1-PP-260306-01")
                         
                         if st.form_submit_button("새 항목 등록하기"):
-                            wb = openpyxl.load_workbook(io.BytesIO(raw_bytes))
-                            ws = wb[first_sheet]
-                            new_row_data = [""] * len(orig_cols)
-                            for i, c in enumerate(orig_cols):
+                            new_row_dict = {}
+                            for c in df_raw.columns:
+                                if c == 'Original_Index': continue
                                 c_clean = str(c).replace(" ", "").upper()
-                                if '날짜' in c_clean or '일자' in c_clean: new_row_data[i] = str(n_date)
-                                elif '발행부서' in c_clean: new_row_data[i] = n_dept
-                                elif '발행자' in c_clean or '작성자' in c_clean: new_row_data[i] = n_author
-                                elif '장비호기' in c_clean or '호기' in c_clean: new_row_data[i] = n_unit
-                                elif 'ECN' in c_clean or '문서번호' in c_clean: new_row_data[i] = n_ecn
-                                elif 'AS-IS' in c_clean or 'ASIS' in c_clean or '내용' in c_clean: new_row_data[i] = n_asis
-                                elif 'TO-BE' in c_clean or 'TOBE' in c_clean or '변경' in c_clean: new_row_data[i] = n_tobe
-                                elif '특이사항' in c_clean or '비고' in c_clean: new_row_data[i] = n_note
-                                elif '조치' in c_clean or '진행' in c_clean: new_row_data[i] = n_status
+                                if '날짜' in c_clean or '일자' in c_clean: new_row_dict[c] = str(n_date)
+                                elif '발행부서' in c_clean: new_row_dict[c] = n_dept
+                                elif '발행자' in c_clean or '작성자' in c_clean: new_row_dict[c] = n_author
+                                elif '장비호기' in c_clean or '호기' in c_clean: new_row_dict[c] = n_unit
+                                elif 'ECN' in c_clean or '문서번호' in c_clean: new_row_dict[c] = n_ecn
+                                elif 'AS-IS' in c_clean or 'ASIS' in c_clean or '내용' in c_clean: new_row_dict[c] = n_asis
+                                elif 'TO-BE' in c_clean or 'TOBE' in c_clean or '변경' in c_clean: new_row_dict[c] = n_tobe
+                                elif '특이사항' in c_clean or '비고' in c_clean: new_row_dict[c] = n_note
+                                elif '조치' in c_clean or '진행' in c_clean: new_row_dict[c] = n_status
                                 elif '첨부' in c_clean: 
                                     n_attach_clean = n_attach.strip().replace('"', '')
                                     if n_attach_clean and not n_attach_clean.lower().endswith('.pdf') and not n_attach_clean.startswith("http") and not n_attach_clean.startswith("\\\\"):
@@ -309,32 +296,39 @@ class ECNSTNTab:
                                     if n_attach_clean.startswith(bad_base_path):
                                         n_attach_clean = n_attach_clean[len(bad_base_path):].lstrip("\\")
                                     if n_attach_clean and not n_attach_clean.startswith("\\\\") and not n_attach_clean.startswith("http"):
-                                        new_row_data[i] = f"{ecn_base_path}\\{n_attach_clean}"
+                                        new_row_dict[c] = f"{ecn_base_path}\\{n_attach_clean}"
                                     else:
-                                        new_row_data[i] = n_attach_clean
-                            ws.append(new_row_data)
+                                        new_row_dict[c] = n_attach_clean
+                                else:
+                                    new_row_dict[c] = ""
                             
-                            output = io.BytesIO()
-                            wb.save(output)
-                            self.repo.update_file(target_file, f"Add new ECN via Web", output.getvalue(), file_content.sha)
-                            st.success("✅ 새 ECN 항목이 추가되었습니다! 화면을 새로고침 합니다.")
+                            df_new_row = pd.DataFrame([new_row_dict])
+                            df_final = pd.concat([df_raw.drop(columns=['Original_Index'], errors='ignore'), df_new_row], ignore_index=True)
+                            self.db_ecn.save(df_final)
+                            
+                            st.success("✅ 새 ECN 항목이 구글 시트에 추가되었습니다! 화면을 새로고침 합니다.")
                             st.rerun()
 
                 if save_btn:
                     try:
-                        wb = openpyxl.load_workbook(io.BytesIO(raw_bytes))
-                        ws = wb[first_sheet]
                         changes_made = False
                         for _, row in edited_df.iterrows():
                             orig_idx = int(row['Original_Index'])
-                            xl_row = orig_idx + 1 
+                            
                             if '특이사항' in col_idx_map:
-                                ws.cell(row=xl_row, column=col_idx_map['특이사항'] + 1, value=row.get('특이사항', ''))
-                                changes_made = True
+                                col_name = col_idx_map['특이사항']
+                                if str(df_raw.at[orig_idx, col_name]) != str(row.get('특이사항', '')):
+                                    df_raw.at[orig_idx, col_name] = row.get('특이사항', '')
+                                    changes_made = True
+                                    
                             if '조치현황' in col_idx_map:
-                                ws.cell(row=xl_row, column=col_idx_map['조치현황'] + 1, value=row.get('조치현황', ''))
-                                changes_made = True
+                                col_name = col_idx_map['조치현황']
+                                if str(df_raw.at[orig_idx, col_name]) != str(row.get('조치현황', '')):
+                                    df_raw.at[orig_idx, col_name] = row.get('조치현황', '')
+                                    changes_made = True
+                                    
                             if '첨부' in col_idx_map:
+                                col_name = col_idx_map['첨부']
                                 fname = str(row.get('첨부(파일명)', '')).strip().replace('"', '')
                                 if fname.startswith(bad_base_path):
                                     fname = fname[len(bad_base_path):].lstrip("\\")
@@ -346,25 +340,22 @@ class ECNSTNTab:
                                     full_path = f"{ecn_base_path}\\{fname}"
                                 else:
                                     full_path = fname
-                                ws.cell(row=xl_row, column=col_idx_map['첨부'] + 1, value=full_path)
-                                changes_made = True
-                                
+                                    
+                                if str(df_raw.at[orig_idx, col_name]) != str(full_path):
+                                    df_raw.at[orig_idx, col_name] = full_path
+                                    changes_made = True
+                                    
                         if changes_made:
-                            output = io.BytesIO()
-                            wb.save(output)
-                            self.repo.update_file(target_file, f"Dashboard Update: ECN ({equipment}-{unit})", output.getvalue(), file_content.sha)
-                            st.success("✅ 엑셀 원본 파일에 성공적으로 저장되었습니다! 화면을 새로고침 합니다.")
+                            self.db_ecn.save(df_raw.drop(columns=['Original_Index'], errors='ignore'))
+                            st.success("✅ 구글 시트에 성공적으로 저장되었습니다! 화면을 새로고침 합니다.")
                             st.rerun()
                         else:
                             st.warning("저장할 변경사항이 없습니다.")
                     except Exception as save_err:
-                        st.error(f"엑셀 저장 중 오류가 발생했습니다: {save_err}")
+                        st.error(f"구글 시트 저장 중 오류가 발생했습니다: {save_err}")
 
             else:
-                st.warning(f"선택하신 조건에 해당하는 ECN 내역이 없습니다.")
+                st.warning(f"선택하신 장비({equipment})에 해당하는 ECN 내역이 없거나, 구글 시트가 비어있습니다. 새 항목을 추가해주세요.")
                 
         except Exception as e:
-            if "404" in str(e):
-                st.error(f"⚠️ 깃허브에 **`{target_file}`** 파일이 없습니다. 엑셀 양식을 만들어 업로드해주세요.")
-            else:
-                st.error(f"⚠️ 파일을 읽는 중 오류가 발생했습니다: {e}")
+            st.error(f"⚠️ 데이터를 읽는 중 오류가 발생했습니다: {e}")
