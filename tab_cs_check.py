@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 from config import CS_TEMPLATE, maintain_project_order, get_row_color, EQUIPMENT_OPTIONS
 
 class CSCheckSheetTab:
@@ -8,32 +9,22 @@ class CSCheckSheetTab:
 
     def render(self):
         df_flow, _ = self.db_flow.load()
-        
-        if 'view_project_detail' not in st.session_state:
-            st.session_state['view_project_detail'] = None
+        if 'view_project_detail' not in st.session_state: st.session_state['view_project_detail'] = None
 
-        if not df_flow.empty and "프로젝트명" in df_flow.columns:
-            project_list = df_flow["프로젝트명"].dropna().unique().tolist()
-        else:
-            project_list = []
+        # 에러 방지용 안전 코드
+        project_list = df_flow["프로젝트명"].dropna().unique().tolist() if not df_flow.empty and "프로젝트명" in df_flow.columns else []
 
-        # 상세 작업 화면 뷰
         if st.session_state['view_project_detail'] and st.session_state['view_project_detail'] in project_list:
             selected_proj = st.session_state['view_project_detail']
             if st.button("◀ 전체 현황판으로"):
                 st.session_state['view_project_detail'] = None
                 st.rerun()
-            
+            st.subheader(f"✅ 상세 작업: {selected_proj}")
             mask = df_flow["프로젝트명"] == selected_proj
-            proj_df = df_flow[mask].copy()
-            st.subheader(f"✅ 세부 작업: {selected_proj}")
-            st.dataframe(proj_df, use_container_width=True)
-
-        # 전체 현황판 뷰
+            st.dataframe(df_flow[mask], use_container_width=True)
         else:
             st.subheader("✅ 장비 제작 Flow 전체 현황판")
-            if not project_list:
-                st.info("현재 프로젝트가 없습니다.")
+            if not project_list: st.info("프로젝트가 없습니다.")
             else:
                 for proj in project_list:
                     if st.button(f"🔍 {proj} 상세 보기", key=proj):
