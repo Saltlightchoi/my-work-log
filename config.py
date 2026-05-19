@@ -51,7 +51,7 @@ CS_TEMPLATE = [
 ]
 
 # ========================================================
-# 2. 구글 시트 연동 로직 (로컬/클라우드 자동 지원)
+# 2. 구글 시트 연동 로직
 # ========================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CREDS_FILE = os.path.join(BASE_DIR, 'service-account.json')
@@ -63,7 +63,6 @@ class DataManager:
         self.sheet_name = sheet_name
         self.text_columns = text_columns or []
         
-        # 로컬(PC) 환경이면 파일을 찾고, 웹(Streamlit Cloud)이면 Secrets를 찾음
         if os.path.exists(CREDS_FILE):
             self.creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
         else:
@@ -73,14 +72,15 @@ class DataManager:
         self.client = gspread.authorize(self.creds)
         self.sheet = self.client.open_by_key(self.spreadsheet_id).worksheet(self.sheet_name)
 
+    # ★ 핵심 수정: self를 _self로 변경 (Streamlit 캐싱 에러 방지용)
     @st.cache_data(ttl=600)
-    def load(self):
-        data = self.sheet.get_all_records()
+    def load(_self):
+        data = _self.sheet.get_all_records()
         df = pd.DataFrame(data)
-        for col in self.text_columns:
+        for col in _self.text_columns:
             if col in df.columns:
                 df[col] = df[col].fillna("").astype(str)
-        return df
+        return df, None
 
     def save(self, df):
         self.sheet.clear()
@@ -88,7 +88,7 @@ class DataManager:
         self.sheet.update(data_to_save)
 
 # ========================================================
-# 3. 유틸리티 함수 (여기가 빠져서 발생한 에러입니다!)
+# 3. 유틸리티 함수
 # ========================================================
 def maintain_project_order(df, original_order):
     df['__proj_cat__'] = pd.Categorical(df['프로젝트명'], categories=original_order, ordered=True)
