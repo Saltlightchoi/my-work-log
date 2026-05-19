@@ -1,6 +1,14 @@
+# config.py 상단 수정
 import pandas as pd
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+# oauth2client 대신 oauth2client.service_account를 정확히 명시합니다.
+from oauth2client.service_account import ServiceAccountCredentials 
+
+# 그리고 아래처럼 CREDS_FILE 경로를 정확히 지정하세요.
+import os
+# 현재 파일(config.py)이 있는 위치를 기준으로 파일을 찾습니다.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CREDS_FILE = os.path.join(BASE_DIR, 'service-account.json') # 파일 이름 확인!
 
 # Google Sheets API 인증 범위
 SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
