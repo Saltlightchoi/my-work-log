@@ -1,7 +1,6 @@
-﻿streamlit
-st-gsheets-connection
-PyGithub
+streamlit
 pandas
 plotly
 openpyxl
-
+gspread
+oauth2client
