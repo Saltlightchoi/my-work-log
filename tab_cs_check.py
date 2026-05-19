@@ -14,7 +14,10 @@ class CSCheckSheetTab:
         if 'view_project_detail' not in st.session_state:
             st.session_state['view_project_detail'] = None
 
-        project_list = df_flow["프로젝트명"].unique().tolist() if not df_flow.empty else []
+        if not df_flow.empty and "프로젝트명" in df_flow.columns:
+    project_list = df_flow["프로젝트명"].dropna().unique().tolist()
+else:
+    project_list = []
 
         # ==========================================
         # 뷰 1: 상세 작업 화면 (특정 프로젝트 클릭 시)
