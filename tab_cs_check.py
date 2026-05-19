@@ -1,313 +1,107 @@
-import streamlit as st
 import pandas as pd
-from datetime import datetime
-from config import CS_TEMPLATE, maintain_project_order, get_row_color, EQUIPMENT_OPTIONS
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import os
+import streamlit as st
+import json
 
-class CSCheckSheetTab:
-    def __init__(self, db_flow):
-        self.db_flow = db_flow
+# ========================================================
+# 1. 율무 아빠님의 소중한 원본 데이터
+# ========================================================
+BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 
-    def render(self):
-        # 깃허브 시절의 sha_flow는 이제 사용하지 않으므로 무시(_)합니다.
-        df_flow, _ = self.db_flow.load()
+EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "32CM", "32XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
+
+CS_TEMPLATE = [
+    {"대항목": "공통", "순서": 1, "작업내용": "I/O Check\n- Out Put으로 동작 후 In Put LED 확인\n- Cylinder 정상 동작 확인\n- Manual에서 Cylinder 동작 후 LED 점등 확인\n- 미비된 부분 I/O List, PC에 저장 후 전장 수정 요청 진행\n- 전장 수정 후 수정되었는지 동작, LED 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 2, "작업내용": "공압 Leak Check", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 3, "작업내용": "Cylinder Speed 조정 및 Part 위치 조정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 4, "작업내용": "전면부 후면부 1차 Levelling\n- Auto Leveler 사용\n- Stacker Base 상단 -> 바닥면 400mm", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Stacker", "순서": 1, "작업내용": "L/D 1,2, UL/D 1,2, Emt, Reject Inverter 값 설정\n- 운전 모드 변경 P79-2(인터락 해제), P79-1(인터락 작동)\n- P3: 60, P4: 60(고속), P5: 30(중속), P6: 10(저속), P7: 5(가속), P8: 0(감속)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 1, "작업내용": "Motor Parameter Setting 및 다회전 클리어\n- S/W 팀 요청\n- 다회전 클리어 방법: Panaterm Ver.6.0 다운 후 해당 Parameter Servo Drive에 케이블 연결 -> 앰프 접속 -> 확인 -> 모니터 -> 다회전 클리어 클릭 -> 완료", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 2, "작업내용": "Precizer Up Rod 길이 변경 (57mm)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Hand", "순서": 1, "작업내용": "Loader Unloader X,Y축 직진도 (±0.5mm) Setting 및 측정\n- Dial Gauge Indicator 0.01mm(바늘)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Hand", "순서": 2, "작업내용": "L/D, UL/D Pitch, 높이(±0.15mm) Setting 및 측정\n- Dial Gauge Indicator 0.01mm(바늘)\n- Double Nut로 길이 조정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Stacker", "순서": 1, "작업내용": "L/D 1,2, UL/D 1,2, Empty, Reject Base 평탄도(±0.2mm) Setting 및 측정\n- 디지털 전자 수평계 사용 X,Y축 ±0.2mm 이내", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Transfer", "순서": 1, "작업내용": "L/D, UL/D X,Y,Z축 직진도 평탄도(±0.3mm) Setting 및 측정\n- Dial Gauge Indicator 0.01mm(바늘)\n- 모든 무두 볼트 풀어놓은 후 측정 후 무드 볼트 조정\n- Z축 ±Limit Sensor 이동, Hard Stopper 위치변경", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Test", "순서": 1, "작업내용": "Front, Rear Press 평탄도(±0.25mm) Setting 및 측정\n- 디지털 거리 측정기, 측정 지그 사용\n- 무두 볼트 풀어놓은 후 측정 -> + 수치가 제일 큰 부분에 리셋 -> 무두 볼트 사용하여 평탄도 Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Test", "순서": 2, "작업내용": "Front, Rear Press Load Cell (0.2bar, 0.29bar) Setting 및 측정\n- Load Cell, 측정 지그\n- 언 컨텍 값(기구 이동 가능), 컨택값(해당 수치 도달 지점)\n- Load Cell 로드를 Match Plate X,Y 중간에서 컨택 해야함", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Test", "순서": 3, "작업내용": "Front, Rear T-Tray Rail 평탄도(±0.2mm) Setting 및 측정\n- 디지털 전자 수평계 사용\n- 측정 위치 : T-Tray 왼쪽 중간 오른쪽", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Set Plate", "순서": 1, "작업내용": "L/D 1,2, UL/D 1,2 X축 직진도(±0.2mm) (Gauge Block 사용) 평탄도(±0.2mm) Setting 및 측정\n- Dial Gauge Indicator 0.01mm(바늘)\n- Gauge Block 사용", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Stacker", "순서": 1, "작업내용": "Reject Front Rear Base 높이 조정\n- Rear Base Cylinder Rod 최대로 내린뒤, Front를 무두 볼트 사용하여 Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Set Plate", "순서": 1, "작업내용": "L/D 1,2, UL/D 1,2 Support Lock/Unlock Cylinder Rod Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Set Plate", "순서": 2, "작업내용": "L/D 1,2, UL/D 1,2 Down Hard Stopper 높이 Setting (24mm) 및 측정\n- Ex) L/D 1,2: 21mm, UL/D 1,2: 24mm Pass", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Middle", "순서": 1, "작업내용": "L/D, UL/D Gripper Up Cylinder 시린더 Rod (37mm) Setting\n- Cylinder 상단에서 Joint Nut 상단 까지 37mm Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Input", "순서": 1, "작업내용": "Bottom Feeder Up Cylinder Rod (16.5mm) Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Output", "순서": 1, "작업내용": "Bottom Feeder Up Cylinder Rod (16.5mm) Setting", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 1, "작업내용": "전면부 후면부 Docking 및 Levelling\n- Auto Leveler 사용\n- Stacker Base 상단 -> 바닥면 400mm -> 전면부 풋 높이랑 동일하게 후면부 Setting\n- 전면부 Levelling -> Docking Pin 제거, 전면부 Cable Disconnect -> 후면부랑 전면부 Docking -> 후면부 Levelling -> Docking Pin 장착(안맞으면 빠루로 좌,우 이동) -> Cable Connect", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Middle", "순서": 1, "작업내용": "L/D, UL/D Rail Up/Down 높이, 평탄, 직진도 Setting (T-Tray 사용)\n- T-Tray 사용, Up/Down 상태에서 T-Tray가 흘려 내려가지 않게 Setting\n- Stopper 사용하여 Up/Down 높이 레벨 조정 (Up: 48.5mm, Down: 42.5mm)\n- Up 상태일때 후면부 Rail 한쪽이 안맞는다면 후면부 쪽 Rail 위치 조정 필요", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 1, "작업내용": "배출 Fan 장착 및 전원 Connect 연결\n- I/O 번호 확인, OS에서 Fan Check 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Hand", "순서": 1, "작업내용": "L/D, UL/D X,Y축 반복도(±0.05mm) 측정 (10회)\n- Dial Gauge Indicator 0.01mm(바늘)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Transfer", "순서": 1, "작업내용": "L/D, UL/D X,Z축 반복도(±0.05mm) 측정 (10회)\n- Digital Indicator (0.001mm) 사용", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "Input", "순서": 1, "작업내용": "Bottom Feeder X축 반복도(±0.05mm) 측정 (10회)\n- Dial Gauge Indicator 0.01mm(바늘)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 1, "작업내용": "Transfer, Hand, Middle Feeder, Input, Output Motor Teaching", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 2, "작업내용": "후면부 덕트 -> 측면(Door) -> 후면(Door) -> 상부 Cover 장착 -> 부속 Cover 장착, Door Key, Door Sensor 장착 및 OS 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 3, "작업내용": "Ionizer Loader A-01, Unloader A-02 설정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 4, "작업내용": "접지 연결 및 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 5, "작업내용": "환경 검수 List 확인 및 품질팀 Support", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 6, "작업내용": "Initial 및 Long Run 진행 (T-Tray 미사용)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 7, "작업내용": "Dry Run 진행 (T-Tray 사용)", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 8, "작업내용": "Dummy Run 진행 및 Clear Alarm (3000회)", "상태": "⬜ 대기", "비고": "", "첨부": ""}
+]
+
+# ========================================================
+# 2. 구글 시트 연동 로직
+# ========================================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CREDS_FILE = os.path.join(BASE_DIR, 'service-account.json')
+SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+
+class DataManager:
+    def __init__(self, spreadsheet_id, sheet_name, text_columns=None):
+        self.spreadsheet_id = spreadsheet_id
+        self.sheet_name = sheet_name
+        self.text_columns = text_columns or []
         
-        # 세션 초기화: 상세 보기를 위한 변수
-        if 'view_project_detail' not in st.session_state:
-            st.session_state['view_project_detail'] = None
-
-        # [수정 완료] 들여쓰기 에러 완벽 해결 및 안전망 추가
-        if not df_flow.empty and "프로젝트명" in df_flow.columns:
-            project_list = df_flow["프로젝트명"].dropna().unique().tolist()
+        if os.path.exists(CREDS_FILE):
+            self.creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
         else:
-            project_list = []
-
-        # ==========================================
-        # 뷰 1: 상세 작업 화면 (특정 프로젝트 클릭 시)
-        # ==========================================
-        if st.session_state['view_project_detail'] and st.session_state['view_project_detail'] in project_list:
-            selected_proj = st.session_state['view_project_detail']
+            creds_dict = json.loads(st.secrets["GCP_CREDENTIALS"])
+            self.creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
             
-            # 상단 네비게이션
-            col_back, col_title = st.columns([1.5, 8.5])
-            with col_back:
-                st.markdown("<div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
-                if st.button("◀ 전체 현황판으로", use_container_width=True):
-                    st.session_state['view_project_detail'] = None
-                    st.rerun()
-            with col_title:
-                st.markdown(f"<div class='main-title'>✅ 장비 제작 Flow : 세부 작업 ({selected_proj})</div>", unsafe_allow_html=True)
-            
-            st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+        self.client = gspread.authorize(self.creds)
+        self.sheet = self.client.open_by_key(self.spreadsheet_id).worksheet(self.sheet_name)
 
-            mask = df_flow["프로젝트명"] == selected_proj
-            proj_df = df_flow[mask].copy()
+    # 1단계: 외부에서 이 함수를 부르면...
+    def load(self):
+        # 2단계: 시트 이름표(self.sheet_name)를 들고 캐시 함수로 찾아갑니다!
+        return self._cached_load(self.sheet_name)
 
-            # 제어부 (저장 / 삭제)
-            save_col, del_col, empty_col = st.columns([2, 2, 6])
-            with save_col: 
-                btn_save = st.button("💾 변경 저장", use_container_width=True, type="primary")
-            with del_col: 
-                if st.button("🗑️ 이 프로젝트 삭제", use_container_width=True):
-                    st.session_state['delete_target_proj'] = selected_proj
-                    st.rerun()
+    # ★ 핵심 수정: 이름표(sheet_name_key)를 확인해서 시트별로 다른 기억(Cache)을 만듭니다.
+    @st.cache_data(ttl=600)
+    def _cached_load(_self, sheet_name_key):
+        data = _self.sheet.get_all_records()
+        df = pd.DataFrame(data)
+        for col in _self.text_columns:
+            if col in df.columns:
+                df[col] = df[col].fillna("").astype(str)
+        return df, None
 
-            if st.session_state.get('delete_target_proj') == selected_proj:
-                st.error(f"🚨 [{selected_proj}] 프로젝트를 영구 삭제하시겠습니까?")
-                if st.button("⚠️ 삭제 확정", type="primary"):
-                    # [수정 완료] 구글 시트 저장 방식에 맞게 수정됨
-                    self.db_flow.save(df_flow[~mask])
-                    st.cache_data.clear() # 캐시 초기화 추가
-                    st.session_state['delete_target_proj'] = None
-                    st.session_state['view_project_detail'] = None # 삭제 후 메인으로
-                    st.rerun()
-                if st.button("❌ 취소"): 
-                    st.session_state['delete_target_proj'] = None
-                    st.rerun()
-                st.stop() 
+    def save(self, df):
+        self.sheet.clear()
+        data_to_save = [df.columns.values.tolist()] + df.values.tolist()
+        self.sheet.update(data_to_save)
 
-            # 대항목 관리
-            cats = proj_df['대항목'].unique().tolist()
-            with st.expander("⚙️ 프로젝트 대항목 관리 (추가/수정/삭제/순서변경)"):
-                c1, c2, c3, c4 = st.tabs(["➕ 대항목 추가", "✏️ 이름 수정", "❌ 대항목 삭제", "↕️ 순서 변경"])
-                
-                with c1:
-                    with st.form("add_cat_form", clear_on_submit=True):
-                        new_c = st.text_input("새 대항목 이름")
-                        if st.form_submit_button("추가하기"):
-                            if new_c and new_c not in cats:
-                                new_row = pd.DataFrame([{"프로젝트명": selected_proj, "대항목": new_c, "순서": 1, "작업내용": "새 작업 내용 입력", "상태": "⬜ 대기", "비고": "", "첨부": "", "업데이트일": ""}])
-                                self.db_flow.save(pd.concat([df_flow, new_row], ignore_index=True))
-                                st.cache_data.clear()
-                                st.success(f"'{new_c}' 항목이 추가되었습니다.")
-                                st.rerun()
+# ========================================================
+# 3. 유틸리티 함수
+# ========================================================
+def maintain_project_order(df, original_order):
+    df['__proj_cat__'] = pd.Categorical(df['프로젝트명'], categories=original_order, ordered=True)
+    return df.sort_values(by=['__proj_cat__'], kind='stable').drop(columns=['__proj_cat__']).reset_index(drop=True)
 
-                with c2:
-                    with st.form("edit_cat_form", clear_on_submit=True):
-                        target_c = st.selectbox("수정할 대항목 선택", cats)
-                        rename_c = st.text_input("새로운 이름 입력")
-                        if st.form_submit_button("이름 변경"):
-                            if rename_c and rename_c not in cats:
-                                df_flow.loc[(df_flow["프로젝트명"] == selected_proj) & (df_flow["대항목"] == target_c), "대항목"] = rename_c
-                                self.db_flow.save(df_flow)
-                                st.cache_data.clear()
-                                st.success("이름이 변경되었습니다.")
-                                st.rerun()
-
-                with c3:
-                    with st.form("del_cat_form"):
-                        del_c = st.selectbox("삭제할 대항목 선택", cats)
-                        st.warning("⚠️ 해당 대항목과 안에 포함된 모든 세부 작업이 영구 삭제됩니다.")
-                        if st.form_submit_button("삭제 실행"):
-                            df_flow = df_flow[~((df_flow["프로젝트명"] == selected_proj) & (df_flow["대항목"] == del_c))]
-                            self.db_flow.save(df_flow)
-                            st.cache_data.clear()
-                            st.success("삭제되었습니다.")
-                            st.rerun()
-
-                with c4:
-                    st.write("표 안의 **'새 순서'** 숫자를 클릭하여 순서를 변경하고 적용 버튼을 누르세요.")
-                    order_df = pd.DataFrame({"대항목": cats, "새 순서": range(1, len(cats)+1)})
-                    edited_order = st.data_editor(order_df, hide_index=True, use_container_width=True)
-                    if st.button("변경된 순서 적용하기"):
-                        edited_order = edited_order.sort_values("새 순서")
-                        ordered_cats = edited_order["대항목"].tolist()
-                        proj_df['__cat_order__'] = pd.Categorical(proj_df['대항목'], categories=ordered_cats, ordered=True)
-                        sorted_proj_df = proj_df.sort_values(['__cat_order__', '순서']).drop(columns=['__cat_order__'])
-                        
-                        new_df_flow = df_flow[df_flow["프로젝트명"] != selected_proj]
-                        new_df_flow = pd.concat([new_df_flow, sorted_proj_df], ignore_index=True)
-                        self.db_flow.save(new_df_flow)
-                        st.cache_data.clear()
-                        st.success("순서가 적용되었습니다.")
-                        st.rerun()
-
-            # 진행률 표시
-            total_tasks = len(proj_df); comp_tasks = len(proj_df[proj_df["상태"] == "✅ 완료"])
-            pct_float = (comp_tasks / total_tasks) if total_tasks > 0 else 0.0
-            st.markdown(f"<div style='font-size:16px; font-weight:bold; color:#4CAF50;'>⚡ 해당 호기 진행도 ({comp_tasks} / {total_tasks})</div>", unsafe_allow_html=True)
-            st.progress(pct_float, text=f"{int(pct_float * 100)}% 완료")
-
-            # 에디터 테이블 출력
-            proj_df['group_id'] = (proj_df['대항목'] != proj_df['대항목'].shift()).cumsum()
-            groups = proj_df.groupby('group_id', sort=False) 
-            edited_dfs = []; current_user_stamp = f"{st.session_state['user_name']} ({datetime.today().strftime('%y-%m-%d')})"
-
-            for group_id, group_df in groups:
-                cat = group_df['대항목'].iloc[0]
-                display_df = group_df.drop(columns=['group_id']).reset_index(drop=True)
-                curr_stats = display_df['상태'].tolist()
-                
-                cat_total = len(curr_stats)
-                cat_comp = curr_stats.count('✅ 완료')
-                cnt_str = f"({cat_comp}/{cat_total})"
-                
-                if '🚨 보류' in curr_stats: tab_title = f"🔴 [보류] {cat} {cnt_str}"
-                elif curr_stats and all(s == '✅ 완료' for s in curr_stats): tab_title = f"🟢 [완료] {cat} {cnt_str}"
-                elif any(s in ['⏳ 작업중', '✅ 완료'] for s in curr_stats): tab_title = f"🟡 [진행] {cat} {cnt_str}"
-                else: tab_title = f"📍 [대기] {cat} {cnt_str}"
-                
-                with st.expander(tab_title, expanded=False):
-                    styled_df = display_df.style.apply(get_row_color, axis=1)
-                    edited_cat_df = st.data_editor(
-                        styled_df, use_container_width=True, hide_index=True, num_rows="dynamic", key=f"editor_{selected_proj}_{group_id}",
-                        column_config={
-                            "순서": st.column_config.NumberColumn("No", width="small"), 
-                            "작업내용": st.column_config.TextColumn("세부 작업 내용", width="large"), 
-                            "상태": st.column_config.SelectboxColumn("상태", options=["⬜ 대기", "⏳ 작업중", "✅ 완료", "🚨 보류"], width="small"),
-                            "비고": st.column_config.TextColumn("비고", width="small"),
-                            "첨부": st.column_config.TextColumn("첨부", width="small")
-                        }
-                    )
-                    for idx, new_row in edited_cat_df.iterrows():
-                        if new_row['상태'] == "⬜ 대기": edited_cat_df.at[idx, '업데이트일'] = ""
-                        else:
-                            match = display_df[(display_df['작업내용'] == new_row['작업내용']) & (display_df['상태'] == new_row['상태']) & (display_df['비고'] == new_row['비고'])]
-                            if match.empty: edited_cat_df.at[idx, '업데이트일'] = current_user_stamp
-                            else: edited_cat_df.at[idx, '업데이트일'] = match.iloc[0]['업데이트일']
-                    edited_cat_df["대항목"] = cat; edited_cat_df["프로젝트명"] = selected_proj; edited_cat_df["org_group_id"] = group_id 
-                    edited_dfs.append(edited_cat_df)
-
-            # 저장 로직
-            if btn_save:
-                updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
-                if not updated_proj_df.empty:
-                    updated_proj_df = updated_proj_df.sort_values(by=['org_group_id', '순서'], kind='stable')
-                    updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
-                    updated_proj_df["순서"] = updated_proj_df.groupby('group_id').cumcount() + 1
-                    updated_proj_df = updated_proj_df.drop(columns=['group_id', 'org_group_id']).reset_index(drop=True)
-                original_projects = df_flow['프로젝트명'].unique().tolist()
-                new_df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
-                self.db_flow.save(maintain_project_order(new_df_flow, original_projects))
-                st.cache_data.clear()
-                st.success("✅ 저장되었습니다!"); st.rerun()
-
-        # ==========================================
-        # 뷰 2: 전체 현황판 메인 화면 (기본 뷰)
-        # ==========================================
-        else:
-            st.markdown("<div class='main-title'>✅ 장비 제작 Flow 전체 현황판</div>", unsafe_allow_html=True)
-            st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
-
-            # 새 프로젝트 추가 버튼
-            with st.expander("➕ 새 장비(호기) 제작 시작하기"):
-                with st.form("new_proj_form", clear_on_submit=True):
-                    new_proj = st.text_input("새 장비명 (예: 4010H #2호기)")
-                    source_options = ["기본 템플릿(초기화 상태)"] + project_list
-                    source_proj = st.selectbox("어떤 형식(기존 호기)을 복사할까요?", source_options)
-                    if st.form_submit_button("프로젝트 생성하기") and new_proj and new_proj not in project_list:
-                        if source_proj == "기본 템플릿(초기화 상태)": new_df = pd.DataFrame(CS_TEMPLATE)
-                        else:
-                            new_df = df_flow[df_flow["프로젝트명"] == source_proj].copy()
-                            new_df[["상태", "비고", "첨부", "업데이트일"]] = ["⬜ 대기", "", "", ""]
-                        new_df["프로젝트명"] = new_proj
-                        self.db_flow.save(pd.concat([df_flow, new_df], ignore_index=True))
-                        st.cache_data.clear()
-                        st.session_state['view_project_detail'] = new_proj # 생성 후 바로 진입
-                        st.rerun()
-
-            # ★ 필터 UI 추가 (우측 정렬 배치)
-            filter_col1, empty_col, filter_col2 = st.columns([2.5, 3, 4.5])
-            with filter_col1:
-                model_filter = st.selectbox("📌 모델별 필터", ["전체"] + EQUIPMENT_OPTIONS)
-            with filter_col2:
-                st.markdown("<div style='font-size: 14px; color: #333; margin-bottom: 5px; font-weight: bold;'>📌 진행 상태 필터</div>", unsafe_allow_html=True)
-                sc1, sc2, sc3 = st.columns(3)
-                show_todo = sc1.checkbox("📍 예정(대기)", value=True)
-                show_prog = sc2.checkbox("🏃‍♂️ 진행중", value=True)
-                show_done = sc3.checkbox("✅ 완료", value=True)
-                
-            st.markdown("<hr style='margin-top: 15px; margin-bottom: 25px;'>", unsafe_allow_html=True)
-
-            if not project_list:
-                st.info("현재 진행 중인 장비 제작 Flow가 없습니다. 위에서 새 장비를 추가해 주세요.")
-                return
-            
-            # --- 장비 진행률 사전 계산, 필터링 및 분류 ---
-            todo_projects = []
-            prog_projects = []
-            completed_projects = []
-            
-            for proj in project_list:
-                # 1. 모델 필터 적용
-                if model_filter != "전체" and model_filter.lower() not in proj.lower():
-                    continue
-
-                p_df = df_flow[df_flow["프로젝트명"] == proj]
-                total_items = len(p_df)
-                completed_items = len(p_df[p_df["상태"] == "✅ 완료"])
-                pct = int((completed_items / total_items) * 100) if total_items > 0 else 0
-                
-                # 상태 확인
-                if pct == 100: status_cat = "완료"
-                elif pct > 0: status_cat = "진행중"
-                else: status_cat = "대기"
-
-                # 2. 상태 필터 적용 (선택된 항목만 각 리스트에 넣음)
-                proj_data = {"name": proj, "total": total_items, "completed": completed_items, "pct": pct}
-                
-                if status_cat == "완료" and show_done:
-                    completed_projects.append(proj_data)
-                elif status_cat == "진행중" and show_prog:
-                    prog_projects.append(proj_data)
-                elif status_cat == "대기" and show_todo:
-                    todo_projects.append(proj_data)
-
-            # 카드 렌더링 함수
-            def render_project_cards(proj_data_list):
-                cols = st.columns(3)
-                for idx, p_data in enumerate(proj_data_list):
-                    proj = p_data["name"]
-                    total_items = p_data["total"]
-                    completed_items = p_data["completed"]
-                    pct = p_data["pct"]
-                    
-                    # 배터리 및 게이지 블록 계산
-                    blocks = pct // 10
-                    bar = "🟩" * blocks + "⬜" * (10 - blocks)
-                    batt_icon = "🔋" if pct >= 20 else "🪫"
-                    
-                    # 상태별 색상
-                    if pct == 100: color, bg = "#4CAF50", "#e8f5e9" # 초록 (완료)
-                    elif pct > 0: color, bg = "#2196F3", "#e3f2fd"  # 파랑 (진행중)
-                    else: color, bg = "#9e9e9e", "#f5f5f5"          # 회색 (대기)
-
-                    with cols[idx % 3]:
-                        # 예쁜 카드 UI 렌더링
-                        st.markdown(f"""
-                            <div style="background-color: {bg}; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 6px solid {color}; margin-bottom: 15px;">
-                                <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 5px;">{proj}</div>
-                                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">작업 현황: {completed_items} / {total_items} 건</div>
-                                <div style="font-size: 26px; font-weight: bold; color: {color}; margin-bottom: 5px;">{pct}%</div>
-                                <div style="font-size: 14px; letter-spacing: 1.5px; color: #333;">{batt_icon} [{bar}]</div>
-                            </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # 상세 보기 버튼
-                        if st.button(f"🔍 [{proj}] 상세 작업 및 체크하기", key=f"btn_{proj}", use_container_width=True):
-                            st.session_state['view_project_detail'] = proj
-                            st.rerun()
-                        st.markdown("<br>", unsafe_allow_html=True)
-
-            # 3. 화면 출력 (조건에 맞는 데이터가 있을 때만 껍데기 제목 출력!)
-            has_data = False
-            
-            if todo_projects:
-                st.markdown("### 📍 예정(대기) 장비 목록")
-                render_project_cards(todo_projects)
-                st.markdown("<hr style='margin-top: 5px; margin-bottom: 25px; border-top: 1px dashed #ccc;'>", unsafe_allow_html=True)
-                has_data = True
-                
-            if prog_projects:
-                st.markdown("### 🏃‍♂️ 진행 중인 장비 목록")
-                render_project_cards(prog_projects)
-                st.markdown("<hr style='margin-top: 5px; margin-bottom: 25px; border-top: 1px dashed #ccc;'>", unsafe_allow_html=True)
-                has_data = True
-                
-            if completed_projects:
-                st.markdown("### ✅ 제작 완료된 장비 목록")
-                render_project_cards(completed_projects)
-                has_data = True
-                
-            # 체크를 다 끄거나 검색 조건에 아예 안 맞을 때만 이 문구 하나 출력
-            if not has_data:
-                st.info("조건에 맞는 장비가 없습니다. 필터 옵션을 확인해 주세요.")
+def get_row_color(row):
+    val = row.get('상태', '')
+    if val == '✅ 완료': return ['background-color: rgba(76, 175, 80, 0.2)'] * len(row)
+    elif val == '⏳ 작업중': return ['background-color: rgba(255, 193, 7, 0.2)'] * len(row)
+    elif val == '🚨 보류': return ['background-color: rgba(244, 67, 54, 0.2)'] * len(row)
+    return [''] * len(row)
