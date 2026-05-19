@@ -8,16 +8,18 @@ class CSCheckSheetTab:
         self.db_flow = db_flow
 
     def render(self):
-        df_flow, sha_flow = self.db_flow.load()
+        # 깃허브 시절의 sha_flow는 이제 사용하지 않으므로 무시(_)합니다.
+        df_flow, _ = self.db_flow.load()
         
         # 세션 초기화: 상세 보기를 위한 변수
         if 'view_project_detail' not in st.session_state:
             st.session_state['view_project_detail'] = None
 
+        # [수정 완료] 들여쓰기 에러 완벽 해결 및 안전망 추가
         if not df_flow.empty and "프로젝트명" in df_flow.columns:
-    project_list = df_flow["프로젝트명"].dropna().unique().tolist()
-else:
-    project_list = []
+            project_list = df_flow["프로젝트명"].dropna().unique().tolist()
+        else:
+            project_list = []
 
         # ==========================================
         # 뷰 1: 상세 작업 화면 (특정 프로젝트 클릭 시)
@@ -52,7 +54,9 @@ else:
             if st.session_state.get('delete_target_proj') == selected_proj:
                 st.error(f"🚨 [{selected_proj}] 프로젝트를 영구 삭제하시겠습니까?")
                 if st.button("⚠️ 삭제 확정", type="primary"):
-                    self.db_flow.save(df_flow[~mask], sha_flow, f"Delete: {selected_proj}")
+                    # [수정 완료] 구글 시트 저장 방식에 맞게 수정됨
+                    self.db_flow.save(df_flow[~mask])
+                    st.cache_data.clear() # 캐시 초기화 추가
                     st.session_state['delete_target_proj'] = None
                     st.session_state['view_project_detail'] = None # 삭제 후 메인으로
                     st.rerun()
@@ -72,7 +76,8 @@ else:
                         if st.form_submit_button("추가하기"):
                             if new_c and new_c not in cats:
                                 new_row = pd.DataFrame([{"프로젝트명": selected_proj, "대항목": new_c, "순서": 1, "작업내용": "새 작업 내용 입력", "상태": "⬜ 대기", "비고": "", "첨부": "", "업데이트일": ""}])
-                                self.db_flow.save(pd.concat([df_flow, new_row], ignore_index=True), sha_flow, f"Add Cat: {new_c}")
+                                self.db_flow.save(pd.concat([df_flow, new_row], ignore_index=True))
+                                st.cache_data.clear()
                                 st.success(f"'{new_c}' 항목이 추가되었습니다.")
                                 st.rerun()
 
@@ -83,7 +88,8 @@ else:
                         if st.form_submit_button("이름 변경"):
                             if rename_c and rename_c not in cats:
                                 df_flow.loc[(df_flow["프로젝트명"] == selected_proj) & (df_flow["대항목"] == target_c), "대항목"] = rename_c
-                                self.db_flow.save(df_flow, sha_flow, f"Rename Cat: {target_c}")
+                                self.db_flow.save(df_flow)
+                                st.cache_data.clear()
                                 st.success("이름이 변경되었습니다.")
                                 st.rerun()
 
@@ -93,7 +99,8 @@ else:
                         st.warning("⚠️ 해당 대항목과 안에 포함된 모든 세부 작업이 영구 삭제됩니다.")
                         if st.form_submit_button("삭제 실행"):
                             df_flow = df_flow[~((df_flow["프로젝트명"] == selected_proj) & (df_flow["대항목"] == del_c))]
-                            self.db_flow.save(df_flow, sha_flow, f"Delete Cat: {del_c}")
+                            self.db_flow.save(df_flow)
+                            st.cache_data.clear()
                             st.success("삭제되었습니다.")
                             st.rerun()
 
@@ -109,7 +116,8 @@ else:
                         
                         new_df_flow = df_flow[df_flow["프로젝트명"] != selected_proj]
                         new_df_flow = pd.concat([new_df_flow, sorted_proj_df], ignore_index=True)
-                        self.db_flow.save(new_df_flow, sha_flow, "Reorder Cats")
+                        self.db_flow.save(new_df_flow)
+                        st.cache_data.clear()
                         st.success("순서가 적용되었습니다.")
                         st.rerun()
 
@@ -169,7 +177,8 @@ else:
                     updated_proj_df = updated_proj_df.drop(columns=['group_id', 'org_group_id']).reset_index(drop=True)
                 original_projects = df_flow['프로젝트명'].unique().tolist()
                 new_df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
-                self.db_flow.save(maintain_project_order(new_df_flow, original_projects), sha_flow, f"Update: {selected_proj}")
+                self.db_flow.save(maintain_project_order(new_df_flow, original_projects))
+                st.cache_data.clear()
                 st.success("✅ 저장되었습니다!"); st.rerun()
 
         # ==========================================
@@ -191,7 +200,8 @@ else:
                             new_df = df_flow[df_flow["프로젝트명"] == source_proj].copy()
                             new_df[["상태", "비고", "첨부", "업데이트일"]] = ["⬜ 대기", "", "", ""]
                         new_df["프로젝트명"] = new_proj
-                        self.db_flow.save(pd.concat([df_flow, new_df], ignore_index=True), sha_flow, f"Create: {new_proj}")
+                        self.db_flow.save(pd.concat([df_flow, new_df], ignore_index=True))
+                        st.cache_data.clear()
                         st.session_state['view_project_detail'] = new_proj # 생성 후 바로 진입
                         st.rerun()
 
