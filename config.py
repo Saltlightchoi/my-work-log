@@ -2,16 +2,17 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
-import io
+import streamlit as st
+import json
 
 # ========================================================
-# 율무 아빠님 원본 설정 데이터 (단 하나도 수정하지 않음)
+# 1. 율무 아빠님의 소중한 원본 데이터
 # ========================================================
 BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
-
 EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "32CM", "32XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
 
-CS_TEMPLATE = [
+
+   CS_TEMPLATE = [
     {"대항목": "공통", "순서": 1, "작업내용": "I/O Check\n- Out Put으로 동작 후 In Put LED 확인\n- Cylinder 정상 동작 확인\n- Manual에서 Cylinder 동작 후 LED 점등 확인\n- 미비된 부분 I/O List, PC에 저장 후 전장 수정 요청 진행\n- 전장 수정 후 수정되었는지 동작, LED 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
     {"대항목": "공통", "순서": 2, "작업내용": "공압 Leak Check", "상태": "⬜ 대기", "비고": "", "첨부": ""},
     {"대항목": "공통", "순서": 3, "작업내용": "Cylinder Speed 조정 및 Part 위치 조정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
@@ -50,7 +51,7 @@ CS_TEMPLATE = [
 ]
 
 # ========================================================
-# 구글 시트 연동 로직 (GitHub 로직 완벽 대체)
+# 2. 구글 시트 연동 로직 (수정된 부분)
 # ========================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CREDS_FILE = os.path.join(BASE_DIR, 'service-account.json')
@@ -62,33 +63,27 @@ class DataManager:
         self.sheet_name = sheet_name
         self.text_columns = text_columns or []
         
-        self.creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+        # ★ 핵심 로직: 열쇠 파일이 내 PC에 있으면 파일을 읽고, 없으면 Streamlit 비밀 금고를 읽음
+        if os.path.exists(CREDS_FILE):
+            self.creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+        else:
+            # Streamlit Cloud 환경
+            creds_dict = json.loads(st.secrets["GCP_CREDENTIALS"])
+            self.creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
+            
         self.client = gspread.authorize(self.creds)
         self.sheet = self.client.open_by_key(self.spreadsheet_id).worksheet(self.sheet_name)
 
+    @st.cache_data(ttl=600)
     def load(self):
-        """구글 시트에서 데이터를 가져옵니다."""
         data = self.sheet.get_all_records()
         df = pd.DataFrame(data)
         for col in self.text_columns:
             if col in df.columns:
                 df[col] = df[col].fillna("").astype(str)
-        return df, None # SHA 불필요
+        return df
 
-    def save(self, df, sha=None, message=None):
-        """구글 시트에 데이터를 저장합니다."""
+    def save(self, df):
         self.sheet.clear()
-        # 데이터프레임을 리스트로 변환하여 업데이트
         data_to_save = [df.columns.values.tolist()] + df.values.tolist()
         self.sheet.update(data_to_save)
-
-def maintain_project_order(df, original_order):
-    df['__proj_cat__'] = pd.Categorical(df['프로젝트명'], categories=original_order, ordered=True)
-    return df.sort_values(by=['__proj_cat__'], kind='stable').drop(columns=['__proj_cat__']).reset_index(drop=True)
-
-def get_row_color(row):
-    val = row.get('상태', '')
-    if val == '✅ 완료': return ['background-color: rgba(76, 175, 80, 0.2)'] * len(row)
-    elif val == '⏳ 작업중': return ['background-color: rgba(255, 193, 7, 0.2)'] * len(row)
-    elif val == '🚨 보류': return ['background-color: rgba(244, 67, 54, 0.2)'] * len(row)
-    return [''] * len(row)
