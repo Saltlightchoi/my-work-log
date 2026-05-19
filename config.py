@@ -6,14 +6,14 @@ import streamlit as st
 import json
 
 # ========================================================
-# 1. 율무 아빠님의 소중한 원본 데이터
+# 1. 원본 데이터 및 템플릿
 # ========================================================
 BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 
 EQUIPMENT_OPTIONS = ["SLH1", "4010H", "3208H", "3208AT", "3208M", "3208C", "32CM", "32XM", "ADC200", "ADC300", "ADC400", "AH5200", "AM5"]
 
 CS_TEMPLATE = [
-    {"대항목": "공통", "순서": 1, "작업내용": "I/O Check\n- Out Put으로 동작 후 In 단 Put LED 확인\n- Cylinder 정상 동작 확인\n- Manual에서 Cylinder 동작 후 LED 점등 확인\n- 미비된 부분 I/O List, PC에 저장 후 전장 수정 요청 진행\n- 전장 수정 후 수정되었는지 동작, LED 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
+    {"대항목": "공통", "순서": 1, "작업내용": "I/O Check\n- Out Put으로 동작 후 In Put LED 확인\n- Cylinder 정상 동작 확인\n- Manual에서 Cylinder 동작 후 LED 점등 확인\n- 미비된 부분 I/O List, PC에 저장 후 전장 수정 요청 진행\n- 전장 수정 후 수정되었는지 동작, LED 확인", "상태": "⬜ 대기", "비고": "", "첨부": ""},
     {"대항목": "공통", "순서": 2, "작업내용": "공압 Leak Check", "상태": "⬜ 대기", "비고": "", "첨부": ""},
     {"대항목": "공통", "순서": 3, "작업내용": "Cylinder Speed 조정 및 Part 위치 조정", "상태": "⬜ 대기", "비고": "", "첨부": ""},
     {"대항목": "공통", "순서": 4, "작업내용": "전면부 후면부 1차 Levelling\n- Auto Leveler 사용\n- Stacker Base 상단 -> 바닥면 400mm", "상태": "⬜ 대기", "비고": "", "첨부": ""},
@@ -72,15 +72,11 @@ class DataManager:
         self.client = gspread.authorize(self.creds)
         self.sheet = self.client.open_by_key(self.spreadsheet_id).worksheet(self.sheet_name)
 
+    # ★ 캐시(Cache) 완벽 제거! 매번 구글시트에서 진짜 최신 데이터를 강제로 읽어옵니다.
     def load(self):
-        # ★ 캐시 파괴(Cache Buster): 함수 이름을 완전히 바꿔서 서버가 예전 빈 데이터를 기억 못하게 멱살잡고 끌고 옵니다.
-        return self._load_data_fresh(self.sheet_name)
-
-    @st.cache_data(ttl=300)
-    def _load_data_fresh(_self, sheet_name_key):
-        data = _self.sheet.get_all_records()
+        data = self.sheet.get_all_records()
         df = pd.DataFrame(data)
-        for col in _self.text_columns:
+        for col in self.text_columns:
             if col in df.columns:
                 df[col] = df[col].fillna("").astype(str)
         return df, None
@@ -89,7 +85,6 @@ class DataManager:
         self.sheet.clear()
         data_to_save = [df.columns.values.tolist()] + df.values.tolist()
         self.sheet.update(data_to_save)
-        st.cache_data.clear() # 저장 시 캐시 완벽 초기화
 
 # ========================================================
 # 3. 유틸리티 함수
