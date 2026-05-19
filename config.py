@@ -1,5 +1,6 @@
 # config.py 상단 수정
 import pandas as pd
+import streamlit as st
 import gspread
 # oauth2client 대신 oauth2client.service_account를 정확히 명시합니다.
 from oauth2client.service_account import ServiceAccountCredentials 
@@ -24,17 +25,15 @@ class DataManager:
         self.creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
         self.client = gspread.authorize(self.creds)
         self.sheet = self.client.open_by_key(self.spreadsheet_id).worksheet(self.sheet_name)
-
+        
+@st.cache_data(ttl=600) # 10분(600초) 동안 데이터를 캐시함
     def load(self):
-        # 깃허브 SHA 방식 제거, 데이터 로드
         data = self.sheet.get_all_records()
         df = pd.DataFrame(data)
-        
-        # 텍스트 컬럼 보정
         for col in self.text_columns:
             if col in df.columns:
                 df[col] = df[col].fillna("").astype(str)
-        return df, None # SHA 필요 없음
+        return df, None
 
     def save(self, df, sha=None, message=None):
         # 시트 초기화 후 전체 업데이트
