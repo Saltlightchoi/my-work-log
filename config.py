@@ -2,11 +2,10 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
-import io
 import streamlit as st
 
 # ========================================================
-# 1. 원본 설정 데이터 (5월 11일 기준 그대로 복구)
+# 1. 율무 아빠님의 소중한 원본 데이터 (완벽 복구)
 # ========================================================
 BASE_PATH_RAW = r"\\192.168.0.100\500 생산\550 국내CS\공유사진\\"
 
@@ -62,23 +61,20 @@ class DataManager:
         self.spreadsheet_id = spreadsheet_id
         self.sheet_name = sheet_name
         self.text_columns = text_columns or []
-        
         self.creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
         self.client = gspread.authorize(self.creds)
         self.sheet = self.client.open_by_key(self.spreadsheet_id).worksheet(self.sheet_name)
 
     @st.cache_data(ttl=600)
     def load(self):
-        """구글 시트에서 데이터를 가져오며 캐싱을 적용하여 속도 향상"""
         data = self.sheet.get_all_records()
         df = pd.DataFrame(data)
         for col in self.text_columns:
             if col in df.columns:
                 df[col] = df[col].fillna("").astype(str)
-        return df, None 
+        return df
 
-    def save(self, df, sha=None, message=None):
-        """구글 시트에 데이터를 저장 (전체 내용 덮어쓰기)"""
+    def save(self, df):
         self.sheet.clear()
         data_to_save = [df.columns.values.tolist()] + df.values.tolist()
         self.sheet.update(data_to_save)
