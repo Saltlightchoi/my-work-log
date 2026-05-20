@@ -11,16 +11,24 @@ class ECNSTNTab:
 
     def render(self):
         # ==========================================
-        # ★ 메인 타이틀 옆에 드롭다운 메뉴 붙이기
+        # 메인 타이틀 옆에 드롭다운 메뉴 붙이기
         # ==========================================
-        col_title, col_menu = st.columns([7.5, 2.5])
+        col_title, col_empty, col_menu = st.columns([5.5, 2.5, 2])
         with col_title:
             st.markdown("<div class='main-title'>🛠️ ECN & STN (장비 파트 및 수정사항 관리)</div>", unsafe_allow_html=True)
+        with col_empty:
+            pass # 빈 공간
         with col_menu:
             st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
-            new_menu = st.selectbox("메뉴 이동", ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"], index=3, label_visibility="collapsed")
-            if new_menu != "🛠️ ECN & STN":
-                st.session_state['current_menu'] = new_menu
+            selected_menu = st.selectbox(
+                "메뉴",
+                ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"],
+                index=["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"].index(st.session_state['current_menu']),
+                key="menu_ecn",
+                label_visibility="collapsed"
+            )
+            if selected_menu != st.session_state['current_menu']:
+                st.session_state['current_menu'] = selected_menu
                 st.rerun()
                 
         st.markdown("<hr style='margin-top: -5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
