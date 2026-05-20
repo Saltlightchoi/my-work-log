@@ -60,7 +60,6 @@ class ECNSTNTab:
                 elif '조치' in c_clean or '진행' in c_clean: 
                     base_col = '조치현황'
                     col_idx_map['조치현황'] = base_col
-                # 첨부 2를 먼저 필터링
                 elif '첨부2' in c_clean or '링크2' in c_clean:
                     base_col = '첨부 2'
                     col_idx_map['첨부 2'] = base_col
@@ -73,6 +72,16 @@ class ECNSTNTab:
                 seen_cols.add(base_col)
                 new_cols.append(base_col)
             
+            # ★ 구글 시트에 첨부1, 첨부2가 없어도 무조건 강제로 생성하는 방어막 추가!
+            if '첨부 1' not in col_idx_map.values():
+                df_raw['첨부 1'] = ""
+                new_cols.append('첨부 1')
+                col_idx_map['첨부 1'] = '첨부 1'
+            if '첨부 2' not in col_idx_map.values():
+                df_raw['첨부 2'] = ""
+                new_cols.append('첨부 2')
+                col_idx_map['첨부 2'] = '첨부 2'
+
             df_raw.columns = new_cols
             df_raw['Original_Index'] = df_raw.index
             df = df_raw.copy()
@@ -305,15 +314,4 @@ class ECNSTNTab:
                                     
                         if changes_made:
                             self.db_ecn.save(df_raw.drop(columns=['Original_Index'], errors='ignore'))
-                            st.success("✅ 구글 시트에 성공적으로 저장되었습니다! 화면을 새로고침 합니다.")
-                            st.rerun()
-                        else:
-                            st.warning("저장할 변경사항이 없습니다.")
-                    except Exception as save_err:
-                        st.error(f"구글 시트 저장 중 오류가 발생했습니다: {save_err}")
-
-            else:
-                st.warning(f"선택하신 장비({equipment})에 해당하는 ECN 내역이 없거나, 구글 시트가 비어있습니다. 새 항목을 추가해주세요.")
-                
-        except Exception as e:
-            st.error(f"⚠️ 데이터를 읽는 중 오류가 발생했습니다: {e}")
+                            st.
