@@ -28,27 +28,35 @@ except Exception as e:
 # ==========================================
 st.set_page_config(layout="wide", page_title="장비 관리 통합 시스템")
 
+# ★ 잘림 현상을 해결한 핵심 CSS 영역입니다.
 st.markdown("""
     <style>
-        .block-container { max-width: 98% !important; padding-top: 3.5rem !important; padding-bottom: 2rem !important; }
+        .block-container { max-width: 98% !important; padding-top: 3rem !important; padding-bottom: 2rem !important; }
         
-        /* ★ 핵심: 첫 번째 드롭다운 박스(대제목 역할)를 투명하고 거대하게 만듭니다! */
+        /* 드롭다운 박스의 높이를 강제로 늘려서 글자가 숨막히지 않게 여백을 줍니다 */
         section[data-testid="stMain"] div[data-testid="stSelectbox"]:first-of-type > div[data-baseweb="select"] > div {
             background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
             cursor: pointer !important;
+            height: auto !important; 
+            min-height: 65px !important; /* 높이 확보 */
         }
-        /* 대제목 글자 크기와 굵기 설정 */
+        
+        /* 글자 크기, 굵기, 줄간격 설정 및 잘림 방지(overflow) */
         section[data-testid="stMain"] div[data-testid="stSelectbox"]:first-of-type div[data-baseweb="select"] {
-            font-size: 2.2rem !important;
+            font-size: 2.1rem !important;
             font-weight: 800 !important;
+            line-height: 1.5 !important;
+            overflow: visible !important; /* 상자를 벗어나도 글씨가 온전히 보이게 강제 설정 */
         }
-        /* 드롭다운 우측 화살표 아이콘 크기 키우기 */
+        
+        /* 우측 화살표 아이콘 크기 및 위치 조정 */
         section[data-testid="stMain"] div[data-testid="stSelectbox"]:first-of-type div[data-baseweb="select"] svg {
             width: 2rem !important;
             height: 2rem !important;
             color: #888 !important;
+            margin-top: 5px !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -59,7 +67,6 @@ st.markdown("""
 if 'user_name' not in st.session_state:
     st.session_state['user_name'] = None
 
-# ★ 메뉴 이름을 탭의 대제목과 100% 동일하게 길게 셋팅합니다.
 if 'current_menu' not in st.session_state:
     st.session_state['current_menu'] = "📝 팀 업무일지 대시보드"
 
