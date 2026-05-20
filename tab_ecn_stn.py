@@ -27,8 +27,8 @@ class ECNSTNTab:
 
         if show_help:
             st.info("**이용 안내:** 구글 시트 **`ECN_STN`** 탭을 기반으로 목록을 출력합니다.\n\n"
-                    "1. 표의 **'조치현황'**, **'특이사항'**, **'첨부(G-Drive 링크)'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다.\n"
-                    "2. **첨부파일 넣기:** 구글 드라이브에 올려둔 사진이나 PDF의 '공유 링크'를 복사해서 **'첨부'** 칸에 붙여넣으세요.\n"
+                    "1. 표의 **'조치현황'**, **'특이사항'**, **'첨부 1, 2'** 칸을 더블 클릭하여 내용을 직접 수정할 수 있습니다.\n"
+                    "2. 첨부가 3개 이상일 경우에는 구글 드라이브 폴더 링크를 활용해 주세요.\n"
                     "3. 파란색으로 변한 링크를 클릭하면 즉시 파일이 열립니다!\n"
                     "4. 수정한 뒤엔 반드시 하단의 **[💾 변경사항 구글 시트에 저장하기]** 버튼을 눌러주세요.")
 
@@ -36,7 +36,7 @@ class ECNSTNTab:
             df_raw, _ = self.db_ecn.load()
             
             if df_raw.empty or len(df_raw.columns) == 0:
-                df_raw = pd.DataFrame(columns=['날짜', '발행부서', '발행자', '장비호기', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부'])
+                df_raw = pd.DataFrame(columns=['날짜', '발행부서', '발행자', '장비호기', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부 1', '첨부 2'])
 
             orig_cols = df_raw.columns.tolist()
             new_cols = []
@@ -60,9 +60,13 @@ class ECNSTNTab:
                 elif '조치' in c_clean or '진행' in c_clean: 
                     base_col = '조치현황'
                     col_idx_map['조치현황'] = base_col
+                # 첨부 2를 먼저 필터링
+                elif '첨부2' in c_clean or '링크2' in c_clean:
+                    base_col = '첨부 2'
+                    col_idx_map['첨부 2'] = base_col
                 elif '첨부' in c_clean or '링크' in c_clean: 
-                    base_col = '첨부'
-                    col_idx_map['첨부'] = base_col
+                    base_col = '첨부 1'
+                    col_idx_map['첨부 1'] = base_col
 
                 if base_col in seen_cols:
                     base_col = f"{base_col}_{i}"
@@ -73,8 +77,6 @@ class ECNSTNTab:
             df_raw['Original_Index'] = df_raw.index
             df = df_raw.copy()
             
-            # ★ 핵심 업그레이드: 장비명 스마트 필터링!
-            # '장비호기' 칸에 장비명이 없어도, 'ECN No' 칸을 읽고 자동으로 찾아냅니다.
             mask_equip = pd.Series(False, index=df.index)
             if '장비호기' in df.columns:
                 mask_equip = mask_equip | df['장비호기'].astype(str).str.contains(equipment, case=False, na=False)
@@ -112,7 +114,7 @@ class ECNSTNTab:
             if search_keyword:
                 filtered_df = filtered_df[filtered_df.apply(lambda r: search_keyword.lower() in str(r).lower(), axis=1)]
                 
-            expected_cols = ['Original_Index', '날짜', '발행부서', '발행자', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부']
+            expected_cols = ['Original_Index', '날짜', '발행부서', '발행자', 'ECN No', 'AS-IS', 'TO-BE', '특이사항', '조치현황', '첨부 1', '첨부 2']
             display_cols = [c for c in expected_cols if c in filtered_df.columns]
             filtered_df = filtered_df[display_cols].copy()
             
@@ -169,7 +171,7 @@ class ECNSTNTab:
             st.markdown("<br>", unsafe_allow_html=True)
 
             if not filtered_df.empty:
-                disabled_cols = [c for c in filtered_df.columns if c not in ['특이사항', '조치현황', '첨부']]
+                disabled_cols = [c for c in filtered_df.columns if c not in ['특이사항', '조치현황', '첨부 1', '첨부 2']]
                 
                 def highlight_status(val):
                     val_str = str(val).strip()
@@ -189,8 +191,10 @@ class ECNSTNTab:
                 if "특이사항" in filtered_df.columns: col_cfg["특이사항"] = st.column_config.TextColumn("특이사항", width="medium")
                 if "조치현황" in filtered_df.columns: col_cfg["조치현황"] = st.column_config.SelectboxColumn("조치현황", options=["대기", "진행중", "완료"], width="small")
                 
-                if "첨부" in filtered_df.columns: 
-                    col_cfg["첨부"] = st.column_config.LinkColumn("첨부 (G-Drive 링크)", width="medium")
+                if "첨부 1" in filtered_df.columns: 
+                    col_cfg["첨부 1"] = st.column_config.LinkColumn("첨부 1 (링크)", display_text="🔗 열기 1", width="small")
+                if "첨부 2" in filtered_df.columns: 
+                    col_cfg["첨부 2"] = st.column_config.LinkColumn("첨부 2 (링크)", display_text="🔗 열기 2", width="small")
 
                 edited_df = st.data_editor(
                     styled_df, 
@@ -235,10 +239,11 @@ class ECNSTNTab:
                         n_asis = f_col5.text_area("AS-IS (수정 전)")
                         n_tobe = f_col6.text_area("TO-BE (수정 후)")
                         
-                        f_col7, f_col8, f_col9 = st.columns([2, 1, 2])
+                        f_col7, f_col8, f_col9, f_col10 = st.columns([1.5, 1, 1.5, 1.5])
                         n_note = f_col7.text_input("특이사항")
                         n_status = f_col8.selectbox("조치현황", ["대기", "진행중", "완료"])
-                        n_attach = f_col9.text_input("첨부 (구글 드라이브 링크)", placeholder="예: https://drive.google.com/...")
+                        n_attach1 = f_col9.text_input("첨부 1 (링크)", placeholder="https://...")
+                        n_attach2 = f_col10.text_input("첨부 2 (링크)", placeholder="https://...")
                         
                         if st.form_submit_button("새 항목 등록하기"):
                             new_row_dict = {}
@@ -254,7 +259,8 @@ class ECNSTNTab:
                                 elif 'TO-BE' in c_clean or 'TOBE' in c_clean or '변경' in c_clean: new_row_dict[c] = n_tobe
                                 elif '특이사항' in c_clean or '비고' in c_clean: new_row_dict[c] = n_note
                                 elif '조치' in c_clean or '진행' in c_clean: new_row_dict[c] = n_status
-                                elif '첨부' in c_clean or '링크' in c_clean: new_row_dict[c] = n_attach.strip()
+                                elif '첨부2' in c_clean or '링크2' in c_clean: new_row_dict[c] = n_attach2.strip()
+                                elif '첨부' in c_clean or '링크' in c_clean: new_row_dict[c] = n_attach1.strip()
                                 else:
                                     new_row_dict[c] = ""
                             
@@ -283,9 +289,16 @@ class ECNSTNTab:
                                     df_raw.at[orig_idx, col_name] = row.get('조치현황', '')
                                     changes_made = True
                                     
-                            if '첨부' in col_idx_map:
-                                col_name = col_idx_map['첨부']
-                                new_val = str(row.get('첨부', '')).strip()
+                            if '첨부 1' in col_idx_map:
+                                col_name = col_idx_map['첨부 1']
+                                new_val = str(row.get('첨부 1', '')).strip()
+                                if str(df_raw.at[orig_idx, col_name]) != new_val:
+                                    df_raw.at[orig_idx, col_name] = new_val
+                                    changes_made = True
+                                    
+                            if '첨부 2' in col_idx_map:
+                                col_name = col_idx_map['첨부 2']
+                                new_val = str(row.get('첨부 2', '')).strip()
                                 if str(df_raw.at[orig_idx, col_name]) != new_val:
                                     df_raw.at[orig_idx, col_name] = new_val
                                     changes_made = True
