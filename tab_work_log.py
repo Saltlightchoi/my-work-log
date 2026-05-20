@@ -32,10 +32,10 @@ class WorkLogTab:
                 e = st.selectbox("장비", EQUIPMENT_OPTIONS)
                 c = st.text_area("업무 내용", height=300)
                 n = st.text_input("비고")
-                a = st.text_input("첨부 (FTP 경로 등)")
+                a = st.text_input("첨부 (G-Drive 링크)")
                 if st.form_submit_button("저장하기"):
                     user_name = st.session_state.get('user_name', '본인')
-                    new_row = pd.DataFrame([{"날짜": str(d), "장비": e, "작성자": user_name, "업무내용": c, "비고": n, "첨부": a}])
+                    new_row = pd.DataFrame([{"날짜": str(d), "장비": e, "작성자": user_name, "업무내용": c, "비고": n, "첨부": a.strip()}])
                     # 저장할 때는 임시로 만든 '날짜_dt' 컬럼을 빼고 저장
                     save_df = pd.concat([df_log.drop(columns=['날짜_dt'], errors='ignore'), new_row], ignore_index=True)
                     self.db_log.save(save_df)
@@ -62,10 +62,10 @@ class WorkLogTab:
                 val_note = df_log.loc[idx, '비고'] if '비고' in df_log.columns else ""
                 e_note = st.text_input("비고 수정", value="" if pd.isna(val_note) else str(val_note))
                 val_attach = df_log.loc[idx, '첨부'] if '첨부' in df_log.columns else ""
-                e_attach = st.text_input("첨부 수정", value="" if pd.isna(val_attach) else str(val_attach))
+                e_attach = st.text_input("첨부 수정 (G-Drive 링크)", value="" if pd.isna(val_attach) else str(val_attach))
                 
                 if st.form_submit_button("수정 완료"):
-                    df_log.loc[idx, ['날짜', '장비', '작성자', '업무내용', '비고', '첨부']] = [str(e_date), e_equip, e_author, e_content, e_note, e_attach]
+                    df_log.loc[idx, ['날짜', '장비', '작성자', '업무내용', '비고', '첨부']] = [str(e_date), e_equip, e_author, e_content, e_note, e_attach.strip()]
                     save_df = df_log.drop(columns=['날짜_dt'], errors='ignore')
                     self.db_log.save(save_df)
                     st.cache_data.clear() 
@@ -135,6 +135,10 @@ class WorkLogTab:
         if '날짜_dt' in filtered_df.columns:
             filtered_df = filtered_df.drop(columns=['날짜_dt'])
 
+        # ★ 빈칸을 깔끔하게 정리하여 '🔗 파일 열기' 오류 방지
+        if '첨부' in filtered_df.columns:
+            filtered_df['첨부'] = filtered_df['첨부'].apply(lambda x: x if pd.notna(x) and str(x).strip() != "" else None)
+
         st.dataframe(
             filtered_df, 
             use_container_width=True, 
@@ -142,6 +146,6 @@ class WorkLogTab:
             column_config={
                 "업무내용": st.column_config.TextColumn("업무내용", width="large"),
                 "비고": st.column_config.TextColumn("비고", width="small"),
-                "첨부": st.column_config.LinkColumn("첨부 (G-Drive 링크)", width="medium")
+                "첨부": st.column_config.LinkColumn("첨부", display_text="🔗 파일 열기", width="medium")
             }
         )
