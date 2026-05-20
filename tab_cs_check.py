@@ -24,14 +24,30 @@ class CSCheckSheetTab:
         if st.session_state['view_project_detail'] and st.session_state['view_project_detail'] in project_list:
             selected_proj = st.session_state['view_project_detail']
             
-            col_back, col_title = st.columns([1.5, 8.5])
+            # ★ 상세 화면: 뒤로가기 버튼 + 대제목 + 메뉴 드롭다운 배치
+            col_back, col_title, col_empty, col_menu = st.columns([1.5, 5.5, 1, 2])
             with col_back:
                 st.markdown("<div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
                 if st.button("◀ 전체 현황판으로", use_container_width=True):
                     st.session_state['view_project_detail'] = None
                     st.rerun()
             with col_title:
-                st.markdown(f"<div class='main-title'>✅ 장비 제작 Flow : 세부 작업 ({selected_proj})</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='main-title'>✅ 제작 Flow : 세부 작업 ({selected_proj})</div>", unsafe_allow_html=True)
+            with col_empty:
+                pass
+            with col_menu:
+                st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+                selected_menu = st.selectbox(
+                    "메뉴",
+                    ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"],
+                    index=["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"].index(st.session_state['current_menu']),
+                    key="menu_cs_detail",
+                    label_visibility="collapsed"
+                )
+                if selected_menu != st.session_state['current_menu']:
+                    st.session_state['current_menu'] = selected_menu
+                    st.session_state['view_project_detail'] = None # 다른 탭으로 갈 때 상세뷰 초기화
+                    st.rerun()
             
             st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
@@ -166,8 +182,26 @@ class CSCheckSheetTab:
         # 뷰 2: 전체 현황판 메인 화면 (기본 뷰)
         # ==========================================
         else:
-            st.markdown("<div class='main-title'>✅ 장비 제작 Flow 전체 현황판</div>", unsafe_allow_html=True)
-            st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+            # ★ 메인 화면: 대제목 옆에 메뉴 드롭다운 배치
+            col_title, col_empty, col_menu = st.columns([5.5, 2.5, 2])
+            with col_title:
+                st.markdown("<div class='main-title'>✅ 장비 제작 Flow 전체 현황판</div>", unsafe_allow_html=True)
+            with col_empty:
+                pass
+            with col_menu:
+                st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+                selected_menu = st.selectbox(
+                    "메뉴",
+                    ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"],
+                    index=["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"].index(st.session_state['current_menu']),
+                    key="menu_cs_main",
+                    label_visibility="collapsed"
+                )
+                if selected_menu != st.session_state['current_menu']:
+                    st.session_state['current_menu'] = selected_menu
+                    st.rerun()
+
+            st.markdown("<hr style='margin-top: -5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
             with st.expander("➕ 새 장비(호기) 제작 시작하기"):
                 with st.form("new_proj_form", clear_on_submit=True):
