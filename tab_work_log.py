@@ -142,6 +142,6 @@ class WorkLogTab:
             column_config={
                 "업무내용": st.column_config.TextColumn("업무내용", width="large"),
                 "비고": st.column_config.TextColumn("비고", width="small"),
-                "첨부": st.column_config.TextColumn("첨부", width="small")
+                "첨부": st.column_config.LinkColumn("첨부 (G-Drive 링크)", width="medium")
             }
         )
