@@ -19,7 +19,7 @@ class CSCheckSheetTab:
             project_list = []
 
         # ==========================================
-        # 뷰 1: 상세 작업 화면 (세부 작업은 일반 텍스트 렌더링 유지)
+        # 뷰 1: 상세 작업 화면
         # ==========================================
         if st.session_state['view_project_detail'] and st.session_state['view_project_detail'] in project_list:
             selected_proj = st.session_state['view_project_detail']
@@ -165,7 +165,7 @@ class CSCheckSheetTab:
                 st.success("✅ 저장되었습니다!"); st.rerun()
 
         # ==========================================
-        # 뷰 2: 전체 현황판 메인 화면 (대제목 그 자체가 드롭다운 리스트입니다)
+        # 뷰 2: 전체 현황판 메인 화면
         # ==========================================
         else:
             menu_options = ["📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)"]
@@ -185,14 +185,32 @@ class CSCheckSheetTab:
             with st.expander("➕ 새 장비(호기) 제작 시작하기"):
                 with st.form("new_proj_form", clear_on_submit=True):
                     new_proj = st.text_input("새 장비명 (예: 4010H #2호기)")
-                    source_options = ["기본 템플릿(초기화 상태)"] + project_list
+                    
+                    # ★ 완전 빈 템플릿 옵션이 추가되었습니다!
+                    source_options = ["완전 빈 템플릿 (새 장비용 백지 상태)", "기본 템플릿 (SLH1 기준)"] + project_list
                     source_proj = st.selectbox("어떤 형식(기존 호기)을 복사할까요?", source_options)
+                    
                     if st.form_submit_button("프로젝트 생성하기") and new_proj and new_proj not in project_list:
-                        if source_proj == "기본 템플릿(초기화 상태)": new_df = pd.DataFrame(CS_TEMPLATE)
+                        if source_proj == "완전 빈 템플릿 (새 장비용 백지 상태)":
+                            # 백지 상태를 위한 뼈대만 제공 (삭제 후 변경 가능)
+                            new_df = pd.DataFrame([{
+                                "프로젝트명": new_proj, 
+                                "대항목": "새 대항목 (이름을 수정하세요)", 
+                                "순서": 1, 
+                                "작업내용": "첫 번째 세부 작업을 입력하세요", 
+                                "상태": "⬜ 대기", 
+                                "비고": "", 
+                                "첨부": "", 
+                                "업데이트일": ""
+                            }])
+                        elif source_proj == "기본 템플릿 (SLH1 기준)": 
+                            new_df = pd.DataFrame(CS_TEMPLATE)
+                            new_df["프로젝트명"] = new_proj
                         else:
                             new_df = df_flow[df_flow["프로젝트명"] == source_proj].copy()
                             new_df[["상태", "비고", "첨부", "업데이트일"]] = ["⬜ 대기", "", "", ""]
-                        new_df["프로젝트명"] = new_proj
+                            new_df["프로젝트명"] = new_proj
+                            
                         self.db_flow.save(pd.concat([df_flow, new_df], ignore_index=True))
                         st.session_state['view_project_detail'] = new_proj 
                         st.rerun()
