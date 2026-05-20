@@ -1,40 +1,16 @@
-import streamlit as st 
-import pandas as pd 
-import io 
-import re 
-import calendar 
-from datetime import datetime, date 
-import plotly.graph_objects as go 
-from plotly.subplots import make_subplots 
-from config import EQUIPMENT_OPTIONS 
+import streamlit as st
+import pandas as pd
+import io
+import re
+import calendar
+from datetime import datetime, date
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from config import EQUIPMENT_OPTIONS
 
-class EquipmentDataTab: 
-    def __init__(self, repo): 
+class EquipmentDataTab:
+    def __init__(self, repo):
         self.repo = repo
-
-    def _render_navigation(self):
-        st.markdown("---")
-        menu_options = [
-            "📝 팀 업무일지 대시보드",
-            "✅ 장비 제작 Flow 전체 현황판",
-            "📊 장비가동데이터",
-            "🛠️ ECN & STN (장비 파트 및 수정사항 관리)"
-        ]
-        current_menu = st.session_state.get('current_menu', "📊 장비가동데이터")
-        try:
-            current_index = menu_options.index(current_menu)
-        except ValueError:
-            current_index = 2
-            
-        selected_menu = st.selectbox(
-            "🔗 다른 업무 탭으로 빠른 이동", 
-            options=menu_options, 
-            index=current_index,
-            key="nav_EquipmentDataTab_dropdown" 
-        )
-        if selected_menu != current_menu:
-            st.session_state['current_menu'] = selected_menu
-            st.rerun()
 
     def render(self):
         st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
@@ -256,4 +232,3 @@ class EquipmentDataTab:
             st.markdown(f"<table class='final-report-table'><thead><tr><th style='width:75px;'>날짜</th><th style='width:60px;'>코드</th><th style='width:60px;'>PPJ</th><th>에러내용</th><th>조치내용</th><th style='width:65px;'>시간</th><th style='width:90px;'>위치</th></tr></thead><tbody>{html}</tbody></table>", unsafe_allow_html=True)
         else:
             st.info("선택하신 기간 내 상세 에러 내역이 없습니다.")
-        self._render_navigation()
