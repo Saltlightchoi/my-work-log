@@ -8,6 +8,9 @@ class WorkLogTab:
         self.db_log = db_log
 
     def render(self):
+        # ==========================================
+        # 1. 데이터 로드 및 전처리
+        # ==========================================
         df_log, _ = self.db_log.load()
         
         if not df_log.empty and '날짜' in df_log.columns:
@@ -15,6 +18,9 @@ class WorkLogTab:
             df_log['날짜'] = df_log['날짜_dt'].dt.date.astype(str)
             df_log = df_log.sort_values(by='날짜_dt', ascending=False).reset_index(drop=True)
 
+        # ==========================================
+        # 2. 사이드바: 일지 작성/수정/삭제
+        # ==========================================
         st.sidebar.markdown("---")
         st.sidebar.markdown("### 📝 일지 작성/수정/삭제")
         mode = st.sidebar.selectbox("기능 선택", ["➕ 작성", "✏️ 수정", "❌ 삭제"])
@@ -79,16 +85,24 @@ class WorkLogTab:
                 st.rerun()
 
         # ==========================================
-        # ★ 메인 화면: 타이틀 옆에 드롭다운 메뉴 붙이기
+        # 3. 메인 화면: 타이틀 옆에 드롭다운 메뉴 붙이기
         # ==========================================
-        col_title, col_menu, col_excel = st.columns([5.5, 2.5, 2])
+        col_title, col_empty, col_menu, col_excel = st.columns([4.5, 2.5, 2, 1])
         with col_title:
             st.markdown("<div class='main-title'>📝 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
+        with col_empty:
+            pass # 빈 공간으로 밀어내기
         with col_menu:
-            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True) # 줄 높이 완벽 맞춤
-            new_menu = st.selectbox("메뉴 이동", ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"], index=0, label_visibility="collapsed")
-            if new_menu != "📝 업무일지":
-                st.session_state['current_menu'] = new_menu
+            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+            selected_menu = st.selectbox(
+                "메뉴",
+                ["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"],
+                index=["📝 업무일지", "✅ 장비 제작 Flow", "📊 장비가동데이터", "🛠️ ECN & STN"].index(st.session_state['current_menu']),
+                key="menu_worklog",
+                label_visibility="collapsed"
+            )
+            if selected_menu != st.session_state['current_menu']:
+                st.session_state['current_menu'] = selected_menu
                 st.rerun()
         with col_excel:
             export_df = df_log.drop(columns=['날짜_dt'], errors='ignore') if not df_log.empty else df_log
@@ -98,6 +112,9 @@ class WorkLogTab:
 
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 5px;'>", unsafe_allow_html=True)
 
+        # ==========================================
+        # 4. 필터링 UI
+        # ==========================================
         filter_col1, filter_col2, filter_col3 = st.columns([3, 3, 4])
         with filter_col1:
             date_range = st.date_input("📅 검색 날짜 범위", value=(datetime.now() - timedelta(weeks=2), datetime.now()))
@@ -109,7 +126,11 @@ class WorkLogTab:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
+        # ==========================================
+        # 5. 데이터 필터링 적용 및 화면 출력
+        # ==========================================
         filtered_df = df_log.copy()
+        
         if not filtered_df.empty and '날짜_dt' in filtered_df.columns:
             if isinstance(date_range, tuple) and len(date_range) == 2:
                 mask = (filtered_df['날짜_dt'].dt.date >= date_range[0]) & (filtered_df['날짜_dt'].dt.date <= date_range[1])
