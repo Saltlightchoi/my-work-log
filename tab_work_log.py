@@ -31,10 +31,9 @@ class WorkLogTab:
                 e = st.selectbox("장비", EQUIPMENT_OPTIONS)
                 c = st.text_area("업무 내용", height=300)
                 a1 = st.text_input("첨부 1 (G-Drive 링크)")
-                a2 = st.text_input("첨부 2 (G-Drive 링크)") # 기존 비고 역할
+                a2 = st.text_input("첨부 2 (G-Drive 링크)") 
                 if st.form_submit_button("저장하기"):
                     user_name = st.session_state.get('user_name', '본인')
-                    # DB 구조를 유지하기 위해 a2를 '비고' 컬럼에 밀어넣음
                     new_row = pd.DataFrame([{"날짜": str(d), "장비": e, "작성자": user_name, "업무내용": c, "비고": a2.strip(), "첨부": a1.strip()}])
                     save_df = pd.concat([df_log.drop(columns=['날짜_dt'], errors='ignore'), new_row], ignore_index=True)
                     self.db_log.save(save_df)
@@ -93,7 +92,6 @@ class WorkLogTab:
             st.markdown("<div class='main-title'>📝 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
         with col_excel:
             export_df = df_log.drop(columns=['날짜_dt'], errors='ignore') if not df_log.empty else df_log
-            # 엑셀 다운로드할 때는 '비고'를 '첨부 2'로 바꿔서 출력
             export_df = export_df.rename(columns={"비고": "첨부 2", "첨부": "첨부 1"})
             csv_data = export_df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
             st.download_button(label="📥 엑셀 다운로드", data=csv_data, file_name=f"work_log_{datetime.now().strftime('%Y%m%d')}.csv", use_container_width=True)
@@ -136,16 +134,20 @@ class WorkLogTab:
         if '날짜_dt' in filtered_df.columns:
             filtered_df = filtered_df.drop(columns=['날짜_dt'])
 
-        # 빈칸 정리 및 링크 적용
         if '첨부' in filtered_df.columns:
             filtered_df['첨부'] = filtered_df['첨부'].apply(lambda x: x if pd.notna(x) and str(x).strip() != "" else None)
         if '비고' in filtered_df.columns:
             filtered_df['비고'] = filtered_df['비고'].apply(lambda x: x if pd.notna(x) and str(x).strip() != "" else None)
 
+        # ★ 강제 정렬 코드 추가 (column_order)
+        display_order = ["날짜", "장비", "작성자", "업무내용", "첨부", "비고"]
+        actual_order = [col for col in display_order if col in filtered_df.columns]
+
         st.dataframe(
             filtered_df, 
             use_container_width=True, 
             hide_index=True, 
+            column_order=actual_order, # 여기서 1번, 2번 순서를 강제로 때려맞춥니다.
             column_config={
                 "업무내용": st.column_config.TextColumn("업무내용", width="large"),
                 "첨부": st.column_config.LinkColumn("첨부 1", display_text="🔗 열기 1", width="small"),
