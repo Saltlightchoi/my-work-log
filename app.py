@@ -35,10 +35,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. 로그인 로직
+# 2. 로그인 및 탭(메뉴) 상태 유지 로직
 # ==========================================
 if 'user_name' not in st.session_state:
     st.session_state['user_name'] = None
+if 'current_menu' not in st.session_state:
+    st.session_state['current_menu'] = "📝 업무일지"
 
 if st.session_state['user_name'] is None:
     st.markdown("<h2 style='text-align: center;'>🔐 장비 관리 통합 시스템 로그인</h2>", unsafe_allow_html=True)
@@ -51,19 +53,13 @@ if st.session_state['user_name'] is None:
     st.stop()
 
 # ==========================================
-# 3. 사이드바 (접속자 텍스트 고정) 및 전역 메뉴 상태
+# 3. 사이드바 (접속자 고정) & 탭 렌더링
 # ==========================================
-st.sidebar.markdown(f"<div style='font-size: 16px; font-weight: bold; margin-bottom: 20px;'>👤 접속자: {st.session_state['user_name']}</div>", unsafe_allow_html=True)
-
-# 메뉴 상태를 세션에 저장하여 각 탭에서도 공유할 수 있게 만듭니다.
-if 'current_menu' not in st.session_state:
-    st.session_state['current_menu'] = "📝 업무일지"
+st.sidebar.markdown(f"### 👤 {st.session_state['user_name']} 님")
+st.sidebar.markdown("---")
 
 menu = st.session_state['current_menu']
 
-# ==========================================
-# 4. 메뉴 렌더링
-# ==========================================
 if menu == "📝 업무일지":
     WorkLogTab(db_work_log).render()
 elif menu == "✅ 장비 제작 Flow":
