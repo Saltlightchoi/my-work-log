@@ -13,6 +13,31 @@ class EquipmentDataTab:
         self.repo = repo
 
     def render(self):
+        # =====================================================================
+        # ✅ CS현황판과 완벽히 동일한 방식의 드롭다운 UI (상단 배치, 글자 숨김)
+        # =====================================================================
+        menu_options = ["📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)"]
+        
+        current_menu = st.session_state.get('current_menu', "📊 장비가동데이터")
+        try:
+            current_index = menu_options.index(current_menu)
+        except ValueError:
+            current_index = 2
+
+        selected_menu = st.selectbox(
+            "메뉴",
+            menu_options,
+            index=current_index,
+            key="menu_eq_data_main",
+            label_visibility="collapsed"
+        )
+        if selected_menu != current_menu:
+            st.session_state['current_menu'] = selected_menu
+            st.rerun()
+            
+        # =====================================================================
+        # 기존 로직 시작 (장비 가동 데이터 정밀 분석)
+        # =====================================================================
         st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
