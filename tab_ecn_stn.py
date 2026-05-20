@@ -314,4 +314,15 @@ class ECNSTNTab:
                                     
                         if changes_made:
                             self.db_ecn.save(df_raw.drop(columns=['Original_Index'], errors='ignore'))
-                            st.
+                            st.success("✅ 구글 시트에 성공적으로 저장되었습니다! 화면을 새로고침 합니다.")
+                            st.rerun()
+                        else:
+                            st.warning("저장할 변경사항이 없습니다.")
+                    except Exception as save_err:
+                        st.error(f"구글 시트 저장 중 오류가 발생했습니다: {save_err}")
+
+            else:
+                st.warning(f"선택하신 장비({equipment})에 해당하는 ECN 내역이 없거나, 구글 시트가 비어있습니다. 새 항목을 추가해주세요.")
+                
+        except Exception as e:
+            st.error(f"⚠️ 데이터를 읽는 중 오류가 발생했습니다: {e}")
