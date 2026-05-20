@@ -7,28 +7,34 @@ from tab_equipment_data import EquipmentDataTab
 from tab_ecn_stn import ECNSTNTab
 
 # ==========================================
-# 0. 구글 시트 및 깃허브 설정
+# 0. 구글 시트/깃허브 연결 (★ 캐싱 적용: 과부하 방지 및 속도 향상)
 # ==========================================
-SPREADSHEET_ID = "1XcqwD79ggyoZ82OWVGRqJ_vXbA3fBU77b1vompB3bjA"
-db_work_log = DataManager(SPREADSHEET_ID, "업무일지", ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"])
-db_cs_check = DataManager(SPREADSHEET_ID, "CS체크리스트")
-db_ecn = DataManager(SPREADSHEET_ID, "ECN_STN")
+@st.cache_resource
+def init_connections():
+    SPREADSHEET_ID = "1XcqwD79ggyoZ82OWVGRqJ_vXbA3fBU77b1vompB3bjA"
+    db1 = DataManager(SPREADSHEET_ID, "업무일지", ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"])
+    db2 = DataManager(SPREADSHEET_ID, "CS체크리스트")
+    db3 = DataManager(SPREADSHEET_ID, "ECN_STN")
+    
+    try:
+        if "GITHUB_TOKEN" in st.secrets:
+            g = Github(st.secrets["GITHUB_TOKEN"])
+        else:
+            g = Github()
+        r = g.get_repo("saltlightchoi/my-work-log") 
+    except Exception:
+        r = None
+        
+    return db1, db2, db3, r
 
-try:
-    if "GITHUB_TOKEN" in st.secrets:
-        g = Github(st.secrets["GITHUB_TOKEN"])
-    else:
-        g = Github()
-    repo = g.get_repo("saltlightchoi/my-work-log") 
-except Exception as e:
-    repo = None
+# 캐싱된 함수를 호출하여 연결을 한 번만 수행하고 계속 재사용합니다.
+db_work_log, db_cs_check, db_ecn, repo = init_connections()
 
 # ==========================================
 # 1. 환경 설정 및 타이틀 드롭다운 마법(CSS)
 # ==========================================
 st.set_page_config(layout="wide", page_title="장비 관리 통합 시스템")
 
-# ★ 잘림 현상을 해결한 핵심 CSS 영역입니다.
 st.markdown("""
     <style>
         .block-container { max-width: 98% !important; padding-top: 3rem !important; padding-bottom: 2rem !important; }
@@ -40,15 +46,15 @@ st.markdown("""
             box-shadow: none !important;
             cursor: pointer !important;
             height: auto !important; 
-            min-height: 65px !important; /* 높이 확보 */
+            min-height: 65px !important;
         }
         
-        /* 글자 크기, 굵기, 줄간격 설정 및 잘림 방지(overflow) */
+        /* 글자 크기, 굵기, 줄간격 설정 및 잘림 방지 */
         section[data-testid="stMain"] div[data-testid="stSelectbox"]:first-of-type div[data-baseweb="select"] {
             font-size: 2.1rem !important;
             font-weight: 800 !important;
             line-height: 1.5 !important;
-            overflow: visible !important; /* 상자를 벗어나도 글씨가 온전히 보이게 강제 설정 */
+            overflow: visible !important;
         }
         
         /* 우측 화살표 아이콘 크기 및 위치 조정 */
