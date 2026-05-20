@@ -14,7 +14,6 @@ class WorkLogTab:
         df_log, _ = self.db_log.load()
         
         if not df_log.empty and '날짜' in df_log.columns:
-            # 검색(필터링)을 위해 날짜를 계산 가능한 형태로 임시 저장
             df_log['날짜_dt'] = pd.to_datetime(df_log['날짜'], errors='coerce')
             df_log['날짜'] = df_log['날짜_dt'].dt.date.astype(str)
             df_log = df_log.sort_values(by='날짜_dt', ascending=False).reset_index(drop=True)
@@ -31,12 +30,12 @@ class WorkLogTab:
                 d = st.date_input("날짜", datetime.today())
                 e = st.selectbox("장비", EQUIPMENT_OPTIONS)
                 c = st.text_area("업무 내용", height=300)
-                n = st.text_input("비고")
-                a = st.text_input("첨부 (G-Drive 링크)")
+                a1 = st.text_input("첨부 1 (G-Drive 링크)")
+                a2 = st.text_input("첨부 2 (G-Drive 링크)") # 기존 비고 역할
                 if st.form_submit_button("저장하기"):
                     user_name = st.session_state.get('user_name', '본인')
-                    new_row = pd.DataFrame([{"날짜": str(d), "장비": e, "작성자": user_name, "업무내용": c, "비고": n, "첨부": a.strip()}])
-                    # 저장할 때는 임시로 만든 '날짜_dt' 컬럼을 빼고 저장
+                    # DB 구조를 유지하기 위해 a2를 '비고' 컬럼에 밀어넣음
+                    new_row = pd.DataFrame([{"날짜": str(d), "장비": e, "작성자": user_name, "업무내용": c, "비고": a2.strip(), "첨부": a1.strip()}])
                     save_df = pd.concat([df_log.drop(columns=['날짜_dt'], errors='ignore'), new_row], ignore_index=True)
                     self.db_log.save(save_df)
                     st.cache_data.clear() 
@@ -59,13 +58,15 @@ class WorkLogTab:
                 val_author = df_log.loc[idx, '작성자'] if '작성자' in df_log.columns else ""
                 e_author = st.text_input("작성자 확인 및 수정", value="" if pd.isna(val_author) else str(val_author))
                 e_content = st.text_area("내용 수정", value=str(df_log.loc[idx, '업무내용']), height=300)
-                val_note = df_log.loc[idx, '비고'] if '비고' in df_log.columns else ""
-                e_note = st.text_input("비고 수정", value="" if pd.isna(val_note) else str(val_note))
-                val_attach = df_log.loc[idx, '첨부'] if '첨부' in df_log.columns else ""
-                e_attach = st.text_input("첨부 수정 (G-Drive 링크)", value="" if pd.isna(val_attach) else str(val_attach))
+                
+                val_attach1 = df_log.loc[idx, '첨부'] if '첨부' in df_log.columns else ""
+                e_attach1 = st.text_input("첨부 1 수정 (G-Drive 링크)", value="" if pd.isna(val_attach1) else str(val_attach1))
+                
+                val_attach2 = df_log.loc[idx, '비고'] if '비고' in df_log.columns else ""
+                e_attach2 = st.text_input("첨부 2 수정 (G-Drive 링크)", value="" if pd.isna(val_attach2) else str(val_attach2))
                 
                 if st.form_submit_button("수정 완료"):
-                    df_log.loc[idx, ['날짜', '장비', '작성자', '업무내용', '비고', '첨부']] = [str(e_date), e_equip, e_author, e_content, e_note, e_attach.strip()]
+                    df_log.loc[idx, ['날짜', '장비', '작성자', '업무내용', '비고', '첨부']] = [str(e_date), e_equip, e_author, e_content, e_attach2.strip(), e_attach1.strip()]
                     save_df = df_log.drop(columns=['날짜_dt'], errors='ignore')
                     self.db_log.save(save_df)
                     st.cache_data.clear() 
@@ -92,13 +93,15 @@ class WorkLogTab:
             st.markdown("<div class='main-title'>📝 팀 업무일지 대시보드</div>", unsafe_allow_html=True)
         with col_excel:
             export_df = df_log.drop(columns=['날짜_dt'], errors='ignore') if not df_log.empty else df_log
+            # 엑셀 다운로드할 때는 '비고'를 '첨부 2'로 바꿔서 출력
+            export_df = export_df.rename(columns={"비고": "첨부 2", "첨부": "첨부 1"})
             csv_data = export_df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
             st.download_button(label="📥 엑셀 다운로드", data=csv_data, file_name=f"work_log_{datetime.now().strftime('%Y%m%d')}.csv", use_container_width=True)
 
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 5px;'>", unsafe_allow_html=True)
 
         # ==========================================
-        # 4. 메인 화면: 필터링 UI (대시보드 하단에 배치)
+        # 4. 메인 화면: 필터링 UI
         # ==========================================
         filter_col1, filter_col2, filter_col3 = st.columns([3, 3, 4])
         with filter_col1:
@@ -117,7 +120,6 @@ class WorkLogTab:
         filtered_df = df_log.copy()
         
         if not filtered_df.empty and '날짜_dt' in filtered_df.columns:
-            # 사용자가 달력에서 2개의 날짜(시작, 끝)를 모두 선택했을 때만 필터 적용
             if isinstance(date_range, tuple) and len(date_range) == 2:
                 mask = (filtered_df['날짜_dt'].dt.date >= date_range[0]) & (filtered_df['날짜_dt'].dt.date <= date_range[1])
                 filtered_df = filtered_df.loc[mask]
@@ -131,13 +133,14 @@ class WorkLogTab:
                 filtered_df['작성자'].astype(str).str.contains(keyword, na=False, case=False)
             ]
 
-        # 화면에 출력하기 직전에 계산용으로 썼던 '날짜_dt' 컬럼 숨기기
         if '날짜_dt' in filtered_df.columns:
             filtered_df = filtered_df.drop(columns=['날짜_dt'])
 
-        # ★ 빈칸을 깔끔하게 정리하여 '🔗 파일 열기' 오류 방지
+        # 빈칸 정리 및 링크 적용
         if '첨부' in filtered_df.columns:
             filtered_df['첨부'] = filtered_df['첨부'].apply(lambda x: x if pd.notna(x) and str(x).strip() != "" else None)
+        if '비고' in filtered_df.columns:
+            filtered_df['비고'] = filtered_df['비고'].apply(lambda x: x if pd.notna(x) and str(x).strip() != "" else None)
 
         st.dataframe(
             filtered_df, 
@@ -145,7 +148,7 @@ class WorkLogTab:
             hide_index=True, 
             column_config={
                 "업무내용": st.column_config.TextColumn("업무내용", width="large"),
-                "비고": st.column_config.TextColumn("비고", width="small"),
-                "첨부": st.column_config.LinkColumn("첨부", display_text="🔗 파일 열기", width="medium")
+                "첨부": st.column_config.LinkColumn("첨부 1", display_text="🔗 열기 1", width="small"),
+                "비고": st.column_config.LinkColumn("첨부 2", display_text="🔗 열기 2", width="small")
             }
         )
