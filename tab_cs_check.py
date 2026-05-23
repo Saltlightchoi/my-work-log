@@ -152,10 +152,8 @@ class CSCheckSheetTab:
                     edited_cat_df["대항목"] = cat; edited_cat_df["프로젝트명"] = selected_proj; edited_cat_df["org_group_id"] = group_id 
                     edited_dfs.append(edited_cat_df)
 
-          if btn_save:
+            if btn_save:
                 updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
-                
-                # 새로 추가한 줄의 빈칸(NaN)을 빈 글자("")로 변환
                 updated_proj_df = updated_proj_df.fillna("")
                 
                 if not updated_proj_df.empty:
@@ -166,8 +164,6 @@ class CSCheckSheetTab:
                 
                 original_projects = df_flow['프로젝트명'].unique().tolist()
                 new_df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
-                
-                # 전체 데이터 병합 후에도 안전하게 한 번 더 빈칸 처리
                 new_df_flow = new_df_flow.fillna("")
                 
                 self.db_flow.save(maintain_project_order(new_df_flow, original_projects))
@@ -196,13 +192,11 @@ class CSCheckSheetTab:
                 with st.form("new_proj_form", clear_on_submit=True):
                     new_proj = st.text_input("새 장비명 (예: 4010H #2호기)")
                     
-                    # ★ 완전 빈 템플릿 옵션이 추가되었습니다!
                     source_options = ["완전 빈 템플릿 (새 장비용 백지 상태)", "기본 템플릿 (SLH1 기준)"] + project_list
                     source_proj = st.selectbox("어떤 형식(기존 호기)을 복사할까요?", source_options)
                     
                     if st.form_submit_button("프로젝트 생성하기") and new_proj and new_proj not in project_list:
                         if source_proj == "완전 빈 템플릿 (새 장비용 백지 상태)":
-                            # 백지 상태를 위한 뼈대만 제공 (삭제 후 변경 가능)
                             new_df = pd.DataFrame([{
                                 "프로젝트명": new_proj, 
                                 "대항목": "새 대항목 (이름을 수정하세요)", 
