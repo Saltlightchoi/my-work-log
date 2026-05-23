@@ -155,21 +155,24 @@ class CSCheckSheetTab:
           if btn_save:
                 updated_proj_df = pd.concat(edited_dfs, ignore_index=True)
                 
-                # 이렇게 윗줄(updated_proj_df...)과 수직이 완벽하게 맞아야 합니다.
-                updated_proj_df = updated_proj_df.fillna("") 
+                # 새로 추가한 줄의 빈칸(NaN)을 빈 글자("")로 변환
+                updated_proj_df = updated_proj_df.fillna("")
                 
                 if not updated_proj_df.empty:
-                    # if문 안쪽은 또 Tab키를 한 번 더 눌러서 들여씁니다.
-                    updated_proj_df = updated_proj_df.sort_values(...)
+                    updated_proj_df = updated_proj_df.sort_values(by=['org_group_id', '순서'], kind='stable')
+                    updated_proj_df['group_id'] = (updated_proj_df['대항목'] != updated_proj_df['대항목'].shift()).cumsum()
+                    updated_proj_df["순서"] = updated_proj_df.groupby('group_id').cumcount() + 1
+                    updated_proj_df = updated_proj_df.drop(columns=['group_id', 'org_group_id']).reset_index(drop=True)
                 
                 original_projects = df_flow['프로젝트명'].unique().tolist()
                 new_df_flow = pd.concat([df_flow[~mask], updated_proj_df], ignore_index=True)
                 
-                # 🚨 [버그 픽스 2]: 전체 데이터 병합 후에도 안전하게 한 번 더 빈칸 처리
+                # 전체 데이터 병합 후에도 안전하게 한 번 더 빈칸 처리
                 new_df_flow = new_df_flow.fillna("")
                 
                 self.db_flow.save(maintain_project_order(new_df_flow, original_projects))
-                st.success("✅ 저장되었습니다!"); st.rerun()
+                st.success("✅ 저장되었습니다!")
+                st.rerun()
 
         # ==========================================
         # 뷰 2: 전체 현황판 메인 화면
