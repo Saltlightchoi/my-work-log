@@ -23,7 +23,7 @@ class JamLogTab:
                 border-radius: 8px; 
                 background-color: #f8fafc; 
                 margin-top: -5px !important; 
-                margin-bottom: 15px !important; 
+                margin-bottom: 0px !important; 
             }
             
             /* 2. 발생일자, 발생시간 등 라벨(제목)이 잘리지 않고 무조건 보이도록 복구 */
