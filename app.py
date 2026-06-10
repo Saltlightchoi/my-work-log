@@ -108,5 +108,5 @@ elif menu == "🛠️ ECN & STN (장비 파트 및 수정사항 관리)":
 # 사이드바 렌더링 부분에서 깔끔하게 db_jam_log만 넘겨주면 됩니다!
 elif menu == "🚨 Jam & 트러블슈팅 이력": 
     from tab_jam_log import JamLogTab
-        tab = JamLogTab(db_jam_log) # 에러 마스터는 이 안에서 알아서 찾아옵니다.
-        tab.render()
+    tab = JamLogTab(db_jam_log) # 에러 마스터는 이 안에서 알아서 찾아옵니다.
+    tab.render()
