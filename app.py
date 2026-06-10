@@ -105,3 +105,8 @@ elif menu == "📊 장비가동데이터":
         st.error("깃허브 저장소를 불러오지 못했습니다.")
 elif menu == "🛠️ ECN & STN (장비 파트 및 수정사항 관리)":
     ECNSTNTab(db_ecn).render()
+# 사이드바 렌더링 부분에서 깔끔하게 db_jam_log만 넘겨주면 됩니다!
+elif menu == "🚨 Jam & 트러블슈팅 이력": 
+    from tab_jam_log import JamLogTab
+        tab = JamLogTab(db_jam_log) # 에러 마스터는 이 안에서 알아서 찾아옵니다.
+        tab.render()
