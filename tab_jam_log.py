@@ -8,16 +8,19 @@ class JamLogTab:
         self.db_jam = db_jam
 
     def render(self):
-        # UI 여백 강제 축소 및 미니 버튼용 커스텀 CSS
+        # ==========================================
+        # 극한의 여백 압축 및 미니 버튼용 CSS
+        # ==========================================
         st.markdown("""
             <style>
-            .small-btn button { padding: 0px 5px !important; min-height: 35px !important; font-size: 16px !important; }
-            .tight-box { border: 1.5px solid #d3d9df; padding: 10px 15px; border-radius: 8px; background-color: #f8fafc; margin-bottom: 10px; }
-            hr { margin: 10px 0px !important; }
+            .small-btn button { padding: 0px !important; min-height: 38px !important; font-size: 18px !important; margin-top: 2px !important; }
+            .tight-box { border: 1.5px solid #d3d9df; padding: 15px; border-radius: 8px; background-color: #f8fafc; margin-top: 0px; margin-bottom: 10px; }
+            hr { margin: 5px 0px 10px 0px !important; padding: 0px !important; }
+            h3 { margin-top: 0px !important; margin-bottom: 5px !important; padding-bottom: 0px !important; }
             </style>
         """, unsafe_allow_html=True)
 
-        # 상단 네비게이션
+        # 상단 네비게이션 드롭다운
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
@@ -30,26 +33,20 @@ class JamLogTab:
         df_jam, _ = self.db_jam.load()
 
         # ==========================================
-        # 1. 대제목 및 우측 상단 미니 버튼
+        # 1. 대제목 및 우측 상단 미니 버튼 (불필요한 공백/글자 제거)
         # ==========================================
-        c_title, c_b1, c_b2, c_b3 = st.columns([7.5, 0.5, 0.5, 0.5])
+        c_title, c_b1, c_b2, c_b3 = st.columns([8.5, 0.5, 0.5, 0.5])
         with c_title: 
-            st.subheader("🚨 장비별 Jam & 트러블슈팅 이력 관리")
+            st.markdown("<h3>Jam 이력 관리</h3>", unsafe_allow_html=True)
         with c_b1: 
-            st.markdown("<div class='small-btn' style='margin-top: 15px;'>", unsafe_allow_html=True)
-            btn_write = st.button("📝", help="작성", use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("<div class='small-btn'>", unsafe_allow_html=True); btn_write = st.button("📝", help="작성", use_container_width=True); st.markdown("</div>", unsafe_allow_html=True)
         with c_b2: 
-            st.markdown("<div class='small-btn' style='margin-top: 15px;'>", unsafe_allow_html=True)
-            btn_edit = st.button("✏️", help="수정", use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("<div class='small-btn'>", unsafe_allow_html=True); btn_edit = st.button("✏️", help="수정", use_container_width=True); st.markdown("</div>", unsafe_allow_html=True)
         with c_b3: 
-            st.markdown("<div class='small-btn' style='margin-top: 15px;'>", unsafe_allow_html=True)
-            btn_del = st.button("🗑️", help="삭제", use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("<div class='small-btn'>", unsafe_allow_html=True); btn_del = st.button("🗑️", help="삭제", use_container_width=True); st.markdown("</div>", unsafe_allow_html=True)
 
         # ==========================================
-        # 2. Jam 작성 (타이트한 UI)
+        # 2. Jam 작성 입력 폼 (타이트한 UI)
         # ==========================================
         st.markdown("<div class='tight-box'>", unsafe_allow_html=True)
 
@@ -75,8 +72,7 @@ class JamLogTab:
                 module_options = sorted(list(df_error_master["모듈"].dropna().astype(str).str.strip().unique()))
                 selected_module = st.selectbox("📍 모듈 (타이핑 검색)", module_options)
             else:
-                # 구글 시트 데이터가 없을 때만 방어용 텍스트 입력창 등장
-                selected_module = st.text_input("📍 모듈 (마스터 시트 없음)")
+                selected_module = st.text_input("📍 모듈 (직접입력)")
 
         with r1_c5:
             code_options = []
@@ -89,7 +85,7 @@ class JamLogTab:
             if code_options:
                 selected_alarm = st.selectbox("🔖 알람코드 (숫자 타이핑 시 자동 필터)", code_options)
             else:
-                selected_alarm = st.text_input("🔖 알람코드 (마스터 시트 없음)")
+                selected_alarm = st.text_input("🔖 알람코드 (직접입력)")
 
         # ▶ Row 2: 알람명 | 조치내역 | CIP상태
         r2_c1, r2_c2, r2_c3 = st.columns([1.5, 4, 1.2])
@@ -115,7 +111,7 @@ class JamLogTab:
         with r2_c3:
             cip_val = st.selectbox("📌 CIP상태", ["해당 없음", "접수 대기", "본사 검토중", "적용 완료"])
 
-        # 📝 버튼(작성) 눌렀을 때의 저장 로직
+        # 📝 펜 아이콘 버튼(작성) 눌렀을 때의 저장 로직
         if btn_write:
             if selected_module and final_code and action_val:
                 new_data = pd.DataFrame([{
@@ -131,19 +127,13 @@ class JamLogTab:
                 st.error("🚨 모듈, 알람코드, 조치내역은 필수입니다.")
         
         if btn_edit or btn_del:
-            st.info("수정 및 삭제는 아래 데이터 표에서 항목을 직접 수정하거나, 행을 선택해 Del 키로 지운 뒤 [변경사항 저장]을 눌러주세요.")
+            st.info("수정 및 삭제는 아래 데이터 표에서 항목을 직접 수정하거나, 행을 선택해 키보드의 Delete 키로 지운 뒤 [표 변경사항 저장]을 눌러주세요.")
 
         st.markdown("</div>", unsafe_allow_html=True)
-
-        if df_error_master.empty:
-            st.warning(f"💡 현재 구글 시트에 **'{sheet_name_for_error}'** 탭이 없거나 데이터가 비어있어, 모듈/알람코드 자동완성 기능이 비활성화되었습니다. (엑셀에 데이터를 추가하시면 자동으로 활성화됩니다)")
 
         # ==========================================
         # 3. 통합 이력 조회 (DownTime 자동 계산)
         # ==========================================
-        st.markdown("### 🔍 통합 이력 조회")
-        st.info("💡 **표 제목(예: 장비명, 알람코드)을 클릭/호버하면 돋보기(검색) 및 체크박스 필터가 나타납니다.** 빈칸인 **'완료시간'**(예: 15:30)을 입력하고 저장하면 **DownTime이 자동 계산**됩니다.")
-
         if not df_jam.empty:
             df_display = df_jam.copy()
             if "발생일자" in df_display.columns:
@@ -161,7 +151,7 @@ class JamLogTab:
                 }
             )
 
-            if st.button("💾 표 변경사항 저장", type="secondary"):
+            if st.button("💾 표 변경사항 저장 (완료시간 적용 및 DownTime 계산)", type="secondary"):
                 for idx, row in edited_df.iterrows():
                     start_str = str(row.get("발생시간", "")).strip()
                     end_str = str(row.get("완료시간", "")).strip()
@@ -178,4 +168,6 @@ class JamLogTab:
                 
                 self.db_jam.save(edited_df.fillna(""))
                 st.success("✅ 변경사항 및 DownTime이 저장되었습니다!")
-                st.rerun
+                st.rerun()
+        else:
+            st.warning("등록된 데이터가 없습니다.")
