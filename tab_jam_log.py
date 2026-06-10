@@ -30,7 +30,7 @@ class JamLogTab:
             .tight-box div[data-testid="stWidgetLabel"] {
                 display: block !important;
                 visibility: visible !important;
-                margin-bottom: 4px !important;
+                /*margin-bottom: 4px !important;*/
             }
             .tight-box div[data-testid="stWidgetLabel"] p { 
                 font-size: 13px !important; 
