@@ -9,50 +9,56 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # 탭 메뉴는 보호하고 공백/글자크기만 깎아내는 정밀 CSS
+        # 메인 메뉴는 절대 보호하고, 폼 내부 공백만 깎아내는 정밀 CSS
         # ==========================================
         st.markdown("""
             <style>
-            /* 화면 전체 상하 공백 축소 */
+            /* 1. 화면 전체 상하 공백 축소 */
             .block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
             
-            /* ★ 첫 번째 드롭다운(탭 메뉴)을 제외한 나머지 위젯들의 하단 여백 제거 (공백 킬러) */
-            div[data-testid="stSelectbox"]:nth-of-type(n+2), .stTextInput, .stDateInput, .stTimeInput { 
+            /* 2. ★ 핵심: 회색 박스(tight-box) 내부의 입력창/드롭다운만 공백 강제 제거 (상단 메뉴 완벽 보호) */
+            .tight-box div[data-testid="stSelectbox"], 
+            .tight-box div[data-testid="stTextInput"], 
+            .tight-box div[data-testid="stDateInput"], 
+            .tight-box div[data-testid="stTimeInput"] { 
                 margin-bottom: -15px !important; 
             }
             
-            /* ★ 라벨(제목) 세팅: 13px, 완전 검정, 굵게 */
-            div[data-testid="stSelectbox"]:nth-of-type(n+2) label p, .stTextInput label p, .stDateInput label p, .stTimeInput label p { 
+            /* 3. 회색 박스 내부 라벨(제목): 13px, 완전 검정, 굵게 */
+            .tight-box div[data-testid="stWidgetLabel"] p { 
                 font-size: 13px !important; 
                 font-weight: 800 !important; 
                 color: #000000 !important; 
                 margin-bottom: 0px !important; 
             }
             
-            /* ★ 입력창 및 드롭다운 내부 선택된 텍스트 크기 13px 완벽 고정 */
-            div[data-testid="stSelectbox"]:nth-of-type(n+2) div[data-baseweb="select"] *, 
-            .stTextInput input, .stDateInput input, .stTimeInput input { 
+            /* 4. 회색 박스 내부 입력창 텍스트 크기 13px 및 높이 타이트하게 고정 */
+            .tight-box input, 
+            .tight-box div[data-baseweb="select"] { 
                 font-size: 13px !important; 
                 min-height: 32px !important; 
                 height: 32px !important; 
-                padding: 4px 10px !important;
             }
             
-            /* ★ 드롭다운 클릭 시 펼쳐지는 리스트 항목 글씨 크기 13px 고정 */
-            ul[data-baseweb="menu"] li, ul[role="listbox"] li {
-                font-size: 13px !important;
+            /* 5. ★ 사진의 문제 해결: 드롭다운 클릭 시 펼쳐지는 리스트의 높이 제한을 풀어서 글씨 잘림 방지 */
+            ul[role="listbox"] li, ul[data-baseweb="menu"] li {
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+                min-height: 35px !important;
+                height: auto !important; /* 강제 높이 제한 해제 */
+                white-space: normal !important; /* 긴 글씨 가로 잘림 방지 */
             }
             
-            /* 미니 아이콘 버튼 (라벨 높이만큼 여백을 줘서 텍스트 박스와 라인 일치) */
+            /* 6. 미니 아이콘 버튼 라인 맞춤 */
             .icon-btn button { 
                 padding: 0px !important; 
                 height: 32px !important; 
                 min-height: 32px !important; 
                 font-size: 16px !important; 
-                margin-top: 21px !important; 
+                margin-top: 21px !important; /* 위쪽 라벨 공간만큼 밀어냄 */
             }
             
-            /* 전체 폼 배경 박스 (상단 여백 0) */
+            /* 7. 전체 폼 배경 박스 (불필요한 마진 0) */
             .tight-box { 
                 border: 1px solid #d3d9df; 
                 padding: 10px 15px 25px 15px; 
@@ -61,10 +67,11 @@ class JamLogTab:
                 margin-top: 0px !important; 
                 margin-bottom: 15px !important; 
             }
+            hr { margin: 5px 0px 15px 0px !important; padding: 0px !important; border-top: 1px solid #ccc; }
             </style>
         """, unsafe_allow_html=True)
 
-        # 상단 네비게이션 드롭다운 (여기에는 CSS 축소가 적용되지 않아 정상 출력됨)
+        # 상단 네비게이션 드롭다운
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
@@ -76,7 +83,7 @@ class JamLogTab:
         df_jam, _ = self.db_jam.load()
 
         # ==========================================
-        # 1. Jam 작성부 (요청하신 정확한 순서와 배치)
+        # 1. Jam 작성부 (1열 꽉 찬 배치)
         # ==========================================
         st.markdown("<div class='tight-box'>", unsafe_allow_html=True)
 
@@ -87,7 +94,7 @@ class JamLogTab:
         with r1[1]: time_val = st.time_input("발생시간", value="now", step=60)
         with r1[2]: equip_val = st.selectbox("장비명", EQUIPMENT_OPTIONS)
 
-        # 마스터 데이터 로드 (오류 방지 로직 포함)
+        # 마스터 데이터 로드
         target_sheet = f"{equip_val}_ErrorList".replace(" ", "").lower()
         df_error_master = pd.DataFrame()
         try:
@@ -118,7 +125,7 @@ class JamLogTab:
             
             selected_code = st.selectbox("알람코드", code_options)
 
-        # 1번 줄 우측 끝: 아이콘 버튼 배치
+        # 우측 끝 미니 아이콘 버튼
         with r1[5]: 
             st.markdown("<div class='icon-btn'>", unsafe_allow_html=True)
             btn_write = st.button("📝", help="저장", use_container_width=True)
@@ -132,7 +139,7 @@ class JamLogTab:
             btn_del = st.button("🗑️", help="삭제", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # ▶ Row 2: 알람명 (다음 줄 단독 배치 - 자동완성 반영)
+        # ▶ Row 2: 알람명 (자동 완성)
         auto_alarm_name = ""
         if selected_code != "(데이터 없음)" and not df_error_master.empty:
             match = df_error_master[(df_error_master["모듈"].astype(str).str.strip() == selected_module) & (df_error_master["알람코드"].astype(str).str.strip() == selected_code)]
@@ -164,7 +171,7 @@ class JamLogTab:
                 st.error("🚨 모듈, 알람코드, 조치내역은 필수입니다. (마스터 데이터를 확인해 주세요.)")
         
         if btn_edit or btn_del:
-            st.info("💡 수정/삭제는 하단 데이터 표 안의 항목을 클릭하여 직접 수정하거나, 행 좌측을 선택해 키보드(Delete)로 지운 뒤 [표 변경사항 저장]을 누르시면 됩니다.")
+            st.info("💡 수정/삭제는 하단 데이터 표 안의 항목을 클릭하여 수정하거나, 행 좌측을 선택해 키보드(Delete)로 지운 뒤 [표 변경사항 저장]을 누르시면 됩니다.")
 
         # ==========================================
         # 2. 통합 이력 조회
