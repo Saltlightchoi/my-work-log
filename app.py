@@ -9,9 +9,6 @@ from tab_ecn_stn import ECNSTNTab
 # ==========================================
 # 0. 구글 시트/깃허브 연결 (★ 캐싱 적용: 과부하 방지 및 속도 향상)
 # ==========================================
-# ==========================================
-# 0. 구글 시트/깃허브 연결 (★ 캐싱 적용: 과부하 방지 및 속도 향상)
-# ==========================================
 @st.cache_resource
 def init_connections():
     SPREADSHEET_ID = "1XcqwD79ggyoZ82OWVGRqJ_vXbA3fBU77b1vompB3bjA"
@@ -23,7 +20,7 @@ def init_connections():
     db3 = DataManager(SPREADSHEET_ID, "ECN_STN")
     
     # 🚨 [추가된 부분] Jam이력 시트를 연결합니다!
-    db_jam = DataManager(JAM_SPREADSHEET_ID, "Jam연결용")
+    db_jam = DataManager(JAM_SPREADSHEET_ID, "SLH1 #1")
     
     try:
         if "GITHUB_TOKEN" in st.secrets:
