@@ -35,7 +35,7 @@ def init_connections():
         r = None
         
     # 🚨 [추가된 부분] db_jam을 반환(return) 목록에 포함시킵니다!
-   return db1, db2, db3, db_jam, repo # 기존 리턴값 순서에 맞게 유지해주세요.
+return db1, db2, db3, db_jam, repo # 기존 리턴값 순서에 맞게 유지해주세요.
 
 db_work_log, db_cs_check, db_ecn, db_jam_log, repo = init_connections()
 
