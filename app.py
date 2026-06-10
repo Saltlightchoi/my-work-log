@@ -13,7 +13,7 @@ from tab_ecn_stn import ECNSTNTab
 def init_connections(): 
     # 1. 구글 시트 ID 세팅
     SPREADSHEET_ID = "1XcqwD79ggyoZ82OWVGRqJ_vXbA3fBU77b1vompB3bjA"  # 기존 마스터 파일
-    JAM_SPREADSHEET_ID = "여기에_새로_만든_Jam이력_파일_ID_입력"     # 새로 만든 Jam 파일
+    JAM_SPREADSHEET_ID = "1vGc9beBabeNpI-AU5zbiVwXkHDyDz-pN1qfrPpHfKxs"     # 새로 만든 Jam 파일
     
     # 2. 구글 시트 연결 (4개)
     db1 = DataManager(SPREADSHEET_ID, "업무일지", ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"]) 
