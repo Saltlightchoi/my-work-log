@@ -9,69 +9,77 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # 메인 메뉴는 절대 보호하고, 폼 내부 공백만 깎아내는 정밀 CSS
+        # 1. 문제의 원인이었던 CSS 완벽 수정 (잘림 방지 & 글씨크기 통일)
         # ==========================================
         st.markdown("""
             <style>
-            /* 1. 화면 전체 상하 공백 축소 */
-            .block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
+            /* 상단 기본 여백 제거 */
+            .block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
             
-            /* 2. ★ 핵심: 회색 박스(tight-box) 내부의 입력창/드롭다운만 공백 강제 제거 (상단 메뉴 완벽 보호) */
-            .tight-box div[data-testid="stSelectbox"], 
-            .tight-box div[data-testid="stTextInput"], 
-            .tight-box div[data-testid="stDateInput"], 
-            .tight-box div[data-testid="stTimeInput"] { 
-                margin-bottom: -15px !important; 
+            /* 1. 상단 메인 드롭다운과 폼 사이의 하얀 공백 원천 차단 (위로 당김) */
+            .tight-box { 
+                border: 1px solid #d3d9df; 
+                padding: 15px; 
+                border-radius: 8px; 
+                background-color: #f8fafc; 
+                margin-top: -5px !important; 
+                margin-bottom: 15px !important; 
             }
             
-            /* 3. 회색 박스 내부 라벨(제목): 13px, 완전 검정, 굵게 */
+            /* 2. 발생일자, 발생시간 등 라벨(제목)이 잘리지 않고 무조건 보이도록 복구 */
+            .tight-box div[data-testid="stWidgetLabel"] {
+                display: block !important;
+                visibility: visible !important;
+                margin-bottom: 4px !important;
+            }
             .tight-box div[data-testid="stWidgetLabel"] p { 
                 font-size: 13px !important; 
                 font-weight: 800 !important; 
                 color: #000000 !important; 
-                margin-bottom: 0px !important; 
             }
             
-            /* 4. 회색 박스 내부 입력창 텍스트 크기 13px 및 높이 타이트하게 고정 */
+            /* 3. 장비명, 모듈, 알람코드 드롭다운과 발생일자/시간의 글씨 크기를 14px로 100% 동일하게 통일 */
+            .tight-box input, 
+            .tight-box div[data-baseweb="select"] * { 
+                font-size: 14px !important; 
+            }
+            
+            /* 창 높이 완벽 통일 */
             .tight-box input, 
             .tight-box div[data-baseweb="select"] { 
-                font-size: 13px !important; 
-                min-height: 32px !important; 
-                height: 32px !important; 
+                min-height: 36px !important; 
+                height: 36px !important; 
+                padding: 4px 10px !important;
             }
             
-            /* 5. ★ 사진의 문제 해결: 드롭다운 클릭 시 펼쳐지는 리스트의 높이 제한을 풀어서 글씨 잘림 방지 */
+            /* 드롭다운 클릭 시 나오는 리스트 글씨 크기도 14px로 고정 */
             ul[role="listbox"] li, ul[data-baseweb="menu"] li {
                 font-size: 14px !important;
-                line-height: 1.5 !important;
-                min-height: 35px !important;
-                height: auto !important; /* 강제 높이 제한 해제 */
-                white-space: normal !important; /* 긴 글씨 가로 잘림 방지 */
+                min-height: 36px !important;
+                height: auto !important;
+                white-space: normal !important;
             }
             
-            /* 6. 미니 아이콘 버튼 라인 맞춤 */
+            /* 4. 아이콘 버튼 높이 맞춤 (제목 라벨 높이만큼 아래로 밀어줌) */
             .icon-btn button { 
                 padding: 0px !important; 
-                height: 32px !important; 
-                min-height: 32px !important; 
+                height: 36px !important; 
+                min-height: 36px !important; 
                 font-size: 16px !important; 
-                margin-top: 21px !important; /* 위쪽 라벨 공간만큼 밀어냄 */
+                margin-top: 27px !important; 
             }
             
-            /* 7. 전체 폼 배경 박스 (불필요한 마진 0) */
-            .tight-box { 
-                border: 1px solid #d3d9df; 
-                padding: 10px 15px 25px 15px; 
-                border-radius: 8px; 
-                background-color: #f8fafc; 
-                margin-top: 0px !important; 
-                margin-bottom: 15px !important; 
+            /* 불필요한 위젯 하단 여백 제거 (잘림 방지를 위해 마진 0 적용) */
+            .tight-box div[data-testid="stSelectbox"], 
+            .tight-box div[data-testid="stTextInput"], 
+            .tight-box div[data-testid="stDateInput"], 
+            .tight-box div[data-testid="stTimeInput"] { 
+                margin-bottom: 0px !important; 
             }
-            hr { margin: 5px 0px 15px 0px !important; padding: 0px !important; border-top: 1px solid #ccc; }
             </style>
         """, unsafe_allow_html=True)
 
-        # 상단 네비게이션 드롭다운
+        # 상단 네비게이션 드롭다운 (여기 아래에 있던 가로선 <hr>을 삭제하여 하얀 공백을 날렸습니다)
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
@@ -83,7 +91,7 @@ class JamLogTab:
         df_jam, _ = self.db_jam.load()
 
         # ==========================================
-        # 1. Jam 작성부 (1열 꽉 찬 배치)
+        # Jam 작성부 (요청하신 정확한 1열 배치)
         # ==========================================
         st.markdown("<div class='tight-box'>", unsafe_allow_html=True)
 
@@ -94,7 +102,7 @@ class JamLogTab:
         with r1[1]: time_val = st.time_input("발생시간", value="now", step=60)
         with r1[2]: equip_val = st.selectbox("장비명", EQUIPMENT_OPTIONS)
 
-        # 마스터 데이터 로드
+        # 마스터 데이터 로드 
         target_sheet = f"{equip_val}_ErrorList".replace(" ", "").lower()
         df_error_master = pd.DataFrame()
         try:
@@ -125,7 +133,7 @@ class JamLogTab:
             
             selected_code = st.selectbox("알람코드", code_options)
 
-        # 우측 끝 미니 아이콘 버튼
+        # 1번 줄 우측 끝: 미니 아이콘 버튼
         with r1[5]: 
             st.markdown("<div class='icon-btn'>", unsafe_allow_html=True)
             btn_write = st.button("📝", help="저장", use_container_width=True)
@@ -174,7 +182,7 @@ class JamLogTab:
             st.info("💡 수정/삭제는 하단 데이터 표 안의 항목을 클릭하여 수정하거나, 행 좌측을 선택해 키보드(Delete)로 지운 뒤 [표 변경사항 저장]을 누르시면 됩니다.")
 
         # ==========================================
-        # 2. 통합 이력 조회
+        # 통합 이력 조회 (DownTime 자동 계산)
         # ==========================================
         if not df_jam.empty:
             df_display = df_jam.copy()
