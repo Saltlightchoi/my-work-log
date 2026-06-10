@@ -14,7 +14,7 @@ from tab_ecn_stn import ECNSTNTab
 # ==========================================
 @st.cache_resource
 def init_connections():
-    MAIN_SPREADSHEET_ID = "1XcqwD79ggyoZ82OWVGRqJ_vXbA3fBU77b1vompB3bjA"
+    SPREADSHEET_ID = "1XcqwD79ggyoZ82OWVGRqJ_vXbA3fBU77b1vompB3bjA"
 
     JAM_SPREADSHEET_ID = "1vGc9beBabeNpI-AU5zbiVwXkHDyDz-pN1qfrPpHfKxs"
     
