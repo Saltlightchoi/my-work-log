@@ -9,18 +9,44 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # 군더더기 없는 깔끔한 UI를 위한 CSS
+        # 글씨 크기 축소 및 극한의 여백 압축 CSS
         # ==========================================
         st.markdown("""
             <style>
+            /* 전체 여백 축소 */
             .block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
-            .action-btn button { min-height: 38px !important; margin-top: 28px !important; padding: 0px 10px !important; font-size: 14px !important; }
-            hr { margin: 5px 0px 15px 0px !important; padding: 0px !important; border-top: 1px solid #ccc; }
-            .tight-box { border: 1px solid #d3d9df; padding: 15px 20px; border-radius: 8px; background-color: #f8fafc; margin-bottom: 15px; }
+            
+            /* 입력창 라벨(제목) 글씨 크기 축소 */
+            .stTextInput label p, .stSelectbox label p, .stDateInput label p, .stTimeInput label p { 
+                font-size: 13px !important; 
+                margin-bottom: 2px !important; 
+                color: #444 !important; 
+            }
+            
+            /* 입력창 자체 높이 및 글씨 크기 축소 */
+            .stTextInput input, .stSelectbox div[data-baseweb="select"], .stDateInput input, .stTimeInput input { 
+                font-size: 13px !important; 
+                min-height: 32px !important; 
+                height: 32px !important; 
+                padding: 4px 10px !important;
+            }
+            
+            /* 미니 아이콘 버튼 세팅 (글자 제거, 아이콘만 표출) */
+            .icon-btn button { 
+                padding: 0px !important; 
+                height: 32px !important; 
+                min-height: 32px !important; 
+                font-size: 16px !important; 
+                margin-top: 24px !important; /* 라벨 높이만큼 아래로 내림 */
+            }
+            
+            /* 구분선 및 박스 세팅 */
+            hr { margin: 5px 0px 10px 0px !important; padding: 0px !important; border-top: 1px solid #ccc; }
+            .tight-box { border: 1.5px solid #d3d9df; padding: 15px 15px; border-radius: 8px; background-color: #f8fafc; margin-bottom: 10px; }
             </style>
         """, unsafe_allow_html=True)
 
-        # 상단 네비게이션 드롭다운 (탭 이름)
+        # 상단 네비게이션 드롭다운
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
@@ -33,38 +59,22 @@ class JamLogTab:
         df_jam, _ = self.db_jam.load()
 
         # ==========================================
-        # 1. 발생일시 및 버튼 (대제목 위치로 이동)
-        # ==========================================
-        r0_c1, r0_c2, r0_spacer, r0_b1, r0_b2, r0_b3 = st.columns([1.5, 1.5, 4.5, 1, 1, 1])
-        
-        with r0_c1: date_val = st.date_input("📅 발생일자", value=datetime.today())
-        with r0_c2: time_val = st.time_input("⏰ 발생시간", value="now", step=60) # 1분 단위 타이핑 지원
-        
-        with r0_b1: 
-            st.markdown("<div class='action-btn'>", unsafe_allow_html=True)
-            btn_write = st.button("📝 저장", use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-        with r0_b2: 
-            st.markdown("<div class='action-btn'>", unsafe_allow_html=True)
-            btn_edit = st.button("✏️ 수정", use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-        with r0_b3: 
-            st.markdown("<div class='action-btn'>", unsafe_allow_html=True)
-            btn_del = st.button("🗑️ 삭제", use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        # ==========================================
-        # 2. 내역 작성 박스 (4항목 한 줄 압축 & 알람명 중심 검색)
+        # Jam 작성부 (요청하신 완벽한 레이아웃 배치)
         # ==========================================
         st.markdown("<div class='tight-box'>", unsafe_allow_html=True)
 
-        # ▶ Row 1: 장비명 | 모듈 | 알람명(드롭다운 검색) | 알람코드(자동입력)
-        r1_c1, r1_c2, r1_c3, r1_c4 = st.columns([1.2, 1.2, 3, 1.2]) # 알람명을 길게, 코드를 짧게 설정
-        
-        with r1_c1: 
-            equip_val = st.selectbox("⚙️ 장비명", EQUIPMENT_OPTIONS)
+        # 윗줄과 아랫줄 컨테이너 생성 (알람명 선택 시 윗줄 알람코드가 바뀌도록 논리적 구조 분리)
+        row1 = st.container()
+        row2 = st.container()
 
-        # 구글 시트 마스터 데이터 연동 로직
+        # ▶ 첫 번째 줄 분할: 일자 | 시간 | 장비명 | 모듈 | 알람코드 || 📝 | ✏️ | 🗑️
+        r1_cols = row1.columns([1.1, 1.1, 1.2, 1.2, 1.2, 0.4, 0.4, 0.4])
+        
+        with r1_cols[0]: date_val = st.date_input("발생일자", value=datetime.today())
+        with r1_cols[1]: time_val = st.time_input("발생시간", value="now", step=60)
+        with r1_cols[2]: equip_val = st.selectbox("장비명", EQUIPMENT_OPTIONS)
+
+        # 마스터 데이터 불러오기
         target_sheet = f"{equip_val}_ErrorList".replace(" ", "").lower()
         actual_sheet_name = None
         df_error_master = pd.DataFrame()
@@ -84,49 +94,62 @@ class JamLogTab:
         except Exception:
             pass
 
-        with r1_c2:
+        with r1_cols[3]:
             if not df_error_master.empty and "모듈" in df_error_master.columns:
                 module_options = sorted(list(df_error_master["모듈"].dropna().astype(str).str.strip().unique()))
             else:
                 module_options = ["(데이터 없음)"]
-            selected_module = st.selectbox("📍 모듈", module_options)
+            selected_module = st.selectbox("모듈", module_options)
 
-        with r1_c3:
+        # ▶ 두 번째 줄 분할: 알람명 (검색) | 조치내역 | CIP상태
+        r2_cols = row2.columns([2.5, 4, 1.5])
+        
+        with r2_cols[0]:
             name_options = []
             filtered_by_module = pd.DataFrame()
             if not df_error_master.empty and selected_module != "(데이터 없음)":
                 filtered_by_module = df_error_master[df_error_master["모듈"].astype(str).str.strip() == selected_module]
                 if not filtered_by_module.empty and "알람명" in filtered_by_module.columns:
-                    # 알람명만 리스트로 쫙 뽑아줍니다.
                     name_options = sorted(list(filtered_by_module["알람명"].dropna().astype(str).str.strip().unique()))
             
             if not name_options:
                 name_options = ["(데이터 없음)"]
                 
-            # ★ 핵심: 알람명을 타이핑해서 검색하는 자동완성 드롭다운
-            selected_alarm_name = st.selectbox("📝 알람명 (타이핑 검색)", name_options)
+            selected_alarm_name = st.selectbox("알람명 (타이핑 검색)", name_options)
 
-        with r1_c4:
-            # 알람명을 고르면 마스터 시트에서 해당 알람코드를 찾아옵니다.
-            auto_code = ""
-            if selected_alarm_name != "(데이터 없음)" and not filtered_by_module.empty and "알람코드" in filtered_by_module.columns:
-                match = filtered_by_module[filtered_by_module["알람명"].astype(str).str.strip() == selected_alarm_name]
-                if not match.empty:
-                    auto_code = match.iloc[0]["알람코드"]
-            
-            # 딱 알람코드만 깔끔하게 표시 및 직접 수정도 가능하게 처리
-            final_code = st.text_input("🔖 알람코드", value=auto_code)
+        # 알람명을 기반으로 알람코드 찾기 (다시 첫 번째 줄 우측에 배치)
+        auto_code = ""
+        if selected_alarm_name != "(데이터 없음)" and not filtered_by_module.empty and "알람코드" in filtered_by_module.columns:
+            match = filtered_by_module[filtered_by_module["알람명"].astype(str).str.strip() == selected_alarm_name]
+            if not match.empty:
+                auto_code = match.iloc[0]["알람코드"]
 
-        # ▶ Row 2: 조치내역 | CIP상태
-        r2_c1, r2_c2 = st.columns([5, 1.5])
-        with r2_c1:
-            action_val = st.text_input("🛠️ 조치내역")
-        with r2_c2:
-            cip_val = st.selectbox("📌 CIP상태", ["해당 없음", "접수 대기", "본사 검토중", "적용 완료"])
+        with r1_cols[4]:
+            final_code = st.text_input("알람코드", value=auto_code)
+
+        # 첫 번째 줄 우측 끝: 아이콘 버튼 배치 (툴팁 적용)
+        with r1_cols[5]: 
+            st.markdown("<div class='icon-btn'>", unsafe_allow_html=True)
+            btn_write = st.button("📝", help="저장", use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        with r1_cols[6]: 
+            st.markdown("<div class='icon-btn'>", unsafe_allow_html=True)
+            btn_edit = st.button("✏️", help="수정", use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        with r1_cols[7]: 
+            st.markdown("<div class='icon-btn'>", unsafe_allow_html=True)
+            btn_del = st.button("🗑️", help="삭제", use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        # 두 번째 줄 나머지 항목
+        with r2_cols[1]:
+            action_val = st.text_input("조치내역")
+        with r2_cols[2]:
+            cip_val = st.selectbox("CIP상태", ["해당 없음", "접수 대기", "본사 검토중", "적용 완료"])
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # 📝 저장 버튼 로직
+        # 📝 저장(작성) 버튼 로직
         if btn_write:
             if selected_module != "(데이터 없음)" and final_code and action_val:
                 new_data = pd.DataFrame([{
