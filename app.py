@@ -9,31 +9,32 @@ from tab_ecn_stn import ECNSTNTab
 # ==========================================
 # 0. 구글 시트/깃허브 연결 (★ 캐싱 적용: 과부하 방지 및 속도 향상)
 # ==========================================
-@st.cache_resource
-def init_connections():
-    SPREADSHEET_ID = "1XcqwD79ggyoZ82OWVGRqJ_vXbA3fBU77b1vompB3bjA"
-
-    JAM_SPREADSHEET_ID = "1vGc9beBabeNpI-AU5zbiVwXkHDyDz-pN1qfrPpHfKxs"
+# ==========================================
+# 0. 구글 시트 연결 (★ 캐싱 적용)
+# ==========================================
+@st.cache_resource 
+def init_connections(): 
+    # 1. 기존 통합 파일 ID
+    SPREADSHEET_ID = "1XcqwD79ggyoZ82OWVGRqJ_vXbA3fBU77b1vompB3bjA" 
     
-    db1 = DataManager(SPREADSHEET_ID, "업무일지", ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"])
-    db2 = DataManager(SPREADSHEET_ID, "CS체크리스트")
+    # 2. 새로 만든 Jam 이력 전용 파일 ID
+    JAM_SPREADSHEET_ID = "1vGc9beBabeNpI-AU5zbiVwXkHDyDz-pN1qfrPpHfKxs"
+
+    # 기존 데이터 연결
+    db1 = DataManager(SPREADSHEET_ID, "업무일지", ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"]) 
+    db2 = DataManager(SPREADSHEET_ID, "CS체크리스트") 
     db3 = DataManager(SPREADSHEET_ID, "ECN_STN")
     
-    # 🚨 [추가된 부분] Jam이력 시트를 연결합니다!
+    # ★ Jam 이력 전용 데이터 연결 (알려주신 실제 탭 이름 적용)
     db_jam = DataManager(JAM_SPREADSHEET_ID, "SLH1 #1")
-    
-    try:
-        if "GITHUB_TOKEN" in st.secrets:
-            g = Github(st.secrets["GITHUB_TOKEN"])
-        else:
-            g = Github()
-        r = g.get_repo("saltlightchoi/my-work-log") 
-    except Exception:
-        r = None
-        
-    # 🚨 [추가된 부분] db_jam을 반환(return) 목록에 포함시킵니다!
-        return db1, db2, db3, db_jam, repo # 기존 리턴값 순서에 맞게 유지해주세요.
 
+    # 깃허브 연결 (안 쓰신다면 None)
+    repo = None 
+    
+    # 반드시 5개를 쉼표로 구분해서 돌려주어야(return) 합니다.
+    return db1, db2, db3, db_jam, repo
+
+# 위에서 돌려준 5개를 정확히 5개의 변수로 받습니다. (여기서 짝이 안 맞으면 TypeError가 납니다)
 db_work_log, db_cs_check, db_ecn, db_jam_log, repo = init_connections()
 
 # ==========================================
