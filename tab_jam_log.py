@@ -68,7 +68,7 @@ class JamLogTab:
         # ==========================================
         with st.container(border=True):
             # ▶ Row 1 (장비명 맨 앞 / 날짜, 시간, 조치자 타이트하게 압축)
-            r1 = st.columns([1.5, 1.1, 0.9, 0.6, 1.2])
+            r1 = st.columns([0.5, 0.5, 0.4, 0.4, 0.8])
             with r1[0]: equip_val = st.selectbox("장비명 (저장될 탭 선택)", DB_SHEET_OPTIONS)
             with r1[1]: date_val = st.date_input("Date (날짜)", value=datetime.today())
             with r1[2]: time_val = st.time_input("Err. Time", value="now", step=60)
@@ -76,21 +76,21 @@ class JamLogTab:
             with r1[4]: total_unit_val = st.text_input("Totalunit")
 
             # ▶ Row 2 (Err.Point, Errorcode 축소 / 메시지는 아주 넓게)
-            r2 = st.columns([1.2, 1.0, 0.8, 4.5])
+            r2 = st.columns([1.0, 0.8, 0.3, 4.5])
             with r2[0]: err_point_val = st.text_input("Err.Point (발생위치)")
             with r2[1]: err_code_val = st.text_input("Errorcode")
             with r2[2]: err_cnt_val = st.number_input("Errorcount", min_value=1, value=1, step=1)
             with r2[3]: err_msg_val = st.text_input("Error Masage")
 
             # ▶ Row 3 (원인 및 조치내역)
-            r3 = st.columns([1, 2, 2, 3])
+            r3 = st.columns([0.7, 2, 2, 3])
             with r3[0]: type_val = st.selectbox("분류", ["H/W", "S/W", "자재불량", "작업자실수", "기타"])
             with r3[1]: symp_val = st.text_input("현상")
             with r3[2]: cause_val = st.text_input("원인")
             with r3[3]: action_val = st.text_input("조치")
 
             # ▶ Row 4 (조치 결과 및 지표)
-            r4 = st.columns([1.5, 1, 1, 1, 1])
+            r4 = st.columns([0.8, 0.4, 0.4, 0.4, 0.4])
             with r4[0]: action_loc_val = st.text_input("조치위치")
             with r4[1]: result_val = st.selectbox("조치결과", ["완료", "진행중", "대기"])
             with r4[2]: mtba_val = st.text_input("MTBA")
@@ -98,7 +98,7 @@ class JamLogTab:
             with r4[4]: mtbi_val = st.text_input("MTBI")
 
             # ▶ Row 5 (자재 정보)
-            r5 = st.columns([2, 1, 1.5, 1.5])
+            r5 = st.columns([0.7, 0.3, 0.4, 0.4])
             with r5[0]: part_no_val = st.text_input("도번 (Part No.)")
             with r5[1]: qty_val = st.text_input("수량")
             with r5[2]: in_date_val = st.text_input("입고일")
