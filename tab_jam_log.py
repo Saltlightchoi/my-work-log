@@ -47,8 +47,8 @@ class JamLogTab:
             /* 창 높이 완벽 통일 */
             .tight-box input, 
             .tight-box div[data-baseweb="select"] { 
-                min-height: 36px !important; 
-                height: 36px !important; 
+                min-height: 12px !important; 
+                height: 12px !important; 
                 padding: 4px 10px !important;
             }
             
