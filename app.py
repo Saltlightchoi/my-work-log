@@ -28,8 +28,14 @@ def init_connections():
     # ★ Jam 이력 전용 데이터 연결 (알려주신 실제 탭 이름 적용)
     db_jam = DataManager(JAM_SPREADSHEET_ID, "SLH1 #1")
 
-    # 깃허브 연결 (안 쓰신다면 None)
-    repo = None 
+     try:
+        if "GITHUB_TOKEN" in st.secrets:
+            g = Github(st.secrets["GITHUB_TOKEN"])
+        else:
+            g = Github()
+        r = g.get_repo("saltlightchoi/my-work-log") 
+    except Exception:
+        r = None
     
     # 반드시 5개를 쉼표로 구분해서 돌려주어야(return) 합니다.
     return db1, db2, db3, db_jam, repo
