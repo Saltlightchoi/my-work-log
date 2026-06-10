@@ -26,7 +26,7 @@ class JamLogTab:
             
             /* 라벨(제목) 글씨체 14px, 진하게 고정 */
             div[data-testid="stWidgetLabel"] p { 
-                font-size: 14px !important; 
+                font-size: 13px !important; 
                 font-weight: 600 !important; 
                 color: #222 !important; 
             }
@@ -37,7 +37,7 @@ class JamLogTab:
             div[data-testid="stTimeInput"] input,
             div[data-testid="stNumberInput"] input,
             div[data-testid="stSelectbox"] div[data-baseweb="select"] span { 
-                font-size: 14px !important; 
+                font-size: 12px !important; 
             }
             </style>
         """, unsafe_allow_html=True)
