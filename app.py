@@ -9,12 +9,18 @@ from tab_ecn_stn import ECNSTNTab
 # ==========================================
 # 0. 구글 시트/깃허브 연결 (★ 캐싱 적용: 과부하 방지 및 속도 향상)
 # ==========================================
+# ==========================================
+# 0. 구글 시트/깃허브 연결 (★ 캐싱 적용: 과부하 방지 및 속도 향상)
+# ==========================================
 @st.cache_resource
 def init_connections():
     SPREADSHEET_ID = "1XcqwD79ggyoZ82OWVGRqJ_vXbA3fBU77b1vompB3bjA"
     db1 = DataManager(SPREADSHEET_ID, "업무일지", ["날짜", "장비", "작성자", "업무내용", "비고", "첨부"])
     db2 = DataManager(SPREADSHEET_ID, "CS체크리스트")
     db3 = DataManager(SPREADSHEET_ID, "ECN_STN")
+    
+    # 🚨 [추가된 부분] Jam이력 시트를 연결합니다!
+    db_jam = DataManager(SPREADSHEET_ID, "Jam이력", ["발생일자", "장비명", "모듈(위치)", "알람코드", "발생현상", "조치내역", "조치결과", "DownTime(분)", "CIP상태"])
     
     try:
         if "GITHUB_TOKEN" in st.secrets:
@@ -25,10 +31,11 @@ def init_connections():
     except Exception:
         r = None
         
-    return db1, db2, db3, r
+    # 🚨 [추가된 부분] db_jam을 반환(return) 목록에 포함시킵니다!
+    return db1, db2, db3, db_jam, r
 
-# 캐싱된 함수를 호출하여 연결을 한 번만 수행하고 계속 재사용합니다.
-db_work_log, db_cs_check, db_ecn, repo = init_connections()
+# 🚨 [추가된 부분] 함수에서 리턴된 db_jam을 'db_jam_log'라는 변수로 받습니다!
+db_work_log, db_cs_check, db_ecn, db_jam_log, repo = init_connections()
 
 # ==========================================
 # 1. 환경 설정 및 타이틀 드롭다운 마법(CSS)
