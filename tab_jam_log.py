@@ -9,43 +9,54 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # 극한의 여백 압축 및 초밀착 UI CSS (공백 제거의 핵심)
+        # 글씨 크기 통일, 명암 조절, 공백 제거를 위한 완벽한 CSS
         # ==========================================
         st.markdown("""
             <style>
-            /* 전체 화면 상하 여백 제거 */
-            .block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
+            /* 1. 상하단 기본 흰색 여백 제거 */
+            .block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
             
-            /* 입력창, 드롭다운 상하 간격(공백) 강제 축소 */
+            /* 2. 각 입력창의 상하 간격(공백) 축소 */
             .stTextInput, .stSelectbox, .stDateInput, .stTimeInput { margin-bottom: -15px !important; }
             
-            /* 라벨(제목) 폰트 크기 축소 및 간격 제거 */
-            .stTextInput label p, .stSelectbox label p, .stDateInput label p, .stTimeInput label p { 
+            /* 3. 라벨(제목) 명암/글씨체 수정 (완전 검은색, 굵게) */
+            div[data-testid="stWidgetLabel"] p { 
                 font-size: 13px !important; 
-                margin-bottom: 0px !important; 
-                color: #444 !important; 
+                font-weight: 800 !important; /* 글씨 굵게 */
+                color: #111111 !important;   /* 완전 검은색으로 명암 대비 높임 */
+                margin-bottom: 2px !important; 
             }
             
-            /* 입력창 자체의 높이를 타이트하게 */
-            .stTextInput input, .stSelectbox div[data-baseweb="select"], .stDateInput input, .stTimeInput input { 
+            /* 4. 드롭다운 및 입력창 내부 글씨 크기 통일 (발생일자와 동일하게 강제 축소) */
+            input, div[data-baseweb="select"] * { 
                 font-size: 13px !important; 
+            }
+            
+            /* 5. 모든 창의 높이 통일 */
+            input, div[data-baseweb="select"] {
                 min-height: 32px !important; 
                 height: 32px !important; 
                 padding: 4px 10px !important;
             }
             
-            /* 미니 아이콘 버튼 세팅 (높이를 입력창과 일치시킴) */
+            /* 6. 미니 아이콘 버튼 세팅 (입력창과 라인 맞춤) */
             .icon-btn button { 
                 padding: 0px !important; 
                 height: 32px !important; 
                 min-height: 32px !important; 
                 font-size: 16px !important; 
-                margin-top: 22px !important; /* 위쪽 라벨 공간만큼 밀어내서 라인 맞춤 */
+                margin-top: 24px !important; /* 위쪽 라벨 공간만큼 밀어냄 */
             }
             
-            /* 폼 배경 박스 */
-            .tight-box { border: 1px solid #d3d9df; padding: 10px 15px 25px 15px; border-radius: 8px; background-color: #f8fafc; margin-bottom: 15px; }
-            hr { margin: 5px 0px 10px 0px !important; padding: 0px !important; border-top: 1px solid #ccc; }
+            /* 7. 전체 폼 배경 박스 (위쪽 공백 제거를 위해 마진 0 적용) */
+            .tight-box { 
+                border: 1px solid #d3d9df; 
+                padding: 15px 15px 25px 15px; 
+                border-radius: 8px; 
+                background-color: #f8fafc; 
+                margin-top: 5px; 
+                margin-bottom: 15px; 
+            }
             </style>
         """, unsafe_allow_html=True)
 
@@ -58,11 +69,10 @@ class JamLogTab:
         if selected_menu != st.session_state.get('current_menu'):
             st.session_state['current_menu'] = selected_menu; st.rerun()
 
-        st.markdown("<hr>", unsafe_allow_html=True)
         df_jam, _ = self.db_jam.load()
 
         # ==========================================
-        # Jam 작성부 (원하시는 순서대로 완벽 배치)
+        # Jam 작성부 (요청하신 순서 및 레이아웃)
         # ==========================================
         st.markdown("<div class='tight-box'>", unsafe_allow_html=True)
 
@@ -98,7 +108,6 @@ class JamLogTab:
             if not df_error_master.empty and selected_module != "(데이터 없음)":
                 filtered_by_module = df_error_master[df_error_master["모듈"].astype(str).str.strip() == selected_module]
                 if not filtered_by_module.empty and "알람코드" in filtered_by_module.columns:
-                    # 알람코드만 추출하여 리스트업
                     code_options = sorted(list(filtered_by_module["알람코드"].dropna().astype(str).str.strip().unique()))
             if not code_options:
                 code_options = ["(데이터 없음)"]
@@ -119,7 +128,7 @@ class JamLogTab:
             btn_del = st.button("🗑️", help="삭제", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # ▶ Row 2: 알람명 (다음 줄 전체 사용)
+        # ▶ Row 2: 알람명 (자동 완성)
         auto_alarm_name = ""
         if selected_code != "(데이터 없음)" and not df_error_master.empty:
             match = df_error_master[(df_error_master["모듈"].astype(str).str.strip() == selected_module) & (df_error_master["알람코드"].astype(str).str.strip() == selected_code)]
