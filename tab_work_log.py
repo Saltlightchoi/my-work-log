@@ -83,7 +83,7 @@ class WorkLogTab:
         # ==========================================
         col_title, col_excel = st.columns([8.5, 1.5])
         with col_title:
-            menu_options = ["📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)"]
+            menu_options = ["📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"]
             selected_menu = st.selectbox(
                 "메뉴",
                 menu_options,
