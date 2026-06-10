@@ -54,8 +54,8 @@ class JamLogTab:
             
             /* 드롭다운 클릭 시 나오는 리스트 글씨 크기도 14px로 고정 */
             ul[role="listbox"] li, ul[data-baseweb="menu"] li {
-                font-size: 14px !important;
-                min-height: 12px !important;
+                font-size: 10px !important;
+                min-height: 8px !important;
                 height: auto !important;
                 white-space: normal !important;
             }
