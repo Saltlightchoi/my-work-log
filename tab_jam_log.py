@@ -41,7 +41,7 @@ class JamLogTab:
             /* 3. 장비명, 모듈, 알람코드 드롭다운과 발생일자/시간의 글씨 크기를 14px로 100% 동일하게 통일 */
             .tight-box input, 
             .tight-box div[data-baseweb="select"] * { 
-                font-size: 13px !important; 
+                font-size: 8px !important; 
             }
             
             /* 창 높이 완벽 통일 */
