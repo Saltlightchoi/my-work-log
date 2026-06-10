@@ -34,7 +34,7 @@ class JamLogTab:
             }
             .tight-box div[data-testid="stWidgetLabel"] p { 
                 font-size: 13px !important; 
-                font-weight: 800 !important; 
+                font-weight: 500 !important; 
                 color: #000000 !important; 
             }
             
