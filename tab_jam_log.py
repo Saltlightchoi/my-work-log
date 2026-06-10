@@ -22,7 +22,7 @@ class JamLogTab:
                 padding: 15px; 
                 border-radius: 8px; 
                 background-color: #f8fafc; 
-                margin-top: 0px !important; 
+                margin-top: -5px !important; 
                 margin-bottom: 10px !important; 
             }
             
