@@ -8,41 +8,30 @@ class JamLogTab:
         self.db_jam = db_jam
 
     def render(self):
-        # ==========================================
-        # 0. 타이틀 드롭다운 메뉴 (화면 상단 네비게이션)
-        # ==========================================
-        menu_options = ["📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)","🚨 Jam & 트러블슈팅 이력"]
-        
-        selected_menu = st.selectbox(
-            "메뉴",
-            menu_options,
-            index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")),
-            key="menu_jam_log",
-            label_visibility="collapsed"
-        )
-        
+        # 1. 상단 타이틀 메뉴 이동 (기존 유지)
+        menu_options = [
+            "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
+            "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
+        ]
+        selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
         if selected_menu != st.session_state.get('current_menu'):
-            st.session_state['current_menu'] = selected_menu
-            st.rerun()
+            st.session_state['current_menu'] = selected_menu; st.rerun()
 
-        st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
-        
-        # 데이터 로드
+        st.markdown("<hr style='margin: 5px 0px 15px 0px;'>", unsafe_allow_html=True)
         df_jam, _ = self.db_jam.load()
 
         # ==========================================
-        # 1. 새로운 Jam 이력 입력부
+        # 1. Jam 작성 (타이트한 UI)
         # ==========================================
-        st.markdown("### ➕ 새로운 Jam/장애 이력 등록")
-        st.markdown("<div style='border: 1px solid #ddd; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
+        st.markdown("### ✍️ Jam 작성")
+        st.markdown("<div style='border: 1.5px solid #ccc; padding: 15px; border-radius: 8px; margin-bottom: 20px; background-color: #f9fbfd;'>", unsafe_allow_html=True)
 
-        c1, c2 = st.columns(2)
-        with c1:
-            date_val = st.date_input("발생 일자")
-        with c2:
-            equip_val = st.selectbox("장비명", EQUIPMENT_OPTIONS)
-
-        st.markdown("<hr style='margin: 10px 0px;'>", unsafe_allow_html=True)
+        # ▶ Row 1: 발생일자 | 발생시간 | 장비명 | 모듈 | 알람코드 (한 줄 배치)
+        r1_c1, r1_c2, r1_c3, r1_c4, r1_c5 = st.columns([1, 1, 1.2, 1.2, 1.5])
+        
+        with r1_c1: date_val = st.date_input("📅 발생일자")
+        with r1_c2: time_val = st.time_input("⏰ 발생시간")
+        with r1_c3: equip_val = st.selectbox("⚙️ 장비명", EQUIPMENT_OPTIONS)
 
         # 동적 에러 마스터 로딩
         sheet_name_for_error = f"{equip_val}_ErrorList"
@@ -52,108 +41,101 @@ class JamLogTab:
         except Exception:
             df_error_master = pd.DataFrame()
 
-        c3, c4 = st.columns(2)
-
-        with c3:
-            if not df_error_master.empty and "모듈" in df_error_master.columns:
-                module_options = df_error_master["모듈"].dropna().unique().tolist()
-            else:
-                module_options = []
-            
+        with r1_c4:
+            module_options = df_error_master["모듈"].dropna().unique().tolist() if not df_error_master.empty and "모듈" in df_error_master.columns else []
             module_options.append("📝 직접 입력")
-            selected_module = st.selectbox("모듈(위치) 선택", module_options)
+            selected_module = st.selectbox("📍 모듈", module_options)
+            final_module = st.text_input("모듈 직접 입력", label_visibility="collapsed") if selected_module == "📝 직접 입력" else selected_module
+
+        with r1_c5:
+            filtered_by_module = df_error_master[df_error_master["모듈"].astype(str).str.strip() == final_module.strip()] if not df_error_master.empty and final_module and final_module != "📝 직접 입력" else pd.DataFrame()
+            code_options = filtered_by_module["알람코드"].dropna().unique().tolist() if not filtered_by_module.empty and "알람코드" in filtered_by_module.columns else []
+            code_options.append("📝 직접 입력")
+            selected_code = st.selectbox("🔖 알람코드", code_options)
+            final_code = st.text_input("코드 직접 입력", label_visibility="collapsed") if selected_code == "📝 직접 입력" else selected_code
+
+        # ▶ Row 2: 알람명 | 조치내역 (넓게) | CIP상태
+        r2_c1, r2_c2, r2_c3 = st.columns([1.5, 4, 1.2])
+        
+        with r2_c1:
+            # 알람코드를 고르면 알람명이 자동으로 채워지도록 설정
+            auto_alarm_name = ""
+            if not filtered_by_module.empty and final_code != "📝 직접 입력":
+                match = filtered_by_module[filtered_by_module["알람코드"].astype(str) == final_code]
+                if not match.empty and "알람명" in match.columns:
+                    auto_alarm_name = match.iloc[0]["알람명"]
             
-            if selected_module == "📝 직접 입력":
-                final_module = st.text_input("모듈명을 직접 입력하세요", key="manual_mod")
-            else:
-                final_module = selected_module
+            final_name = st.text_input("📝 알람명", value=auto_alarm_name)
 
-        with c4:
-            filtered_by_module = pd.DataFrame()
-            if not df_error_master.empty and final_module and final_module != "📝 직접 입력":
-                filtered_by_module = df_error_master[df_error_master["모듈"].astype(str).str.strip() == final_module.strip()]
+        with r2_c2:
+            action_val = st.text_input("🛠️ 조치내역 (원인 및 해결방법)")
+            
+        with r2_c3:
+            cip_val = st.selectbox("📌 CIP상태", ["해당 없음", "접수 대기", "본사 검토중", "적용 완료"])
 
-            if not filtered_by_module.empty and "알람코드" in filtered_by_module.columns and "알람명" in filtered_by_module.columns:
-                alarm_list = (filtered_by_module["알람코드"].astype(str) + " (" + filtered_by_module["알람명"].astype(str) + ")").unique().tolist()
-            else:
-                alarm_list = []
-                
-            alarm_list.append("📝 직접 입력")
-
-            selected_alarm = st.selectbox("알람 코드 및 알람명 (타이핑하여 자동검색)", alarm_list)
-
-            if selected_alarm == "📝 직접 입력":
-                col_a, col_b = st.columns(2)
-                with col_a: final_alarm_code = st.text_input("알람 코드 (예: Err-999)", key="manual_code")
-                with col_b: final_issue = st.text_input("알람명 입력", key="manual_issue")
-            else:
-                try:
-                    final_alarm_code = selected_alarm.split(" (")[0].strip()
-                    final_issue = selected_alarm.split(" (")[1].replace(")", "").strip()
-                except IndexError:
-                    final_alarm_code = selected_alarm
-                    final_issue = selected_alarm
-
-        st.markdown("<hr style='margin: 10px 0px;'>", unsafe_allow_html=True)
-
-        action_val = st.text_input("🛠️ 조치 내역 (자세히 적어주세요)")
-
-        c5, c6, c7 = st.columns(3)
-        with c5:
-            result_val = st.selectbox("조치 결과", ["✅ 완료(양호)", "👀 모니터링 중", "⚠️ 임시조치(재발가능)"])
-        with c6:
-            downtime_val = st.number_input("DownTime (정지 시간/분)", min_value=0)
-        with c7:
-            cip_val = st.selectbox("CIP(개선) 상태", ["해당 없음", "접수 대기", "본사 검토중", "적용 완료"])
-
-        if st.button("💾 Jam 이력 저장", type="primary", use_container_width=True):
-            if final_module and final_alarm_code and final_issue and action_val:
+        # ▶ Row 3: 저장 버튼
+        if st.button("💾 Jam 이력 등록하기", type="primary", use_container_width=True):
+            if final_module and final_code and action_val:
                 new_data = pd.DataFrame([{
-                    "발생일자": date_val.strftime("%Y-%m-%d"), 
-                    "장비명": equip_val,
-                    "모듈(위치)": final_module, 
-                    "알람코드": final_alarm_code, 
-                    "발생현상": final_issue, 
-                    "조치내역": action_val, 
-                    "조치결과": result_val, 
-                    "DownTime(분)": downtime_val, 
-                    "CIP상태": cip_val
+                    "발생일자": date_val.strftime("%Y-%m-%d"), "발생시간": time_val.strftime("%H:%M"),
+                    "장비명": equip_val, "모듈": final_module, "알람코드": final_code, "알람명": final_name,
+                    "조치내역": action_val, "완료시간": "", "DownTime": "", "CIP상태": cip_val, 
+                    "업데이트일": datetime.now().strftime("%Y-%m-%d %H:%M")
                 }])
-                
-                combined_df = pd.concat([df_jam, new_data], ignore_index=True).fillna("")
-                self.db_jam.save(combined_df)
-                st.success("✅ 조치 이력이 성공적으로 등록되었습니다!")
+                self.db_jam.save(pd.concat([df_jam, new_data], ignore_index=True).fillna(""))
+                st.success("✅ 등록되었습니다!")
                 st.rerun()
             else:
-                st.error("🚨 모듈, 알람코드, 알람명, 조치내역은 필수 입력 항목입니다. 빠진 곳이 없는지 확인해 주세요.")
-
+                st.error("🚨 모듈, 알람코드, 조치내역은 필수입니다.")
         st.markdown("</div>", unsafe_allow_html=True)
 
         # ==========================================
-        # 2. 과거 이력 검색 및 데이터 확인
+        # 2. 이력 조회 및 수정 (완료시간 입력 시 DownTime 자동 계산)
         # ==========================================
-        st.markdown("### 🔍 과거 트러블슈팅 이력 통합 검색")
-        
-        c8, c9 = st.columns([1, 3])
-        with c8:
-            filter_equip = st.selectbox("장비명 필터", ["전체"] + EQUIPMENT_OPTIONS, key="filter_equip")
-        with c9:
-            search_kw = st.text_input("검색어 입력 (알람코드, 알람명, 조치내역 등 통합 검색)", placeholder="예: Err-402, 슬립, 로봇")
-        
-        display_df = df_jam.copy()
-        
-        if not display_df.empty:
-            if filter_equip != "전체":
-                display_df = display_df[display_df["장비명"] == filter_equip]
-                
-            if search_kw:
-                mask = display_df.apply(lambda row: row.astype(str).str.contains(search_kw, case=False).any(), axis=1)
-                display_df = display_df[mask]
-                
-            if "발생일자" in display_df.columns:
-                display_df = display_df.sort_values(by="발생일자", ascending=False).reset_index(drop=True)
+        st.markdown("### 🔍 통합 이력 조회 및 완료 처리")
+        st.info("💡 표의 각 **열(Column) 제목(예: 장비명, 알람코드)**을 클릭하면 엑셀처럼 돋보기 아이콘이 나와 **개별 검색 및 드롭다운 체크 필터링**이 가능합니다. \n\n✏️ 빈칸인 **'완료시간'**(예: 15:30)을 표에 직접 입력하고 아래 저장 버튼을 누르면 **DownTime이 자동 계산**됩니다.")
 
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-            st.info(f"총 {len(display_df)} 건의 이력이 검색되었습니다.")
+        if not df_jam.empty:
+            df_display = df_jam.copy()
+            if "발생일자" in df_display.columns:
+                df_display = df_display.sort_values(by=["발생일자", "발생시간"], ascending=[False, False]).reset_index(drop=True)
+            
+            # st.data_editor를 사용하여 표 안에서 직접 엑셀처럼 수정 가능
+            edited_df = st.data_editor(
+                df_display, 
+                use_container_width=True, 
+                hide_index=True, 
+                num_rows="dynamic",
+                column_config={
+                    "완료시간": st.column_config.TextColumn("완료시간(HH:MM)", help="예: 14:30 형태로 입력"),
+                    "DownTime": st.column_config.TextColumn("DownTime(분)", disabled=True), # 자동계산되므로 비활성화
+                    "조치내역": st.column_config.TextColumn("조치내역", width="large")
+                }
+            )
+
+            # 수정 내용 저장 및 DownTime 계산 로직
+            if st.button("💾 표 변경사항 저장 및 DownTime 계산", type="secondary"):
+                for idx, row in edited_df.iterrows():
+                    start_str = str(row.get("발생시간", "")).strip()
+                    end_str = str(row.get("완료시간", "")).strip()
+                    
+                    # 완료시간이 입력되었고, 형식이 HH:MM일 경우 DownTime 계산
+                    if start_str and end_str and ":" in start_str and ":" in end_str:
+                        try:
+                            t_start = datetime.strptime(start_str, "%H:%M")
+                            t_end = datetime.strptime(end_str, "%H:%M")
+                            diff_minutes = int((t_end - t_start).total_seconds() / 60)
+                            
+                            # 자정을 넘긴 경우 (예: 23:00 -> 01:00) 처리
+                            if diff_minutes < 0:
+                                diff_minutes += 24 * 60
+                                
+                            edited_df.at[idx, "DownTime"] = str(diff_minutes)
+                        except ValueError:
+                            pass # 시간 포맷이 안 맞으면 무시
+                
+                self.db_jam.save(edited_df.fillna(""))
+                st.success("✅ 변경사항 및 DownTime이 저장되었습니다!")
+                st.rerun()
         else:
-            st.info("아직 등록된 Jam 이력이 없습니다.")
+            st.warning("등록된 데이터가 없습니다.")
