@@ -19,7 +19,7 @@ class JamLogTab:
             /* 1. 상단 메인 드롭다운과 폼 사이의 하얀 공백 원천 차단 (위로 당김) */
             /*.tight-box { 
                 border: 1px solid #d3d9df; 
-                padding: 15px; 
+                padding: 5px; 
                 border-radius: 8px; 
                 background-color: #f8fafc; 
                 margin-top: -5px !important; 
