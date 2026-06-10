@@ -1,32 +1,43 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from config import EQUIPMENT_OPTIONS, DataManager
+from config import DataManager
 
 class JamLogTab:
     def __init__(self, db_jam):
-        self.db_jam = db_jam
+        self.db_jam = db_jam # 기본 시트 연결 ID 확보용
 
     def render(self):
         # ==========================================
-        # 1. 문제의 원인이었던 CSS 완벽 수정 (잘림 방지 & 글씨크기 통일)
+        # ★ 장비 목록 및 에러 리스트 탭 설정 (Conversion 대응)
+        # ==========================================
+        DB_SHEET_OPTIONS = [
+            "아산 우익반도체 SLH1 #1",
+            "아산 우익반도체 SLH1 #4"
+            # 추후 호기가 늘어나면 여기에 이름만 추가하시면 됩니다.
+        ]
+        
+        ERROR_SHEET_MAPPING = {
+            "Rdimm & Lpcamm": "SLH1_Rdimm_ErrorList",
+            "Socamm": "SLH1_Socamm_ErrorList"
+        }
+
+        # ==========================================
+        # UI 디자인 (공백 제거 및 글씨 14px 강제 고정)
         # ==========================================
         st.markdown("""
             <style>
-            /* 상단 기본 여백 제거 */
-            .block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+            .block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
             
-            /* 1. 상단 메인 드롭다운과 폼 사이의 하얀 공백 원천 차단 (위로 당김) */
-            /*.tight-box { 
+            .tight-box { 
                 border: 1px solid #d3d9df; 
                 padding: 15px; 
                 border-radius: 8px; 
                 background-color: #f8fafc; 
                 margin-top: -5px !important; 
-                margin-bottom: 5px !important; 
-            }*/
+                margin-bottom: 15px !important; 
+            }
             
-            /* 2. 발생일자, 발생시간 등 라벨(제목)이 잘리지 않고 무조건 보이도록 복구 */
             .tight-box div[data-testid="stWidgetLabel"] {
                 display: block !important;
                 visibility: visible !important;
@@ -34,33 +45,29 @@ class JamLogTab:
             }
             .tight-box div[data-testid="stWidgetLabel"] p { 
                 font-size: 13px !important; 
-                font-weight: 500 !important; 
+                font-weight: 800 !important; 
                 color: #000000 !important; 
             }
             
-            /* 3. 장비명, 모듈, 알람코드 드롭다운과 발생일자/시간의 글씨 크기를 14px로 100% 동일하게 통일 */
             .tight-box input, 
             .tight-box div[data-baseweb="select"] * { 
-                font-size: 8px !important; 
+                font-size: 14px !important; 
             }
             
-            /* 창 높이 완벽 통일 */
             .tight-box input, 
             .tight-box div[data-baseweb="select"] { 
-                min-height: 12px !important; 
-                height: 12px !important; 
+                min-height: 36px !important; 
+                height: 36px !important; 
                 padding: 4px 10px !important;
             }
             
-            /* 드롭다운 클릭 시 나오는 리스트 글씨 크기도 14px로 고정 */
             ul[role="listbox"] li, ul[data-baseweb="menu"] li {
-                font-size: 10px !important;
-                min-height: 8px !important;
+                font-size: 14px !important;
+                min-height: 36px !important;
                 height: auto !important;
                 white-space: normal !important;
             }
             
-            /* 4. 아이콘 버튼 높이 맞춤 (제목 라벨 높이만큼 아래로 밀어줌) */
             .icon-btn button { 
                 padding: 0px !important; 
                 height: 36px !important; 
@@ -69,7 +76,6 @@ class JamLogTab:
                 margin-top: 27px !important; 
             }
             
-            /* 불필요한 위젯 하단 여백 제거 (잘림 방지를 위해 마진 0 적용) */
             .tight-box div[data-testid="stSelectbox"], 
             .tight-box div[data-testid="stTextInput"], 
             .tight-box div[data-testid="stDateInput"], 
@@ -79,7 +85,7 @@ class JamLogTab:
             </style>
         """, unsafe_allow_html=True)
 
-        # 상단 네비게이션 드롭다운 (여기 아래에 있던 가로선 <hr>을 삭제하여 하얀 공백을 날렸습니다)
+        # 상단 네비게이션 드롭다운
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
@@ -88,41 +94,51 @@ class JamLogTab:
         if selected_menu != st.session_state.get('current_menu'):
             st.session_state['current_menu'] = selected_menu; st.rerun()
 
-        df_jam, _ = self.db_jam.load()
-
         # ==========================================
-        # Jam 작성부 (요청하신 정확한 1열 배치)
+        # Jam 작성부 (Conversion 대응 스마트 1열 배치)
         # ==========================================
         st.markdown("<div class='tight-box'>", unsafe_allow_html=True)
 
-        # ▶ Row 1: 발생일자 | 발생시간 | 장비명 | 모듈 | 알람코드 | 📝 | ✏️ | 🗑️
-        r1 = st.columns([1.1, 1.1, 1.2, 1.2, 1.2, 0.4, 0.4, 0.4])
+        # ▶ Row 1: 발생일자 | 발생시간 | 장비명(호기) | 품종(에러기준) | 모듈 | 알람코드 | 📝 | ✏️ | 🗑️
+        r1 = st.columns([0.9, 0.9, 1.25, 1.1, 1.1, 1.1, 0.35, 0.35, 0.35])
         
         with r1[0]: date_val = st.date_input("발생일자", value=datetime.today())
         with r1[1]: time_val = st.time_input("발생시간", value="now", step=60)
-        with r1[2]: equip_val = st.selectbox("장비명", EQUIPMENT_OPTIONS)
+        
+        with r1[2]: 
+            equip_val = st.selectbox("장비명(저장 DB)", DB_SHEET_OPTIONS)
 
-        # 마스터 데이터 로드 
-        target_sheet = f"{equip_val}_ErrorList".replace(" ", "").lower()
+        with r1[3]:
+            # 선택된 호기에 따라 기본 품종을 자동으로 세팅 (Conversion 발생 시 수동 변경 가능)
+            default_type_idx = 0 if "#1" in equip_val else 1
+            error_type_val = st.selectbox("품종(에러 리스트)", list(ERROR_SHEET_MAPPING.keys()), index=default_type_idx)
+
+        # 타겟 DB 탭과 Error 탭 확정
+        target_db_tab = equip_val
+        target_error_tab = ERROR_SHEET_MAPPING[error_type_val]
+
+        # 1. 저장될 메인 DB 연결
+        db_machine = DataManager(self.db_jam.spreadsheet_id, target_db_tab)
+        try:
+            df_machine, _ = db_machine.load()
+        except Exception:
+            df_machine = pd.DataFrame()
+
+        # 2. 에러 마스터 시트 연결 (Conversion으로 바뀐 품종에 맞춰 로드됨)
         df_error_master = pd.DataFrame()
         try:
-            client = self.db_jam.client
-            spreadsheet = client.open_by_key(self.db_jam.spreadsheet_id)
-            for ws in spreadsheet.worksheets():
-                if ws.title.replace(" ", "").lower() == target_sheet:
-                    db_error = DataManager(self.db_jam.spreadsheet_id, ws.title)
-                    df_error_master, _ = db_error.load()
-                    if not df_error_master.empty:
-                        df_error_master.columns = df_error_master.columns.str.strip()
-                    break
+            db_error = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
+            df_error_master, _ = db_error.load()
+            if not df_error_master.empty:
+                df_error_master.columns = df_error_master.columns.str.strip()
         except Exception:
             pass
 
-        with r1[3]:
+        with r1[4]:
             module_options = sorted(list(df_error_master["모듈"].dropna().astype(str).str.strip().unique())) if not df_error_master.empty and "모듈" in df_error_master.columns else ["(데이터 없음)"]
             selected_module = st.selectbox("모듈", module_options)
 
-        with r1[4]:
+        with r1[5]:
             code_options = []
             if not df_error_master.empty and selected_module != "(데이터 없음)":
                 filtered_by_module = df_error_master[df_error_master["모듈"].astype(str).str.strip() == selected_module]
@@ -133,16 +149,16 @@ class JamLogTab:
             
             selected_code = st.selectbox("알람코드", code_options)
 
-        # 1번 줄 우측 끝: 미니 아이콘 버튼
-        with r1[5]: 
+        # 우측 끝 미니 아이콘 버튼
+        with r1[6]: 
             st.markdown("<div class='icon-btn'>", unsafe_allow_html=True)
             btn_write = st.button("📝", help="저장", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
-        with r1[6]: 
+        with r1[7]: 
             st.markdown("<div class='icon-btn'>", unsafe_allow_html=True)
             btn_edit = st.button("✏️", help="수정", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
-        with r1[7]: 
+        with r1[8]: 
             st.markdown("<div class='icon-btn'>", unsafe_allow_html=True)
             btn_del = st.button("🗑️", help="삭제", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
@@ -163,29 +179,37 @@ class JamLogTab:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
+        if df_error_master.empty:
+            st.warning(f"🚨 구글 시트에서 선택하신 에러 기준 탭('{target_error_tab}')을 찾을 수 없거나 데이터가 비어있습니다.")
+
         # 📝 저장(작성) 버튼 로직
         if btn_write:
             if selected_module != "(데이터 없음)" and selected_code != "(데이터 없음)" and action_val:
+                # DB에 명확히 기록하기 위해 장비명 옆에 (품종)을 붙여서 저장합니다.
+                saved_equip_name = f"{equip_val} ({error_type_val})"
+                
                 new_data = pd.DataFrame([{
                     "발생일자": date_val.strftime("%Y-%m-%d"), "발생시간": time_val.strftime("%H:%M"),
-                    "장비명": equip_val, "모듈": selected_module, "알람코드": selected_code, "알람명": final_name,
+                    "장비명": saved_equip_name, "모듈": selected_module, "알람코드": selected_code, "알람명": final_name,
                     "조치내역": action_val, "완료시간": "", "DownTime": "", "CIP상태": cip_val, 
                     "업데이트일": datetime.now().strftime("%Y-%m-%d %H:%M")
                 }])
-                self.db_jam.save(pd.concat([df_jam, new_data], ignore_index=True).fillna(""))
-                st.success("✅ 등록되었습니다!")
+                db_machine.save(pd.concat([df_machine, new_data], ignore_index=True).fillna(""))
+                st.success(f"✅ '{target_db_tab}' 탭에 정상적으로 등록되었습니다!")
                 st.rerun()
             else:
-                st.error("🚨 모듈, 알람코드, 조치내역은 필수입니다. (마스터 데이터를 확인해 주세요.)")
+                st.error("🚨 모듈, 알람코드, 조치내역은 필수입니다. (데이터를 확인해 주세요.)")
         
         if btn_edit or btn_del:
             st.info("💡 수정/삭제는 하단 데이터 표 안의 항목을 클릭하여 수정하거나, 행 좌측을 선택해 키보드(Delete)로 지운 뒤 [표 변경사항 저장]을 누르시면 됩니다.")
 
         # ==========================================
-        # 통합 이력 조회 (DownTime 자동 계산)
+        # 통합 이력 조회 (해당 호기 데이터 표출)
         # ==========================================
-        if not df_jam.empty:
-            df_display = df_jam.copy()
+        st.markdown(f"#### 🔍 {equip_val} 누적 이력")
+        
+        if not df_machine.empty:
+            df_display = df_machine.copy()
             if "발생일자" in df_display.columns:
                 df_display = df_display.sort_values(by=["발생일자", "발생시간"], ascending=[False, False]).reset_index(drop=True)
             
@@ -201,7 +225,7 @@ class JamLogTab:
                 }
             )
 
-            if st.button("💾 표 변경사항 저장 (완료시간 적용 및 DownTime 계산)", type="secondary"):
+            if st.button(f"💾 '{target_db_tab}' 표 변경사항 저장 (DownTime 자동계산)", type="secondary"):
                 for idx, row in edited_df.iterrows():
                     start_str = str(row.get("발생시간", "")).strip()
                     end_str = str(row.get("완료시간", "")).strip()
@@ -216,8 +240,8 @@ class JamLogTab:
                         except ValueError:
                             pass 
                 
-                self.db_jam.save(edited_df.fillna(""))
+                db_machine.save(edited_df.fillna(""))
                 st.success("✅ 변경사항 및 DownTime이 저장되었습니다!")
                 st.rerun()
         else:
-            st.info("등록된 데이터가 없습니다.")
+            st.info(f"'{target_db_tab}' 탭에 등록된 데이터가 없습니다. (혹은 구글시트 첫 줄 제목이 맞지 않습니다)")
