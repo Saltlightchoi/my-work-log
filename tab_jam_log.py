@@ -19,11 +19,11 @@ class JamLogTab:
             /* 1. 상단 메인 드롭다운과 폼 사이의 하얀 공백 원천 차단 (위로 당김) */
             /*.tight-box { 
                 border: 1px solid #d3d9df; 
-                padding: 5px; 
+                padding: 15px; 
                 border-radius: 8px; 
                 background-color: #f8fafc; 
                 margin-top: -5px !important; 
-                margin-bottom: 10px !important; 
+                margin-bottom: 5px !important; 
             }*/
             
             /* 2. 발생일자, 발생시간 등 라벨(제목)이 잘리지 않고 무조건 보이도록 복구 */
