@@ -17,12 +17,28 @@ class JamLogTab:
         ]
 
         # ==========================================
-        # 심플하고 안전한 CSS (상하 여백만 줄이고 라벨 굵게)
+        # 심플하고 안전한 CSS (글자 크기 완벽 통일)
         # ==========================================
         st.markdown("""
             <style>
+            /* 상하 여백 축소 */
             .block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-            div[data-testid="stWidgetLabel"] p { font-size: 14px !important; font-weight: 600 !important; color: #222 !important; }
+            
+            /* 라벨(제목) 글씨체 14px, 진하게 고정 */
+            div[data-testid="stWidgetLabel"] p { 
+                font-size: 14px !important; 
+                font-weight: 600 !important; 
+                color: #222 !important; 
+            }
+            
+            /* ★ 입력창 및 드롭다운 내부 글씨 크기 14px 완벽 통일 ★ */
+            div[data-testid="stTextInput"] input, 
+            div[data-testid="stDateInput"] input, 
+            div[data-testid="stTimeInput"] input,
+            div[data-testid="stNumberInput"] input,
+            div[data-testid="stSelectbox"] div[data-baseweb="select"] span { 
+                font-size: 14px !important; 
+            }
             </style>
         """, unsafe_allow_html=True)
 
@@ -48,25 +64,25 @@ class JamLogTab:
         st.markdown("---")
 
         # ==========================================
-        # 21개 항목 입력 폼 (비율에 맞춘 깔끔한 배치)
+        # 21개 항목 입력 폼 (비율에 맞춘 칼배치)
         # ==========================================
         with st.container(border=True):
-            # ▶ Row 1 (기본 정보 - 날짜, 시간 등은 좁게)
-            r1 = st.columns([1, 1, 1.2, 2, 1])
-            with r1[0]: date_val = st.date_input("Date (날짜)", value=datetime.today())
-            with r1[1]: time_val = st.time_input("Err. Time", value="now", step=60)
-            with r1[2]: worker_val = st.text_input("조치자")
-            with r1[3]: equip_val = st.selectbox("장비명 (저장될 탭 선택)", DB_SHEET_OPTIONS)
+            # ▶ Row 1 (장비명 맨 앞 / 날짜, 시간, 조치자 타이트하게 압축)
+            r1 = st.columns([1.5, 1.1, 0.9, 0.6, 1.2])
+            with r1[0]: equip_val = st.selectbox("장비명 (저장될 탭 선택)", DB_SHEET_OPTIONS)
+            with r1[1]: date_val = st.date_input("Date (날짜)", value=datetime.today())
+            with r1[2]: time_val = st.time_input("Err. Time", value="now", step=60)
+            with r1[3]: worker_val = st.text_input("조치자")
             with r1[4]: total_unit_val = st.text_input("Totalunit")
 
-            # ▶ Row 2 (에러 정보 - 에러 메시지는 아주 넓게)
-            r2 = st.columns([1.5, 1.5, 0.8, 4])
+            # ▶ Row 2 (Err.Point, Errorcode 축소 / 메시지는 아주 넓게)
+            r2 = st.columns([1.2, 1.0, 0.8, 4.5])
             with r2[0]: err_point_val = st.text_input("Err.Point (발생위치)")
             with r2[1]: err_code_val = st.text_input("Errorcode")
             with r2[2]: err_cnt_val = st.number_input("Errorcount", min_value=1, value=1, step=1)
             with r2[3]: err_msg_val = st.text_input("Error Masage")
 
-            # ▶ Row 3 (원인 및 조치내역 - 모두 넓게)
+            # ▶ Row 3 (원인 및 조치내역)
             r3 = st.columns([1, 2, 2, 3])
             with r3[0]: type_val = st.selectbox("분류", ["H/W", "S/W", "자재불량", "작업자실수", "기타"])
             with r3[1]: symp_val = st.text_input("현상")
@@ -89,7 +105,7 @@ class JamLogTab:
             with r5[3]: out_date_val = st.text_input("반입일")
 
         # ==========================================
-        # DB 연결 및 안전 예외 처리
+        # DB 연결 및 데이터 21개 항목 매핑
         # ==========================================
         exact_columns = [
             "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
@@ -107,46 +123,7 @@ class JamLogTab:
             st.error(f"🚨 구글 시트 연결 실패: 새로 만드신 Jam 파일에 '{equip_val}' 이라는 이름의 탭(시트)이 없습니다.")
 
         # ==========================================
-        # 버튼 동작 로직
-        # ==========================================
-        if btn_write:
-            if db_machine is None:
-                st.error("🚨 구글 시트 탭이 연결되지 않아 저장할 수 없습니다. 탭 이름을 먼저 확인해 주세요.")
-            elif err_code_val and err_msg_val:
-                new_data = pd.DataFrame([{
-                    "Date": date_val.strftime("%Y-%m-%d"),
-                    "Totalunit": total_unit_val,
-                    "Errorcode": err_code_val,
-                    "Errorcount": err_cnt_val,
-                    "Error Masage": err_msg_val,
-                    "현상": symp_val,
-                    "원인": cause_val,
-                    "조치": action_val,
-                    "Err.Point": err_point_val,
-                    "분류": type_val,
-                    "조치자": worker_val,
-                    "Err. Time": time_val.strftime("%H:%M"),
-                    "MTBA": mtba_val,
-                    "MTTR": mttr_val,
-                    "MTBI": mtbi_val,
-                    "도번": part_no_val,
-                    "수량": qty_val,
-                    "입고일": in_date_val,
-                    "반입일": out_date_val,
-                    "조치위치": action_loc_val,
-                    "조치결과": result_val
-                }])
-                db_machine.save(pd.concat([df_machine, new_data], ignore_index=True).fillna(""))
-                st.success(f"✅ '{equip_val}' 시트에 데이터가 정상적으로 저장되었습니다.")
-                st.rerun()
-            else:
-                st.error("🚨 Errorcode와 Error Masage는 필수 입력 항목입니다.")
-                
-        if btn_edit or btn_del:
-            st.info("💡 데이터 수정/삭제는 아래 표(누적 이력)를 직접 클릭해서 고치거나 지운 후 표 하단의 [변경사항 저장] 버튼을 누르시면 됩니다.")
-
-        # ==========================================
-        # 통합 조회 표
+        # 통합 조회 표 표출 부분
         # ==========================================
         st.markdown(f"#### 🔍 {equip_val} 누적 이력 조회")
         
