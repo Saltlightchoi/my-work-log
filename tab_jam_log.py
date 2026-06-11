@@ -80,7 +80,7 @@ class JamLogTab:
                     if source_field != "err_point" and col_point: st.session_state.err_point = str(row[col_point])
                     if source_field != "err_msg" and col_msg: st.session_state.err_msg = str(row[col_msg])
 
-        DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
+        DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
 
         # ========================================================
         # 🚨 UI 레이아웃 CSS
@@ -109,7 +109,7 @@ class JamLogTab:
             }
 
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
-                height: 20px !important; min-height: 20px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
+                height: 10px !important; min-height: 10px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
                 box-sizing: border-box !important;
             }
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { font-size: 13px !important; }
