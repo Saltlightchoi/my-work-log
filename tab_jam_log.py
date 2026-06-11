@@ -52,16 +52,16 @@ class JamLogTab:
                         st.session_state.err_msg = str(row["알람명"])
 
         # ==========================================
-        # 극단적 압축 CSS (짤림 방지 + 높이 통일 + 간격 축소)
+        # 안전한 레이아웃 CSS (상단 짤림 완벽 해결)
         # ==========================================
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         st.markdown("""
             <style>
-            /* 1. 상단 테두리 짤림 방지를 위해 top 2rem 유지, 하단 여백 축소 */
-            .block-container { padding-top: 2rem !important; padding-bottom: 1rem !important; }
+            /* 1. 상단 테두리 짤림 및 메뉴 숨김 방지 (padding-top 4rem으로 안전하게 내림) */
+            .block-container { padding-top: 4rem !important; padding-bottom: 1rem !important; }
             
-            /* 2. 라벨(제목) 하단 여백 극단적 축소 */
+            /* 2. 라벨(제목) 하단 여백 축소 */
             div[data-testid="stWidgetLabel"] { margin-bottom: 2px !important; }
             div[data-testid="stWidgetLabel"] p { font-size: 13px !important; font-weight: 700 !important; color: #222 !important; }
             
@@ -84,14 +84,9 @@ class JamLogTab:
                 padding-top: 0px !important; 
                 padding-bottom: 0px !important; 
             }
-            /* 드롭다운 리스트 항목 얇게 */
             ul[role="listbox"] li { font-size: 13px !important; min-height: 30px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
             
-            /* 5. 각 줄 사이 세로 간격(gap, margin) 극단적 압축 */
-            div[data-testid="stVerticalBlock"] { gap: 0.2rem !important; }
-            div.element-container { margin-bottom: -5px !important; }
-            
-            /* 버튼들도 얇게 고정 */
+            /* 5. 버튼 크기 및 폰트 고정 */
             .stButton > button { min-height: 34px !important; height: 34px !important; padding: 0px !important; font-size: 14px !important;}
             </style>
         """, unsafe_allow_html=True)
@@ -104,7 +99,7 @@ class JamLogTab:
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
         ]
         
-        # 버튼을 탭 이동창 바로 우측으로 바짝 붙임
+        # 버튼을 탭 이동창 바로 우측으로 나란히 배치
         nav_cols = st.columns([6, 1, 1, 1])
         with nav_cols[0]:
             selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
@@ -114,8 +109,6 @@ class JamLogTab:
         with nav_cols[1]: btn_write = st.button("📝 저장", use_container_width=True)
         with nav_cols[2]: btn_edit = st.button("✏️ 수정", use_container_width=True)
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
-
-        # 박스 상단 여백 유발자(마크다운 구분선) 삭제됨
 
         # ==========================================
         # 입력 폼 (세로/가로 초밀착 배분)
@@ -133,6 +126,7 @@ class JamLogTab:
             with r2[0]: err_point_val = st.text_input("Err.Point", key="err_point", on_change=autofill, args=("err_point",))
             with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
             
+            # 대표님께서 지정해주신 카테고리 (10개)
             category_options = [
                 "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원익파악불가", "장비대여불가,추후 대응"
@@ -154,9 +148,9 @@ class JamLogTab:
 
             part_no_val, qty_val, in_date_val, out_date_val, action_loc_val, result_val = "", "", "", "", "", ""
             
+            # H/W 폼 동적 표출
             if type_val == "H/W 불량, 파손":
-                # 내부 폼이 등장할 때만 얇은 선 그리기
-                st.markdown("<hr style='margin-top: 5px; margin-bottom: 5px;'>", unsafe_allow_html=True)
+                st.markdown("<hr style='margin-top: 10px; margin-bottom: 10px;'>", unsafe_allow_html=True)
                 r6 = st.columns([1.5, 0.8, 1.2, 1.2, 1.5, 1.2])
                 with r6[0]: part_no_val = st.text_input("도번 (Part No.)")
                 with r6[1]: qty_val = st.text_input("수량")
