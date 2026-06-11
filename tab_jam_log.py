@@ -14,7 +14,6 @@ class JamLogTab:
         if "err_code" not in st.session_state: st.session_state.err_code = ""
         if "err_point" not in st.session_state: st.session_state.err_point = ""
         if "err_msg" not in st.session_state: st.session_state.err_msg = ""
-        if 'current_menu' not in st.session_state: st.session_state['current_menu'] = "🚨 Jam & 트러블슈팅 이력"
 
         def autofill(source_field):
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
@@ -42,88 +41,86 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 [해결 1] 상단 탭 메뉴를 드롭다운(selectbox)에서 분리
+        # 🚨 [완벽 격리] 테두리 안쪽만 쥐어짜는 타겟팅 CSS 🚨
         # ========================================================
-        # 이제 상단 메뉴는 selectbox가 아니므로, 아래 CSS가 메뉴 글자를 줄이지 못합니다.
+        st.markdown("""
+            <style>
+            /* 1. 전체 화면 상하 여백 */
+            .block-container { padding-top: 3.5rem !important; padding-bottom: 1rem !important; }
+            
+            /* 상단 버튼 3개 크기 유지 (이 버튼들은 폼 밖에 있으므로 큼직하게 유지됨) */
+            .stButton > button { min-height: 38px !important; height: 38px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; }
+            
+            /* ---------------------------------------------------- */
+            /* ★ 2. 오직 [테두리 쳐진 폼 안쪽]만 완벽하게 다이어트 ★ */
+            /* ---------------------------------------------------- */
+            
+            /* 라벨(제목) 여백과 폰트 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
+                min-height: 12px !important; margin-bottom: -6px !important; 
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
+                font-size: 12px !important; font-weight: 700 !important; color: #222 !important; 
+            }
+            
+            /* 일반 텍스트, 숫자, 날짜 입력창 폰트 13px 및 높이 30px 고정 */
+            div[data-testid="stVerticalBlockBorderWrapper"] input { 
+                font-size: 13px !important; min-height: 30px !important; height: 30px !important; padding: 0px 10px !important;
+            }
+            
+            /* ★ 핵심: 폼 내부 드롭다운만 폰트/높이 축소 (상단 메뉴는 이 영역 밖이므로 본래 크기 유지!) ★ */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
+                min-height: 30px !important; height: 30px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { 
+                font-size: 13px !important; 
+            }
+
+            /* ---------------------------------------------------- */
+            /* ★ 3. 폼 내부 줄 간격(Gap & Margin) 완전 소각 ★ */
+            /* ---------------------------------------------------- */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] {
+                gap: 0rem !important; /* 기본 세로 간격 0 */
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { 
+                margin-bottom: -15px !important; /* 윗줄과 아랫줄을 강제로 바짝 겹쳐버림 */
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div.element-container { 
+                margin-bottom: 0px !important; 
+            }
+            
+            /* H/W 구분선 간격 */
+            div[data-testid="stVerticalBlockBorderWrapper"] hr {
+                margin-top: 5px !important; margin-bottom: 5px !important;
+            }
+            
+            /* 팝업으로 떨어지는 리스트 폰트 (공통 적용) */
+            ul[role="listbox"] li { font-size: 13px !important; min-height: 28px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
+            </style>
+        """, unsafe_allow_html=True)
+
+        # ==========================================
+        # 상단 네비게이션 & 우측 액션 버튼 (드롭다운 원상복구)
+        # ==========================================
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
         ]
         
-        # 라디오 버튼을 가로형으로 배치하여 탭처럼 보이게 만듦 (크기 유지)
-        st.markdown(
-            """<style>
-            div.row-widget.stRadio > div{flex-direction:row; align-items: center; justify-content: center; background-color: #f0f2f6; padding: 10px; border-radius: 10px;}
-            div.row-widget.stRadio > div > label {font-size: 16px !important; font-weight: bold !important; margin: 0 10px;}
-            </style>""", unsafe_allow_html=True
-        )
-        
-        top_cols = st.columns([7, 3])
-        with top_cols[0]:
-            selected_menu = st.radio("메뉴 이동", menu_options, index=menu_options.index(st.session_state['current_menu']), label_visibility="collapsed", horizontal=True)
-            if selected_menu != st.session_state['current_menu']:
-                st.session_state['current_menu'] = selected_menu
-                st.rerun()
+        nav_cols = st.columns([6, 1, 1, 1])
+        with nav_cols[0]:
+            # 이 메뉴는 테두리(BorderWrapper) 바깥에 있으므로, 위 CSS의 영향을 받지 않고 본래의 큼직한 폰트를 유지합니다.
+            selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
+            if selected_menu != st.session_state.get('current_menu'):
+                st.session_state['current_menu'] = selected_menu; st.rerun()
                 
-        with top_cols[1]:
-            btn_cols = st.columns(3)
-            with btn_cols[0]: btn_write = st.button("📝 저장", use_container_width=True)
-            with btn_cols[1]: btn_edit = st.button("✏️ 수정", use_container_width=True)
-            with btn_cols[2]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
-
-
-        # ========================================================
-        # 🚨 [해결 2] 폼 내부 전용 CSS (드롭다운 축소 + 줄 간격 파괴)
-        # ========================================================
-        st.markdown("""
-            <style>
-            /* 1. 상하 여백 조절 */
-            .block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
-            
-            /* ---------------------------------------------------- */
-            /* ★ [입력 폼 내부]: 폰트 13px 통일 및 폼 컨트롤 축소 ★ */
-            /* ---------------------------------------------------- */
-            /* 라벨(제목) */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
-                min-height: 12px !important; margin-bottom: -8px !important; 
-            }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
-                font-size: 12px !important; font-weight: bold !important; color: #333 !important; 
-            }
-            
-            /* 텍스트, 날짜, 숫자 입력창 높이/글자 고정 */
-            div[data-testid="stVerticalBlockBorderWrapper"] input { 
-                font-size: 13px !important; min-height: 28px !important; height: 28px !important; padding: 0px 8px !important;
-            }
-            
-            /* ★ 드롭다운 박스 확실하게 축소 (상단 메뉴는 이제 라디오버튼이므로 영향 안 받음) ★ */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] * { 
-                font-size: 13px !important; 
-            }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
-                min-height: 28px !important; height: 28px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
-            }
-            ul[role="listbox"] li { font-size: 13px !important; min-height: 24px !important; padding: 2px 8px !important; }
-
-            /* ---------------------------------------------------- */
-            /* ★ [줄 간격 파괴]: 모든 여백을 음수로 당겨버림 ★ */
-            /* ---------------------------------------------------- */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] { gap: 0rem !important; }
-            div[data-testid="stVerticalBlockBorderWrapper"] div.element-container { margin-bottom: -15px !important; }
-            
-            /* 가로로 나뉜 컬럼 안쪽의 위아래 마진 제거 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="column"] > div { margin-top: 0px !important; margin-bottom: 0px !important; padding-bottom: 0px !important;}
-            
-            /* hr 선 얇게 */
-            div[data-testid="stVerticalBlockBorderWrapper"] hr { margin-top: 5px !important; margin-bottom: 5px !important; border-top: 1px solid #ddd; }
-            </style>
-        """, unsafe_allow_html=True)
-
+        with nav_cols[1]: btn_write = st.button("📝 저장", use_container_width=True)
+        with nav_cols[2]: btn_edit = st.button("✏️ 수정", use_container_width=True)
+        with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼
+        # 입력 폼 (이 테두리 내부에서만 초밀착 다이어트 발동)
         # ==========================================
-        st.markdown("<br>", unsafe_allow_html=True) # 탭 메뉴와 폼 사이 간격 확보
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
             with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS, key="equip_val")
@@ -136,7 +133,11 @@ class JamLogTab:
             r2 = st.columns([1.5, 4.0, 1.5])
             with r2[0]: err_point_val = st.text_input("Err.Point", key="err_point", on_change=autofill, args=("err_point",))
             with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
-            category_options = ["S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정", "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원익파악불가", "장비대여불가,추후 대응"]
+            
+            category_options = [
+                "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
+                "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원익파악불가", "장비대여불가,추후 대응"
+            ]
             with r2[2]: type_val = st.selectbox("분류", category_options)
 
             r3 = st.columns([1, 1])
@@ -153,6 +154,7 @@ class JamLogTab:
             with r5[2]: mtbi_val = st.text_input("MTBI")
 
             part_no_val, qty_val, in_date_val, out_date_val, action_loc_val, result_val = "", "", "", "", "", ""
+            
             if type_val == "H/W 불량, 파손":
                 st.markdown("<hr>", unsafe_allow_html=True)
                 r6 = st.columns([1.5, 0.8, 1.2, 1.2, 1.5, 1.2])
@@ -164,7 +166,7 @@ class JamLogTab:
                 with r6[5]: result_val = st.selectbox("조치결과", ["완료", "진행중", "대기"])
 
         # ==========================================
-        # DB 연결 및 저장 (기존과 동일)
+        # DB 연결 및 저장 로직
         # ==========================================
         exact_columns = [
             "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
@@ -183,34 +185,59 @@ class JamLogTab:
 
         if btn_write:
             if db_machine is None:
-                st.error("🚨 구글 시트 연결 실패.")
+                st.error("🚨 구글 시트 탭이 연결되지 않아 저장할 수 없습니다. 탭 이름을 먼저 확인해 주세요.")
             elif err_code_val and err_msg_val:
                 new_data = pd.DataFrame([{
-                    "Date": date_val.strftime("%Y-%m-%d"), "Totalunit": total_unit_val, "Errorcode": err_code_val,
-                    "Errorcount": err_cnt_val, "Error Masage": err_msg_val, "현상": symp_val, "원인": cause_val,
-                    "조치": action_val, "Err.Point": err_point_val, "분류": type_val, "조치자": worker_val,
-                    "Err. Time": time_val.strftime("%H:%M"), "MTBA": mtba_val, "MTTR": mttr_val, "MTBI": mtbi_val,
-                    "도번": part_no_val, "수량": qty_val, "입고일": in_date_val, "반입일": out_date_val,
-                    "조치위치": action_loc_val, "조치결과": result_val
+                    "Date": date_val.strftime("%Y-%m-%d"),
+                    "Totalunit": total_unit_val,
+                    "Errorcode": err_code_val,
+                    "Errorcount": err_cnt_val,
+                    "Error Masage": err_msg_val,
+                    "현상": symp_val,
+                    "원인": cause_val,
+                    "조치": action_val,
+                    "Err.Point": err_point_val,
+                    "분류": type_val,
+                    "조치자": worker_val,
+                    "Err. Time": time_val.strftime("%H:%M"),
+                    "MTBA": mtba_val,
+                    "MTTR": mttr_val,
+                    "MTBI": mtbi_val,
+                    "도번": part_no_val,
+                    "수량": qty_val,
+                    "입고일": in_date_val,
+                    "반입일": out_date_val,
+                    "조치위치": action_loc_val,
+                    "조치결과": result_val
                 }])
                 db_machine.save(pd.concat([df_machine, new_data], ignore_index=True).fillna(""))
-                st.success(f"✅ '{equip_val}' 저장 완료.")
-                st.session_state.err_code = ""; st.session_state.err_point = ""; st.session_state.err_msg = ""
+                st.success(f"✅ '{equip_val}' 시트에 데이터가 정상적으로 저장되었습니다.")
+                
+                st.session_state.err_code = ""
+                st.session_state.err_point = ""
+                st.session_state.err_msg = ""
                 st.rerun()
             else:
-                st.error("🚨 ErrorCode와 ErrorMassage 필수 입력.")
+                st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
                 
         if btn_edit or btn_del:
-            st.info("💡 아래 표를 직접 클릭해서 고치거나 지운 후 [변경사항 저장]을 누르세요.")
+            st.info("💡 데이터 수정/삭제는 아래 표(누적 이력)를 직접 클릭해서 고치거나 지운 후 표 하단의 [변경사항 저장] 버튼을 누르시면 됩니다.")
 
+        # ==========================================
+        # 통합 조회 표
+        # ==========================================
         st.markdown(f"#### 🔍 {equip_val} 누적 이력 조회")
+        
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
-            if "Date" in df_display.columns: df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
+            if "Date" in df_display.columns:
+                df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
+            
             edited_df = st.data_editor(df_display, use_container_width=True, hide_index=True, num_rows="dynamic")
+
             if st.button(f"💾 '{equip_val}' 표 변경사항 저장", type="primary"):
                 db_machine.save(edited_df.fillna(""))
-                st.success("✅ 변경사항 저장됨!")
+                st.success("✅ 변경사항이 저장되었습니다!")
                 st.rerun()
         elif db_machine is not None:
-            st.info(f"'{equip_val}' 데이터 없음.")
+            st.info(f"'{equip_val}' 시트에 등록된 데이터가 없습니다.")
