@@ -51,55 +51,58 @@ class JamLogTab:
                         st.session_state.err_msg = str(row["알람명"])
 
         # ==========================================
-        # ★ 스마트 CSS (상단 보호 & 내부 박스만 초밀착 압축)
+        # ★ 스마트 CSS (메뉴 원상복구 & 박스 내부만 초밀착)
         # ==========================================
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         st.markdown("""
             <style>
-            /* 1. 상단 테두리 및 메뉴 짤림 방지 (안전 확보) */
+            /* 1. 상단 메뉴 짤림 방지 (안전 확보) */
             .block-container { padding-top: 3.5rem !important; padding-bottom: 1rem !important; }
             
-            /* 2. 라벨(제목) 하단 여백 완전 제거 */
-            div[data-testid="stWidgetLabel"] { margin-bottom: -2px !important; }
-            div[data-testid="stWidgetLabel"] p { font-size: 13px !important; font-weight: 700 !important; color: #222 !important; }
+            /* 2. 우측 상단 버튼 크기 복구 및 깔끔한 고정 */
+            .stButton > button { min-height: 36px !important; height: 36px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; }
             
-            /* 3. 일반 입력창 및 드롭다운 얇게 고정 */
-            div[data-testid="stTextInput"] input, 
-            div[data-testid="stDateInput"] input, 
-            div[data-testid="stTimeInput"] input,
-            div[data-testid="stNumberInput"] input { 
+            /* ---------------------------------------------------- */
+            /* ★ 아래부터는 테두리 쳐진 '입력 폼 박스 내부'에만 작동합니다 ★ */
+            /* ---------------------------------------------------- */
+            
+            /* 3. 박스 내부 각 줄(Row) 사이의 여백을 완전히 뭉개버림 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div.element-container { 
+                margin-bottom: -15px !important; 
+            }
+            
+            /* 4. 라벨(제목)과 입력창 사이의 쓸데없는 공백 제거 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
+                margin-bottom: -5px !important; 
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
+                font-size: 13px !important; 
+                font-weight: 700 !important; 
+                color: #222 !important; 
+            }
+            
+            /* 5. 폼 내부 입력창 및 드롭다운의 높이와 글자 크기 얇게 다이어트 */
+            div[data-testid="stVerticalBlockBorderWrapper"] input { 
                 font-size: 13px !important; 
                 min-height: 32px !important; 
                 height: 32px !important; 
                 padding: 0px 10px !important;
             }
-            div[data-baseweb="select"] * { font-size: 13px !important; }
-            div[data-baseweb="select"] > div { 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] * { 
+                font-size: 13px !important; 
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
                 min-height: 32px !important; 
                 height: 32px !important; 
                 padding-top: 0px !important; 
                 padding-bottom: 0px !important; 
             }
-            ul[role="listbox"] li { font-size: 13px !important; min-height: 30px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
             
-            /* 4. 우측 버튼 크기 고정 */
-            .stButton > button { min-height: 34px !important; height: 34px !important; padding: 0px !important; font-size: 14px !important;}
-            
-            /* ★ 5. 줄별 간격 복구 (테두리 쳐진 네모 박스 '내부'만 강제 압축하여 상단 레이아웃 파괴 방지) ★ */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] { 
-                gap: 0.1rem !important; 
-            }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stSelectbox"], 
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stTextInput"], 
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stDateInput"], 
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stTimeInput"], 
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stNumberInput"] { 
-                margin-bottom: -15px !important; 
-            }
+            /* 6. H/W 선택 시 나오는 구분선(hr) 상하 여백 제거 */
             div[data-testid="stVerticalBlockBorderWrapper"] hr {
-                margin-top: 0px !important;
-                margin-bottom: 0px !important;
+                margin-top: 5px !important;
+                margin-bottom: 5px !important;
             }
             </style>
         """, unsafe_allow_html=True)
@@ -112,6 +115,7 @@ class JamLogTab:
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
         ]
         
+        # 상단 영역은 CSS 제약을 받지 않으므로 큼직하고 시원하게 나옵니다.
         nav_cols = st.columns([6, 1, 1, 1])
         with nav_cols[0]:
             selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
@@ -123,7 +127,7 @@ class JamLogTab:
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼 (초밀착 세로 여백 적용)
+        # 입력 폼 (이 테두리 컨테이너 내부만 CSS로 강제 압축됩니다)
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
