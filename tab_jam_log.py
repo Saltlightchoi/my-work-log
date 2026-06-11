@@ -109,7 +109,7 @@ class JamLogTab:
             }
 
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
-                height: 32px !important; min-height: 32px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
+                height: 20px !important; min-height: 20px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
                 box-sizing: border-box !important;
             }
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { font-size: 13px !important; }
