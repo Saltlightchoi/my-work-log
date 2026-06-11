@@ -9,16 +9,59 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # ★ 장비명 세팅
+        # ★ Session State 초기화 (자동완성을 위한 메모리 생성)
         # ==========================================
-        DB_SHEET_OPTIONS = [
-            "SLH1 #1",
-            "SLH1 #4"
-        ]
+        if "err_code" not in st.session_state: st.session_state.err_code = ""
+        if "err_point" not in st.session_state: st.session_state.err_point = ""
+        if "err_msg" not in st.session_state: st.session_state.err_msg = ""
 
         # ==========================================
-        # 심플하고 안전한 CSS (글자 크기 완벽 통일)
+        # ★ 핵심 로직: 3개 중 1개만 입력해도 나머지를 찾아주는 자동완성 함수
         # ==========================================
+        def autofill(source_field):
+            # 현재 선택된 장비 확인 (장비에 맞는 에러리스트를 부르기 위함)
+            equip_name = st.session_state.get("equip_val", "SLH1 #1")
+            target_error_tab = "SLH1_Rdimm_ErrorList" if "#1" in equip_name else "SLH1_Socamm_ErrorList"
+            
+            try:
+                db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
+                df_err, _ = db_err.load()
+                if not df_err.empty:
+                    df_err.columns = df_err.columns.astype(str).str.strip()
+            except Exception:
+                return # 에러 시트가 없으면 조용히 종료
+            
+            # 사용자가 방금 입력한 값 가져오기
+            search_val = str(st.session_state[source_field]).strip()
+            if not search_val or df_err.empty: return
+            
+            # 파이썬 변수명과 구글 시트의 헤더 매핑
+            col_map = {"err_code": "알람코드", "err_point": "모듈", "err_msg": "알람명"}
+            search_col = col_map.get(source_field)
+            
+            if search_col in df_err.columns:
+                # 1단계: 완전히 똑같은 글자가 있는지 검색
+                match = df_err[df_err[search_col].astype(str).str.strip() == search_val]
+                
+                # 2단계: 똑같은 게 없으면 그 단어가 '포함'된 항목 검색
+                if match.empty:
+                    match = df_err[df_err[search_col].astype(str).str.contains(search_val, case=False, na=False)]
+                    
+                # 찾았으면 나머지 빈칸들에 데이터 강제 주입!
+                if not match.empty:
+                    row = match.iloc[0]
+                    if source_field != "err_code" and "알람코드" in df_err.columns:
+                        st.session_state.err_code = str(row["알람코드"])
+                    if source_field != "err_point" and "모듈" in df_err.columns:
+                        st.session_state.err_point = str(row["모듈"])
+                    if source_field != "err_msg" and "알람명" in df_err.columns:
+                        st.session_state.err_msg = str(row["알람명"])
+
+        # ==========================================
+        # 장비명 세팅 및 심플 CSS
+        # ==========================================
+        DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
+
         st.markdown("""
             <style>
             .block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
@@ -31,9 +74,7 @@ class JamLogTab:
             </style>
         """, unsafe_allow_html=True)
 
-        # ==========================================
         # 상단 네비게이션 & 우측 액션 버튼
-        # ==========================================
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
@@ -52,132 +93,10 @@ class JamLogTab:
         st.markdown("---")
 
         # ==========================================
-        # 입력 폼 (비율 및 순서 완벽 세팅)
+        # 입력 폼 (자동완성 콜백 연결)
         # ==========================================
         with st.container(border=True):
-            # ▶ 1줄: 장비명, Date, Err.Time, Totalunit, ErrorCode, ErrorCount
+            # ▶ 1줄: 장비명(key 지정), ErrorCode(콜백 연결)
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
-            with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS)
-            with r1[1]: date_val = st.date_input("Date", value=datetime.today())
-            with r1[2]: time_val = st.time_input("Err.Time", value="now", step=60)
-            with r1[3]: total_unit_val = st.text_input("Totalunit")
-            with r1[4]: err_code_val = st.text_input("ErrorCode")
-            with r1[5]: err_cnt_val = st.number_input("ErrorCount", min_value=1, value=1, step=1)
-
-            # ▶ 2줄: Err.Point, ErrorMassage, 분류 (사진과 동일한 항목 적용!)
-            r2 = st.columns([1.5, 4.0, 1.5])
-            with r2[0]: err_point_val = st.text_input("Err.Point")
-            with r2[1]: err_msg_val = st.text_input("ErrorMassage")
-            
-            category_options = [
-                "S/W Bug", "H/W 불량,파손", "H/W 소모성 교체", "H/W 셋업, 조정",
-                "자재 불량", "작업자 실수", "기타", "원인파악불가", "장비대여불가,추후대응"
-            ]
-            with r2[2]: type_val = st.selectbox("분류", category_options)
-
-            # ▶ 3줄: 현상, 원인
-            r3 = st.columns([1, 1])
-            with r3[0]: symp_val = st.text_input("현상")
-            with r3[1]: cause_val = st.text_input("원인")
-
-            # ▶ 5줄: 조치, 조치자
-            r4 = st.columns([5.0, 0.6])
-            with r4[0]: action_val = st.text_input("조치")
-            with r4[1]: worker_val = st.text_input("조치자")
-
-            # ▶ 6줄: MTBA, MTTR, MTBI
-            r5 = st.columns([1, 1, 1, 3.5]) 
-            with r5[0]: mtba_val = st.text_input("MTBA")
-            with r5[1]: mttr_val = st.text_input("MTTR")
-            with r5[2]: mtbi_val = st.text_input("MTBI")
-
-            # ==========================================
-            # ★ 7줄: 분류가 "H/W 불량, 파손"일 때만 나타나는 숨겨진 폼 ★
-            # ==========================================
-            part_no_val, qty_val, in_date_val, out_date_val, action_loc_val, result_val = "", "", "", "", "", ""
-            
-            if type_val == "H/W 불량, 파손":
-                st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
-                r6 = st.columns([1.5, 0.8, 1.2, 1.2, 1.5, 1.2])
-                with r6[0]: part_no_val = st.text_input("도번 (Part No.)")
-                with r6[1]: qty_val = st.text_input("수량")
-                with r6[2]: in_date_val = st.text_input("입고일")
-                with r6[3]: out_date_val = st.text_input("반입일")
-                with r6[4]: action_loc_val = st.text_input("조치위치")
-                with r6[5]: result_val = st.selectbox("조치결과", ["완료", "진행중", "대기"])
-
-        # ==========================================
-        # DB 연결 및 안전 예외 처리
-        # ==========================================
-        exact_columns = [
-            "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
-            "현상", "원인", "조치", "Err.Point", "분류", "조치자", "Err. Time", 
-            "MTBA", "MTTR", "MTBI", "도번", "수량", "입고일", "반입일", "조치위치", "조치결과"
-        ]
-        
-        db_machine = None
-        df_machine = pd.DataFrame(columns=exact_columns)
-
-        try:
-            db_machine = DataManager(self.db_jam.spreadsheet_id, equip_val, exact_columns)
-            df_machine, _ = db_machine.load()
-        except Exception as e:
-            st.error(f"🚨 구글 시트 연결 실패: 새로 만드신 Jam 파일에 '{equip_val}' 이라는 이름의 탭(시트)이 없습니다.")
-
-        # ==========================================
-        # 버튼 동작 로직
-        # ==========================================
-        if btn_write:
-            if db_machine is None:
-                st.error("🚨 구글 시트 탭이 연결되지 않아 저장할 수 없습니다. 탭 이름을 먼저 확인해 주세요.")
-            elif err_code_val and err_msg_val:
-                new_data = pd.DataFrame([{
-                    "Date": date_val.strftime("%Y-%m-%d"),
-                    "Totalunit": total_unit_val,
-                    "Errorcode": err_code_val,
-                    "Errorcount": err_cnt_val,
-                    "Error Masage": err_msg_val,
-                    "현상": symp_val,
-                    "원인": cause_val,
-                    "조치": action_val,
-                    "Err.Point": err_point_val,
-                    "분류": type_val,
-                    "조치자": worker_val,
-                    "Err. Time": time_val.strftime("%H:%M"),
-                    "MTBA": mtba_val,
-                    "MTTR": mttr_val,
-                    "MTBI": mtbi_val,
-                    "도번": part_no_val,
-                    "수량": qty_val,
-                    "입고일": in_date_val,
-                    "반입일": out_date_val,
-                    "조치위치": action_loc_val,
-                    "조치결과": result_val
-                }])
-                db_machine.save(pd.concat([df_machine, new_data], ignore_index=True).fillna(""))
-                st.success(f"✅ '{equip_val}' 시트에 데이터가 정상적으로 저장되었습니다.")
-                st.rerun()
-            else:
-                st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
-                
-        if btn_edit or btn_del:
-            st.info("💡 데이터 수정/삭제는 아래 표(누적 이력)를 직접 클릭해서 고치거나 지운 후 표 하단의 [변경사항 저장] 버튼을 누르시면 됩니다.")
-
-        # ==========================================
-        # 통합 조회 표
-        # ==========================================
-        st.markdown(f"#### 🔍 {equip_val} 누적 이력 조회")
-        
-        if db_machine is not None and not df_machine.empty:
-            df_display = df_machine.copy()
-            if "Date" in df_display.columns:
-                df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
-            
-            edited_df = st.data_editor(df_display, use_container_width=True, hide_index=True, num_rows="dynamic")
-
-            if st.button(f"💾 '{equip_val}' 표 변경사항 저장", type="primary"):
-                db_machine.save(edited_df.fillna(""))
-                st.success("✅ 변경사항이 저장되었습니다!")
-                st.rerun()
-        elif db_machine is not None:
-            st.info(f"'{equip_val}' 시트에 등록된 데이터가 없습니다.")
+            with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS, key="equip_val")
+            with r1[1]: date_val = st.
