@@ -16,34 +16,44 @@ class JamLogTab:
         if "err_msg" not in st.session_state: st.session_state.err_msg = ""
 
         # ==========================================
-        # ★ 무적의 자동완성 로직 (띄어쓰기, 대소문자 무시)
+        # ★ 자동완성 로직 (정확한 마스터 시트 타겟팅)
         # ==========================================
         def autofill(source_field):
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
             
+            # 1. 대표님이 지정해주신 정확한 에러 마스터 시트명 분기
+            if equip_name == "SLH1 #1":
+                target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
+            elif equip_name == "SLH1 #4":
+                target_error_tab = "SLH1_SoCAMM ErrorList"
+            else:
+                target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList" # 기본값
+                
             try:
-                # 지정된 컬럼 포맷을 강제하지 않고, 현재 탭(Jam List)을 있는 그대로 전부 스캔합니다.
-                db_err = DataManager(self.db_jam.spreadsheet_id, equip_name)
+                # 지정된 마스터 시트에서 데이터 로드
+                db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
                 df_err, _ = db_err.load()
                 if df_err.empty: return 
             except Exception: 
-                return # 탭이 없으면 조용히 종료
+                return # 해당 이름의 탭이 구글시트에 없으면 조용히 종료
             
             # 사용자가 방금 입력한 값
             search_val = str(st.session_state[source_field]).strip()
             if not search_val: return
             
-            # [핵심] 엑셀 시트의 컬럼명이 "Error Code"든 "Errorcode"든 다 찾아내는 함수
-            def get_real_col(target):
-                target_clean = target.lower().replace(" ", "")
+            # 2. 마스터 시트의 컬럼명이 한글일지 영어일지 모르므로 유연하게 스캔
+            def get_real_col(*possible_names):
                 for c in df_err.columns:
-                    if str(c).lower().replace(" ", "") == target_clean:
-                        return c
+                    c_clean = str(c).lower().replace(" ", "")
+                    for p in possible_names:
+                        if c_clean == p.lower().replace(" ", ""):
+                            return c
                 return None
 
-            col_code = get_real_col("errorcode")
-            col_point = get_real_col("err.point")
-            col_msg = get_real_col("errormasage")
+            # 엑셀의 헤더가 영어든 한글이든 대응
+            col_code = get_real_col("errorcode", "알람코드", "code")
+            col_point = get_real_col("err.point", "모듈", "point", "errpoint")
+            col_msg = get_real_col("errormasage", "알람명", "errormessage", "message", "error message")
             
             source_to_col = {"err_code": col_code, "err_point": col_point, "err_msg": col_msg}
             search_col = source_to_col.get(source_field)
@@ -56,9 +66,9 @@ class JamLogTab:
                 if match.empty: 
                     match = df_err[df_err[search_col].astype(str).str.contains(search_val, case=False, na=False)]
                 
-                # 3. 과거 이력 중 '가장 최근(마지막)' 데이터로 채워넣기
+                # 3. 마스터 시트에서 매칭된 정보 가져와서 폼에 주입
                 if not match.empty:
-                    row = match.iloc[-1] 
+                    row = match.iloc[0] 
                     
                     if source_field != "err_code" and col_code: 
                         st.session_state.err_code = str(row[col_code])
@@ -70,7 +80,7 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (정돈된 상태 유지)
+        # 🚨 UI 레이아웃 CSS (안정화된 상태 100% 유지)
         # ========================================================
         st.markdown("""
             <style>
@@ -140,7 +150,7 @@ class JamLogTab:
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼 (이벤트 트리거 완벽 연결)
+        # 입력 폼
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
@@ -156,8 +166,8 @@ class JamLogTab:
             with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
             
             category_options = [
-                "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
-                "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원익파악불가", "장비대여불가,추후 대응"
+                "S/W Logic 불량", "H/W 불량, 파 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
+                "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원인파악불가", "장비대기, 추후 대응"
             ]
             with r2[2]: type_val = st.selectbox("분류", category_options)
 
