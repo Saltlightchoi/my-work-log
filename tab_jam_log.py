@@ -16,7 +16,7 @@ class JamLogTab:
         if "err_msg" not in st.session_state: st.session_state.err_msg = ""
 
         # ==========================================
-        # ★ 핵심 로직: 3개 중 1개만 입력해도 나머지를 찾아주는 자동완성 함수
+        # ★ 자동완성 함수
         # ==========================================
         def autofill(source_field):
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
@@ -52,27 +52,59 @@ class JamLogTab:
                         st.session_state.err_msg = str(row["알람명"])
 
         # ==========================================
-        # 장비명 세팅 및 심플 CSS
+        # 극단적 압축 CSS (짤림 방지 + 높이 통일 + 간격 축소)
         # ==========================================
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         st.markdown("""
             <style>
-            .block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-            div[data-testid="stWidgetLabel"] p { font-size: 14px !important; font-weight: 600 !important; color: #222 !important; }
+            /* 1. 상단 테두리 짤림 방지를 위해 top 2rem 유지, 하단 여백 축소 */
+            .block-container { padding-top: 2rem !important; padding-bottom: 1rem !important; }
+            
+            /* 2. 라벨(제목) 하단 여백 극단적 축소 */
+            div[data-testid="stWidgetLabel"] { margin-bottom: 2px !important; }
+            div[data-testid="stWidgetLabel"] p { font-size: 13px !important; font-weight: 700 !important; color: #222 !important; }
+            
+            /* 3. 일반 입력창 얇게 고정 */
             div[data-testid="stTextInput"] input, 
             div[data-testid="stDateInput"] input, 
             div[data-testid="stTimeInput"] input,
-            div[data-testid="stNumberInput"] input,
-            div[data-testid="stSelectbox"] div[data-baseweb="select"] span { font-size: 14px !important; }
+            div[data-testid="stNumberInput"] input { 
+                font-size: 13px !important; 
+                min-height: 34px !important; 
+                height: 34px !important; 
+                padding: 0px 10px !important;
+            }
+            
+            /* 4. 드롭다운(Selectbox) 얇게 고정 및 내부 글씨 축소 */
+            div[data-baseweb="select"] * { font-size: 13px !important; }
+            div[data-baseweb="select"] > div { 
+                min-height: 34px !important; 
+                height: 34px !important; 
+                padding-top: 0px !important; 
+                padding-bottom: 0px !important; 
+            }
+            /* 드롭다운 리스트 항목 얇게 */
+            ul[role="listbox"] li { font-size: 13px !important; min-height: 30px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
+            
+            /* 5. 각 줄 사이 세로 간격(gap, margin) 극단적 압축 */
+            div[data-testid="stVerticalBlock"] { gap: 0.2rem !important; }
+            div.element-container { margin-bottom: -5px !important; }
+            
+            /* 버튼들도 얇게 고정 */
+            .stButton > button { min-height: 34px !important; height: 34px !important; padding: 0px !important; font-size: 14px !important;}
             </style>
         """, unsafe_allow_html=True)
 
+        # ==========================================
+        # 상단 네비게이션 & 우측 액션 버튼
+        # ==========================================
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
         ]
         
+        # 버튼을 탭 이동창 바로 우측으로 바짝 붙임
         nav_cols = st.columns([6, 1, 1, 1])
         with nav_cols[0]:
             selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
@@ -83,10 +115,10 @@ class JamLogTab:
         with nav_cols[2]: btn_edit = st.button("✏️ 수정", use_container_width=True)
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
-        st.markdown("---")
+        # 박스 상단 여백 유발자(마크다운 구분선) 삭제됨
 
         # ==========================================
-        # 입력 폼 (자동완성 콜백 연결)
+        # 입력 폼 (세로/가로 초밀착 배분)
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
@@ -102,7 +134,7 @@ class JamLogTab:
             with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
             
             category_options = [
-                "S/W Logic 불량","H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
+                "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원익파악불가", "장비대여불가,추후 대응"
             ]
             with r2[2]: type_val = st.selectbox("분류", category_options)
@@ -123,7 +155,8 @@ class JamLogTab:
             part_no_val, qty_val, in_date_val, out_date_val, action_loc_val, result_val = "", "", "", "", "", ""
             
             if type_val == "H/W 불량, 파손":
-                st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+                # 내부 폼이 등장할 때만 얇은 선 그리기
+                st.markdown("<hr style='margin-top: 5px; margin-bottom: 5px;'>", unsafe_allow_html=True)
                 r6 = st.columns([1.5, 0.8, 1.2, 1.2, 1.5, 1.2])
                 with r6[0]: part_no_val = st.text_input("도번 (Part No.)")
                 with r6[1]: qty_val = st.text_input("수량")
@@ -133,7 +166,7 @@ class JamLogTab:
                 with r6[5]: result_val = st.selectbox("조치결과", ["완료", "진행중", "대기"])
 
         # ==========================================
-        # DB 연결
+        # DB 연결 및 저장 로직
         # ==========================================
         exact_columns = [
             "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
@@ -150,9 +183,6 @@ class JamLogTab:
         except Exception as e:
             st.error(f"🚨 구글 시트 연결 실패: 새로 만드신 Jam 파일에 '{equip_val}' 이라는 이름의 탭(시트)이 없습니다.")
 
-        # ==========================================
-        # 버튼 동작 로직
-        # ==========================================
         if btn_write:
             if db_machine is None:
                 st.error("🚨 구글 시트 탭이 연결되지 않아 저장할 수 없습니다. 탭 이름을 먼저 확인해 주세요.")
