@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import io  # 엑셀 다운로드를 위한 라이브러리 추가
+import io
 from datetime import datetime
 from config import DataManager
 
@@ -83,7 +83,7 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (안정화된 픽셀 100% 유지)
+        # 🚨 UI 레이아웃 CSS
         # ========================================================
         st.markdown("""
             <style>
@@ -252,7 +252,7 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 ★ 엑셀 다운로드 추가 ★
+        # 통합 조회 표 및 엑셀 다운로드 
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
@@ -280,12 +280,11 @@ class JamLogTab:
             if "Date" in df_display.columns:
                 df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
             
-            # 타이틀 및 다운로드 버튼 가로 배치
-            view_cols = st.columns([8.5, 1.5])
+            # 🚨 버튼 왼쪽으로 밀어내기 (우측에 빈 공간(1.5) 추가)
+            view_cols = st.columns([7.0, 1.5, 1.5])
             with view_cols[0]:
                 st.markdown(f"#### 🔍 {equip_val} 누적 이력 조회 ({len(df_display)}건)")
             with view_cols[1]:
-                # 엑셀 엔진 에러 방지를 위한 안전장치 (오류 시 CSV로 자동 전환)
                 buffer = io.BytesIO()
                 try:
                     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
@@ -294,7 +293,7 @@ class JamLogTab:
                     file_name = f"{equip_val}_데이터_{datetime.now().strftime('%Y%m%d')}.xlsx"
                     mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 except Exception:
-                    download_data = df_display.to_csv(index=False).encode('utf-8-sig') # 한글 안 깨지는 CSV
+                    download_data = df_display.to_csv(index=False).encode('utf-8-sig') 
                     file_name = f"{equip_val}_데이터_{datetime.now().strftime('%Y%m%d')}.csv"
                     mime_type = "text/csv"
 
@@ -305,6 +304,8 @@ class JamLogTab:
                     mime=mime_type,
                     use_container_width=True
                 )
+            with view_cols[2]:
+                st.empty() # 스트림릿 툴바와 겹치지 않도록 우측을 비워둠
 
             # 데이터 에디터 표출
             edited_df = st.data_editor(df_display, use_container_width=True, hide_index=True, num_rows="dynamic")
