@@ -16,56 +16,61 @@ class JamLogTab:
         if "err_msg" not in st.session_state: st.session_state.err_msg = ""
 
         # ==========================================
-        # ★ 자동완성 함수 (원인 수정 완벽 조치)
+        # ★ 무적의 자동완성 로직 (띄어쓰기, 대소문자 무시)
         # ==========================================
         def autofill(source_field):
-            # 1. 가상 시트가 아닌, '현재 탭(Jam List)'에서 과거 데이터를 불러옵니다.
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
-            exact_columns = [
-                "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
-                "현상", "원인", "조치", "Err.Point", "분류", "조치자", "Err. Time", 
-                "MTBA", "MTTR", "MTBI", "도번", "수량", "입고일", "반입일", "조치위치", "조치결과"
-            ]
             
             try:
-                # 현재 장비의 시트를 직접 스캔합니다.
-                db_err = DataManager(self.db_jam.spreadsheet_id, equip_name, exact_columns)
+                # 지정된 컬럼 포맷을 강제하지 않고, 현재 탭(Jam List)을 있는 그대로 전부 스캔합니다.
+                db_err = DataManager(self.db_jam.spreadsheet_id, equip_name)
                 df_err, _ = db_err.load()
-                if not df_err.empty: 
-                    df_err.columns = df_err.columns.astype(str).str.strip()
+                if df_err.empty: return 
             except Exception: 
-                return 
+                return # 탭이 없으면 조용히 종료
             
+            # 사용자가 방금 입력한 값
             search_val = str(st.session_state[source_field]).strip()
-            if not search_val or df_err.empty: return
+            if not search_val: return
             
-            # 2. 구글 시트의 실제 컬럼명 스펠링에 정확히 맞춤
-            col_map = {"err_code": "Errorcode", "err_point": "Err.Point", "err_msg": "Error Masage"}
-            search_col = col_map.get(source_field)
+            # [핵심] 엑셀 시트의 컬럼명이 "Error Code"든 "Errorcode"든 다 찾아내는 함수
+            def get_real_col(target):
+                target_clean = target.lower().replace(" ", "")
+                for c in df_err.columns:
+                    if str(c).lower().replace(" ", "") == target_clean:
+                        return c
+                return None
+
+            col_code = get_real_col("errorcode")
+            col_point = get_real_col("err.point")
+            col_msg = get_real_col("errormasage")
             
-            if search_col in df_err.columns:
-                # 완벽히 일치하는 값 검색
+            source_to_col = {"err_code": col_code, "err_point": col_point, "err_msg": col_msg}
+            search_col = source_to_col.get(source_field)
+            
+            if search_col and search_col in df_err.columns:
+                # 1. 100% 일치하는 값 찾기
                 match = df_err[df_err[search_col].astype(str).str.strip() == search_val]
                 
-                # 없으면 포함하는 값 검색
+                # 2. 없으면 단어가 '포함된' 값 찾기
                 if match.empty: 
                     match = df_err[df_err[search_col].astype(str).str.contains(search_val, case=False, na=False)]
                 
-                # 과거 이력에서 찾았다면 빈칸 자동 주입
+                # 3. 과거 이력 중 '가장 최근(마지막)' 데이터로 채워넣기
                 if not match.empty:
-                    # 과거 이력 중 '가장 최근(마지막)'에 발생했던 동일 에러 정보를 가져옵니다
                     row = match.iloc[-1] 
-                    if source_field != "err_code" and "Errorcode" in df_err.columns: 
-                        st.session_state.err_code = str(row["Errorcode"])
-                    if source_field != "err_point" and "Err.Point" in df_err.columns: 
-                        st.session_state.err_point = str(row["Err.Point"])
-                    if source_field != "err_msg" and "Error Masage" in df_err.columns: 
-                        st.session_state.err_msg = str(row["Error Masage"])
+                    
+                    if source_field != "err_code" and col_code: 
+                        st.session_state.err_code = str(row[col_code])
+                    if source_field != "err_point" and col_point: 
+                        st.session_state.err_point = str(row[col_point])
+                    if source_field != "err_msg" and col_msg: 
+                        st.session_state.err_msg = str(row[col_msg])
 
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 레이아웃 픽셀 완벽 고정 CSS (건드리지 않고 유지) 🚨
+        # 🚨 UI 레이아웃 CSS (정돈된 상태 유지)
         # ========================================================
         st.markdown("""
             <style>
@@ -135,7 +140,7 @@ class JamLogTab:
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼 (콜백 함수 연결 유지)
+        # 입력 폼 (이벤트 트리거 완벽 연결)
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
