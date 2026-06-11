@@ -9,7 +9,7 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # ★ Session State 초기화 (자동완성을 위한 메모리 생성)
+        # ★ Session State 초기화 (자동완성 메모리)
         # ==========================================
         if "err_code" not in st.session_state: st.session_state.err_code = ""
         if "err_point" not in st.session_state: st.session_state.err_point = ""
@@ -38,7 +38,6 @@ class JamLogTab:
             
             if search_col in df_err.columns:
                 match = df_err[df_err[search_col].astype(str).str.strip() == search_val]
-                
                 if match.empty:
                     match = df_err[df_err[search_col].astype(str).str.contains(search_val, case=False, na=False)]
                     
@@ -52,42 +51,56 @@ class JamLogTab:
                         st.session_state.err_msg = str(row["알람명"])
 
         # ==========================================
-        # 안전한 레이아웃 CSS (상단 짤림 완벽 해결)
+        # ★ 스마트 CSS (상단 보호 & 내부 박스만 초밀착 압축)
         # ==========================================
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         st.markdown("""
             <style>
-            /* 1. 상단 테두리 짤림 및 메뉴 숨김 방지 (padding-top 4rem으로 안전하게 내림) */
-            .block-container { padding-top: 4rem !important; padding-bottom: 1rem !important; }
+            /* 1. 상단 테두리 및 메뉴 짤림 방지 (안전 확보) */
+            .block-container { padding-top: 3.5rem !important; padding-bottom: 1rem !important; }
             
-            /* 2. 라벨(제목) 하단 여백 축소 */
-            div[data-testid="stWidgetLabel"] { margin-bottom: 2px !important; }
+            /* 2. 라벨(제목) 하단 여백 완전 제거 */
+            div[data-testid="stWidgetLabel"] { margin-bottom: -2px !important; }
             div[data-testid="stWidgetLabel"] p { font-size: 13px !important; font-weight: 700 !important; color: #222 !important; }
             
-            /* 3. 일반 입력창 얇게 고정 */
+            /* 3. 일반 입력창 및 드롭다운 얇게 고정 */
             div[data-testid="stTextInput"] input, 
             div[data-testid="stDateInput"] input, 
             div[data-testid="stTimeInput"] input,
             div[data-testid="stNumberInput"] input { 
                 font-size: 13px !important; 
-                min-height: 34px !important; 
-                height: 34px !important; 
+                min-height: 32px !important; 
+                height: 32px !important; 
                 padding: 0px 10px !important;
             }
-            
-            /* 4. 드롭다운(Selectbox) 얇게 고정 및 내부 글씨 축소 */
             div[data-baseweb="select"] * { font-size: 13px !important; }
             div[data-baseweb="select"] > div { 
-                min-height: 34px !important; 
-                height: 34px !important; 
+                min-height: 32px !important; 
+                height: 32px !important; 
                 padding-top: 0px !important; 
                 padding-bottom: 0px !important; 
             }
             ul[role="listbox"] li { font-size: 13px !important; min-height: 30px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
             
-            /* 5. 버튼 크기 및 폰트 고정 */
+            /* 4. 우측 버튼 크기 고정 */
             .stButton > button { min-height: 34px !important; height: 34px !important; padding: 0px !important; font-size: 14px !important;}
+            
+            /* ★ 5. 줄별 간격 복구 (테두리 쳐진 네모 박스 '내부'만 강제 압축하여 상단 레이아웃 파괴 방지) ★ */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] { 
+                gap: 0.1rem !important; 
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stSelectbox"], 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stTextInput"], 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stDateInput"], 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stTimeInput"], 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stNumberInput"] { 
+                margin-bottom: -15px !important; 
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] hr {
+                margin-top: 0px !important;
+                margin-bottom: 0px !important;
+            }
             </style>
         """, unsafe_allow_html=True)
 
@@ -99,7 +112,6 @@ class JamLogTab:
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
         ]
         
-        # 버튼을 탭 이동창 바로 우측으로 나란히 배치
         nav_cols = st.columns([6, 1, 1, 1])
         with nav_cols[0]:
             selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
@@ -111,7 +123,7 @@ class JamLogTab:
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼 (세로/가로 초밀착 배분)
+        # 입력 폼 (초밀착 세로 여백 적용)
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
@@ -126,7 +138,6 @@ class JamLogTab:
             with r2[0]: err_point_val = st.text_input("Err.Point", key="err_point", on_change=autofill, args=("err_point",))
             with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
             
-            # 대표님께서 지정해주신 카테고리 (10개)
             category_options = [
                 "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원익파악불가", "장비대여불가,추후 대응"
@@ -148,9 +159,8 @@ class JamLogTab:
 
             part_no_val, qty_val, in_date_val, out_date_val, action_loc_val, result_val = "", "", "", "", "", ""
             
-            # H/W 폼 동적 표출
             if type_val == "H/W 불량, 파손":
-                st.markdown("<hr style='margin-top: 10px; margin-bottom: 10px;'>", unsafe_allow_html=True)
+                st.markdown("<hr>", unsafe_allow_html=True)
                 r6 = st.columns([1.5, 0.8, 1.2, 1.2, 1.5, 1.2])
                 with r6[0]: part_no_val = st.text_input("도번 (Part No.)")
                 with r6[1]: qty_val = st.text_input("수량")
