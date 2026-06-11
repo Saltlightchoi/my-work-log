@@ -87,7 +87,7 @@ class JamLogTab:
         # ========================================================
         st.markdown("""
             <style>
-            .block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
+            .block-container { padding-top: 1.0rem !important; padding-bottom: 1rem !important; }
 
             div[data-testid="stSelectbox"]:first-of-type div[data-baseweb="select"] > div {
                 height: 38px !important; min-height: 38px !important;
