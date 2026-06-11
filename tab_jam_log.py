@@ -9,7 +9,7 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # ★ Session State 초기화 (자동완성 메모리)
+        # ★ Session State 초기화
         # ==========================================
         if "err_code" not in st.session_state: st.session_state.err_code = ""
         if "err_point" not in st.session_state: st.session_state.err_point = ""
@@ -51,38 +51,53 @@ class JamLogTab:
                         st.session_state.err_msg = str(row["알람명"])
 
         # ==========================================
-        # ★ 스마트 CSS (드롭다운 글씨 크기 완벽 고정)
+        # ★ 진짜 폰트/줄간격 타겟팅 CSS ★
         # ==========================================
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         st.markdown("""
             <style>
-            /* 1. 상단 메뉴 짤림 방지 (안전 확보) */
+            /* 1. 상단 메뉴 짤림 방지 */
             .block-container { padding-top: 3.5rem !important; padding-bottom: 1rem !important; }
-            
-            /* 2. 우측 상단 버튼 크기 복구 및 깔끔한 고정 */
             .stButton > button { min-height: 36px !important; height: 36px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; }
             
-            /* ★ 3. 드롭다운 팝업 리스트 글씨 크기 전역 고정 (허공에 뜨는 리스트까지 완벽 축소) ★ */
+            /* ----------------------------------------------------------------- */
+            /* 2. 폰트 사이즈 '13px' 완벽 일치화 (드롭다운의 숨겨진 span 태그 강제 타겟팅) */
+            /* ----------------------------------------------------------------- */
+            div[data-testid="stTextInput"] input, 
+            div[data-testid="stDateInput"] input, 
+            div[data-testid="stTimeInput"] input,
+            div[data-testid="stNumberInput"] input { 
+                font-size: 13px !important; 
+                min-height: 32px !important; 
+                height: 32px !important; 
+                padding: 0px 10px !important;
+            }
+            
+            /* 드롭다운 박스 높이 고정 및 내부 글자 강제 13px */
+            div[data-baseweb="select"] > div { 
+                min-height: 32px !important; 
+                height: 32px !important; 
+                padding-top: 0px !important; 
+                padding-bottom: 0px !important; 
+            }
+            div[data-baseweb="select"] span { 
+                font-size: 13px !important; /* 이 코드가 드롭다운 멍청한 폰트를 죽입니다 */
+                color: #222 !important;
+            }
             ul[role="listbox"] li { 
                 font-size: 13px !important; 
-                min-height: 30px !important; 
+                min-height: 28px !important; 
                 padding-top: 4px !important; 
                 padding-bottom: 4px !important; 
             }
-            
-            /* ---------------------------------------------------- */
-            /* ★ 아래부터는 테두리 쳐진 '입력 폼 박스 내부'에만 작동합니다 ★ */
-            /* ---------------------------------------------------- */
-            
-            /* 4. 박스 내부 각 줄(Row) 사이의 여백 뭉개기 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div.element-container { 
-                margin-bottom: -15px !important; 
-            }
-            
-            /* 5. 라벨(제목)과 입력창 사이의 쓸데없는 공백 제거 */
+
+            /* ----------------------------------------------------------------- */
+            /* 3. 새로운 줄 간격 타겟팅 (태평양 여백 완전 압축) */
+            /* ----------------------------------------------------------------- */
+            /* 제목(라벨) 밑의 쓸데없는 여백 제거 */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
-                margin-bottom: -5px !important; 
+                margin-bottom: -4px !important; 
             }
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
                 font-size: 13px !important; 
@@ -90,29 +105,19 @@ class JamLogTab:
                 color: #222 !important; 
             }
             
-            /* 6. 폼 내부 일반 입력창 크기 고정 */
-            div[data-testid="stVerticalBlockBorderWrapper"] input { 
-                font-size: 13px !important; 
-                min-height: 32px !important; 
-                height: 32px !important; 
-                padding: 0px 10px !important;
+            /* ★ 위젯들을 감싸는 투명 박스의 아래쪽 마진을 통째로 마이너스로 당김 ★ */
+            div[data-testid="stVerticalBlockBorderWrapper"] .element-container { 
+                margin-bottom: -12px !important; 
             }
             
-            /* ★ 7. 폼 내부 드롭다운(Selectbox) 박스 자체의 크기와 선택된 글자 크기 축소 ★ */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] * { 
-                font-size: 13px !important; 
+            /* 칼럼 사이의 기본 gap 0으로 소각 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="column"] > div[data-testid="stVerticalBlock"] {
+                gap: 0rem !important;
             }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
-                min-height: 32px !important; 
-                height: 32px !important; 
-                padding-top: 0px !important; 
-                padding-bottom: 0px !important; 
-            }
-            
-            /* 8. H/W 선택 시 나오는 구분선(hr) 상하 여백 제거 */
+
             div[data-testid="stVerticalBlockBorderWrapper"] hr {
-                margin-top: 5px !important;
-                margin-bottom: 5px !important;
+                margin-top: 8px !important;
+                margin-bottom: 8px !important;
             }
             </style>
         """, unsafe_allow_html=True)
