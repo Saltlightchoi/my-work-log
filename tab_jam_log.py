@@ -51,7 +51,7 @@ class JamLogTab:
                         st.session_state.err_msg = str(row["알람명"])
 
         # ==========================================
-        # ★ 스마트 CSS (메뉴 원상복구 & 박스 내부만 초밀착)
+        # ★ 스마트 CSS (드롭다운 글씨 크기 완벽 고정)
         # ==========================================
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
@@ -63,16 +63,24 @@ class JamLogTab:
             /* 2. 우측 상단 버튼 크기 복구 및 깔끔한 고정 */
             .stButton > button { min-height: 36px !important; height: 36px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; }
             
+            /* ★ 3. 드롭다운 팝업 리스트 글씨 크기 전역 고정 (허공에 뜨는 리스트까지 완벽 축소) ★ */
+            ul[role="listbox"] li { 
+                font-size: 13px !important; 
+                min-height: 30px !important; 
+                padding-top: 4px !important; 
+                padding-bottom: 4px !important; 
+            }
+            
             /* ---------------------------------------------------- */
             /* ★ 아래부터는 테두리 쳐진 '입력 폼 박스 내부'에만 작동합니다 ★ */
             /* ---------------------------------------------------- */
             
-            /* 3. 박스 내부 각 줄(Row) 사이의 여백을 완전히 뭉개버림 */
+            /* 4. 박스 내부 각 줄(Row) 사이의 여백 뭉개기 */
             div[data-testid="stVerticalBlockBorderWrapper"] div.element-container { 
                 margin-bottom: -15px !important; 
             }
             
-            /* 4. 라벨(제목)과 입력창 사이의 쓸데없는 공백 제거 */
+            /* 5. 라벨(제목)과 입력창 사이의 쓸데없는 공백 제거 */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
                 margin-bottom: -5px !important; 
             }
@@ -82,13 +90,15 @@ class JamLogTab:
                 color: #222 !important; 
             }
             
-            /* 5. 폼 내부 입력창 및 드롭다운의 높이와 글자 크기 얇게 다이어트 */
+            /* 6. 폼 내부 일반 입력창 크기 고정 */
             div[data-testid="stVerticalBlockBorderWrapper"] input { 
                 font-size: 13px !important; 
                 min-height: 32px !important; 
                 height: 32px !important; 
                 padding: 0px 10px !important;
             }
+            
+            /* ★ 7. 폼 내부 드롭다운(Selectbox) 박스 자체의 크기와 선택된 글자 크기 축소 ★ */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] * { 
                 font-size: 13px !important; 
             }
@@ -99,7 +109,7 @@ class JamLogTab:
                 padding-bottom: 0px !important; 
             }
             
-            /* 6. H/W 선택 시 나오는 구분선(hr) 상하 여백 제거 */
+            /* 8. H/W 선택 시 나오는 구분선(hr) 상하 여백 제거 */
             div[data-testid="stVerticalBlockBorderWrapper"] hr {
                 margin-top: 5px !important;
                 margin-bottom: 5px !important;
@@ -115,7 +125,6 @@ class JamLogTab:
             "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"
         ]
         
-        # 상단 영역은 CSS 제약을 받지 않으므로 큼직하고 시원하게 나옵니다.
         nav_cols = st.columns([6, 1, 1, 1])
         with nav_cols[0]:
             selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
@@ -127,7 +136,7 @@ class JamLogTab:
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼 (이 테두리 컨테이너 내부만 CSS로 강제 압축됩니다)
+        # 입력 폼
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
