@@ -9,7 +9,7 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # ★ Session State 초기화 (자동완성 메모리)
+        # ★ Session State 초기화
         # ==========================================
         if "err_code" not in st.session_state: st.session_state.err_code = ""
         if "err_point" not in st.session_state: st.session_state.err_point = ""
@@ -41,34 +41,55 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 영역 구분을 완벽히 적용한 타겟팅 CSS 🚨
+        # 🚨 실패를 딛고 완벽히 수정한 타겟팅 CSS 🚨
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. 전체 화면 기본 여백 (상단 메뉴가 짤리지 않게 보호) */
+            /* 1. 상단 메뉴 짤림 방지 */
             .block-container { padding-top: 3.5rem !important; padding-bottom: 1rem !important; }
-            .stButton > button { min-height: 38px !important; height: 38px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; }
             
             /* ---------------------------------------------------- */
-            /* ★ [영역 구분]: 오직 '테두리가 쳐진 폼 박스 내부'만 조작합니다 ★ */
+            /* ★ 2. [상단 탭 메뉴 보호]: 첫 번째 드롭다운은 무조건 크게! ★ */
+            /* ---------------------------------------------------- */
+            div[data-testid="stSelectbox"]:first-of-type div[data-baseweb="select"] > div {
+                min-height: 40px !important; 
+                height: 40px !important;
+            }
+            div[data-testid="stSelectbox"]:first-of-type div[data-baseweb="select"] span {
+                font-size: 16px !important; 
+                font-weight: 800 !important;
+            }
+            
+            /* 우측 버튼 3개도 상단 탭 크기에 맞게 큼직하게 유지 */
+            .stButton > button { 
+                min-height: 40px !important; 
+                height: 40px !important; 
+                font-size: 14px !important; 
+                font-weight: bold !important; 
+                padding: 0px !important; 
+            }
+            
+            /* ---------------------------------------------------- */
+            /* ★ 3. [입력 폼 내부]: 폰트 13px 통일 및 줄 간격 파괴 ★ */
             /* ---------------------------------------------------- */
             
             /* 라벨(제목) 여백과 폰트 */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
-                margin-bottom: -5px !important; 
+                min-height: 14px !important;
+                margin-bottom: -6px !important; 
             }
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
-                font-size: 13px !important; font-weight: 700 !important; color: #222 !important; 
+                font-size: 12px !important; font-weight: 700 !important; color: #222 !important; 
             }
             
-            /* 일반 텍스트 입력창 높이/글자 축소 */
+            /* 일반 텍스트 입력창 높이/글자 완벽 고정 */
             div[data-testid="stVerticalBlockBorderWrapper"] input { 
                 font-size: 13px !important; 
                 min-height: 30px !important; height: 30px !important; 
                 padding: 0px 10px !important;
             }
             
-            /* 드롭다운 박스 높이/글자 축소 (상단 탭 메뉴는 이 영향을 받지 않음!) */
+            /* 드롭다운 박스 얇게 찌그러뜨림 */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
                 min-height: 30px !important; height: 30px !important; 
                 padding-top: 0px !important; padding-bottom: 0px !important; 
@@ -77,19 +98,19 @@ class JamLogTab:
                 font-size: 13px !important; 
             }
 
-            /* ★ 스트림릿 숨겨진 여백(Gap) 완벽 소각 ★ */
+            /* ★ 결정적 원인 해결: st.columns (줄) 사이의 강철 여백 소각 ★ */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] {
-                gap: 0.1rem !important; /* 태평양 같던 1rem 여백을 0.1로 쥐어짬 */
+                gap: 0rem !important; /* 기본 세로 갭 삭제 */
             }
-            div[data-testid="stVerticalBlockBorderWrapper"] .element-container { 
-                margin-bottom: -10px !important; /* 요소들 간의 꼬리 마진을 마이너스로 겹침 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { 
+                margin-bottom: -15px !important; /* 다음 줄을 위로 강제로 끌어올림 (핵심!!) */
             }
             
             div[data-testid="stVerticalBlockBorderWrapper"] hr {
-                margin-top: 8px !important; margin-bottom: 8px !important;
+                margin-top: 5px !important; margin-bottom: 5px !important;
             }
             
-            /* (팝업 리스트는 구조상 바깥에 생성되므로 일괄 폰트 적용) */
+            /* 팝업 리스트 글자 크기 */
             ul[role="listbox"] li { 
                 font-size: 13px !important; min-height: 28px !important; padding-top: 4px !important; padding-bottom: 4px !important; 
             }
@@ -97,7 +118,7 @@ class JamLogTab:
         """, unsafe_allow_html=True)
 
         # ==========================================
-        # 상단 네비게이션 & 우측 액션 버튼 (정상 크기 유지됨)
+        # 상단 네비게이션 & 우측 액션 버튼 (제한 없이 시원하게 표출됨)
         # ==========================================
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
@@ -106,7 +127,6 @@ class JamLogTab:
         
         nav_cols = st.columns([6, 1, 1, 1])
         with nav_cols[0]:
-            # 이 드롭다운은 테두리 밖이므로 글자가 작아지지 않고 본래의 큼직한 크기를 유지합니다.
             selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
             if selected_menu != st.session_state.get('current_menu'):
                 st.session_state['current_menu'] = selected_menu; st.rerun()
@@ -116,7 +136,7 @@ class JamLogTab:
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼 (이 테두리 내부만 초밀착 압축 발동)
+        # 입력 폼 (이 영역의 줄(Row) 간격이 -15px로 바짝 붙습니다)
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
@@ -131,7 +151,6 @@ class JamLogTab:
             with r2[0]: err_point_val = st.text_input("Err.Point", key="err_point", on_change=autofill, args=("err_point",))
             with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
             
-            # 카테고리 10종 유지
             category_options = [
                 "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원익파악불가", "장비대여불가,추후 대응"
