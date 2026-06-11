@@ -68,7 +68,7 @@ class JamLogTab:
             r2 = st.columns([1.5, 4.0, 1.5])
             with r2[0]: err_point_val = st.text_input("Err.Point")
             with r2[1]: err_msg_val = st.text_input("ErrorMassage")
-            with r2[2]: type_val = st.selectbox("분류", ["H/W 불량 파손", "S/W", "자재불량", "작업자실수", "기타"])
+            with r2[2]: type_val = st.selectbox("분류", ["장비대여불가,추후대응", "원인파악불가","H/W 불량 파손", "S/W Bug", "자재불량", "작업자실수","작업실수로 인한 재발생", "기타"])
 
             # ▶ 3줄: 현상, 원인 (절반씩 넓게)
             r3 = st.columns([1, 1])
