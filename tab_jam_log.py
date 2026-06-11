@@ -15,40 +15,62 @@ class JamLogTab:
         if "err_point" not in st.session_state: st.session_state.err_point = ""
         if "err_msg" not in st.session_state: st.session_state.err_msg = ""
 
+        # ==========================================
+        # ★ 자동완성 함수 (원인 수정 완벽 조치)
+        # ==========================================
         def autofill(source_field):
+            # 1. 가상 시트가 아닌, '현재 탭(Jam List)'에서 과거 데이터를 불러옵니다.
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
-            target_error_tab = "SLH1_Rdimm_ErrorList" if "#1" in equip_name else "SLH1_Socamm_ErrorList"
+            exact_columns = [
+                "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
+                "현상", "원인", "조치", "Err.Point", "분류", "조치자", "Err. Time", 
+                "MTBA", "MTTR", "MTBI", "도번", "수량", "입고일", "반입일", "조치위치", "조치결과"
+            ]
+            
             try:
-                db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
+                # 현재 장비의 시트를 직접 스캔합니다.
+                db_err = DataManager(self.db_jam.spreadsheet_id, equip_name, exact_columns)
                 df_err, _ = db_err.load()
-                if not df_err.empty: df_err.columns = df_err.columns.astype(str).str.strip()
-            except Exception: return 
+                if not df_err.empty: 
+                    df_err.columns = df_err.columns.astype(str).str.strip()
+            except Exception: 
+                return 
             
             search_val = str(st.session_state[source_field]).strip()
             if not search_val or df_err.empty: return
             
-            col_map = {"err_code": "알람코드", "err_point": "모듈", "err_msg": "알람명"}
+            # 2. 구글 시트의 실제 컬럼명 스펠링에 정확히 맞춤
+            col_map = {"err_code": "Errorcode", "err_point": "Err.Point", "err_msg": "Error Masage"}
             search_col = col_map.get(source_field)
+            
             if search_col in df_err.columns:
+                # 완벽히 일치하는 값 검색
                 match = df_err[df_err[search_col].astype(str).str.strip() == search_val]
-                if match.empty: match = df_err[df_err[search_col].astype(str).str.contains(search_val, case=False, na=False)]
+                
+                # 없으면 포함하는 값 검색
+                if match.empty: 
+                    match = df_err[df_err[search_col].astype(str).str.contains(search_val, case=False, na=False)]
+                
+                # 과거 이력에서 찾았다면 빈칸 자동 주입
                 if not match.empty:
-                    row = match.iloc[0]
-                    if source_field != "err_code" and "알람코드" in df_err.columns: st.session_state.err_code = str(row["알람코드"])
-                    if source_field != "err_point" and "모듈" in df_err.columns: st.session_state.err_point = str(row["모듈"])
-                    if source_field != "err_msg" and "알람명" in df_err.columns: st.session_state.err_msg = str(row["알람명"])
+                    # 과거 이력 중 '가장 최근(마지막)'에 발생했던 동일 에러 정보를 가져옵니다
+                    row = match.iloc[-1] 
+                    if source_field != "err_code" and "Errorcode" in df_err.columns: 
+                        st.session_state.err_code = str(row["Errorcode"])
+                    if source_field != "err_point" and "Err.Point" in df_err.columns: 
+                        st.session_state.err_point = str(row["Err.Point"])
+                    if source_field != "err_msg" and "Error Masage" in df_err.columns: 
+                        st.session_state.err_msg = str(row["Error Masage"])
 
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 [수정 완료] 픽셀 단위 일치화 & 여백 정상화 CSS 🚨
+        # 🚨 레이아웃 픽셀 완벽 고정 CSS (건드리지 않고 유지) 🚨
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. 상단 과한 여백 정상화 */
             .block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
 
-            /* 2. 상단 탭 메뉴 (크고 선명하게 유지) */
             div[data-testid="stSelectbox"]:first-of-type div[data-baseweb="select"] > div {
                 height: 38px !important; min-height: 38px !important;
             }
@@ -56,11 +78,6 @@ class JamLogTab:
                 font-size: 15px !important; font-weight: 800 !important;
             }
 
-            /* ---------------------------------------------------- */
-            /* ★ 3. 폼 내부 요소 픽셀 단위 완벽 정렬 ★ */
-            /* ---------------------------------------------------- */
-            
-            /* (A) 모든 라벨(제목)의 높이를 16px로 강제 일치 */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
                 height: 16px !important; min-height: 16px !important; margin-bottom: 4px !important; 
             }
@@ -68,13 +85,11 @@ class JamLogTab:
                 font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
             }
 
-            /* (B) 일반 텍스트 및 Date 입력창 높이를 32px로 고정 */
             div[data-testid="stVerticalBlockBorderWrapper"] input { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
                 padding: 0px 8px !important; box-sizing: border-box !important;
             }
 
-            /* (C) 드롭다운 껍데기 높이도 텍스트창과 똑같이 32px로 고정 (들쭉날쭉 원인 제거) */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
                 height: 32px !important; min-height: 32px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
                 box-sizing: border-box !important;
@@ -83,24 +98,18 @@ class JamLogTab:
                 font-size: 13px !important; 
             }
 
-            /* ---------------------------------------------------- */
-            /* 4. 안전한 줄 간격 압축 */
-            /* ---------------------------------------------------- */
-            /* 마이너스 마진 꼼수를 지우고, 스트림릿 기본 갭만 아주 좁게 설정 */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] {
                 gap: 0.1rem !important; 
             }
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { 
-                gap: 0.5rem !important; margin-bottom: -5px !important; /* 과하지 않은 선에서 밀착 */
+                gap: 0.5rem !important; margin-bottom: -5px !important; 
             }
             
-            /* 드롭다운 리스트 글자 크기 */
             ul[role="listbox"] li { font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; }
 
-            /* 5. 우측 상단 버튼 높이 일치 */
             .stButton > button { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; padding: 0px 10px !important; 
-                margin-top: 20px !important; /* 라벨 높이만큼 아래로 밀어서 드롭다운과 열 맞춤 */
+                margin-top: 20px !important; 
             }
             
             hr { margin-top: 5px !important; margin-bottom: 5px !important; }
@@ -126,7 +135,7 @@ class JamLogTab:
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼
+        # 입력 폼 (콜백 함수 연결 유지)
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
