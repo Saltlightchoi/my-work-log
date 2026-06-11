@@ -9,7 +9,7 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # ★ Session State 초기화
+        # ★ Session State 초기화 (자동완성 메모리)
         # ==========================================
         if "err_code" not in st.session_state: st.session_state.err_code = ""
         if "err_point" not in st.session_state: st.session_state.err_point = ""
@@ -18,112 +18,86 @@ class JamLogTab:
         def autofill(source_field):
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
             target_error_tab = "SLH1_Rdimm_ErrorList" if "#1" in equip_name else "SLH1_Socamm_ErrorList"
-            
             try:
                 db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
                 df_err, _ = db_err.load()
-                if not df_err.empty:
-                    df_err.columns = df_err.columns.astype(str).str.strip()
-            except Exception:
-                return 
+                if not df_err.empty: df_err.columns = df_err.columns.astype(str).str.strip()
+            except Exception: return 
             
             search_val = str(st.session_state[source_field]).strip()
             if not search_val or df_err.empty: return
             
             col_map = {"err_code": "알람코드", "err_point": "모듈", "err_msg": "알람명"}
             search_col = col_map.get(source_field)
-            
             if search_col in df_err.columns:
                 match = df_err[df_err[search_col].astype(str).str.strip() == search_val]
-                if match.empty:
-                    match = df_err[df_err[search_col].astype(str).str.contains(search_val, case=False, na=False)]
-                    
+                if match.empty: match = df_err[df_err[search_col].astype(str).str.contains(search_val, case=False, na=False)]
                 if not match.empty:
                     row = match.iloc[0]
-                    if source_field != "err_code" and "알람코드" in df_err.columns:
-                        st.session_state.err_code = str(row["알람코드"])
-                    if source_field != "err_point" and "모듈" in df_err.columns:
-                        st.session_state.err_point = str(row["모듈"])
-                    if source_field != "err_msg" and "알람명" in df_err.columns:
-                        st.session_state.err_msg = str(row["알람명"])
+                    if source_field != "err_code" and "알람코드" in df_err.columns: st.session_state.err_code = str(row["알람코드"])
+                    if source_field != "err_point" and "모듈" in df_err.columns: st.session_state.err_point = str(row["모듈"])
+                    if source_field != "err_msg" and "알람명" in df_err.columns: st.session_state.err_msg = str(row["알람명"])
 
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
-        # ==========================================
-        # 🚨 대표님 지적사항 완벽 반영 CSS 🚨
-        # ==========================================
+        # ========================================================
+        # 🚨 영역 구분을 완벽히 적용한 타겟팅 CSS 🚨
+        # ========================================================
         st.markdown("""
             <style>
-            /* 1. 상단 메뉴 짤림 방지 (여유 확보) */
+            /* 1. 전체 화면 기본 여백 (상단 메뉴가 짤리지 않게 보호) */
             .block-container { padding-top: 3.5rem !important; padding-bottom: 1rem !important; }
-            .stButton > button { min-height: 32px !important; height: 32px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; margin-top: 25px !important;}
+            .stButton > button { min-height: 38px !important; height: 38px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; }
             
             /* ---------------------------------------------------- */
-            /* ★ 2. 스트림릿 드롭다운(BaseWeb) 내부 태그 강제 압축 ★ */
+            /* ★ [영역 구분]: 오직 '테두리가 쳐진 폼 박스 내부'만 조작합니다 ★ */
             /* ---------------------------------------------------- */
-            /* 드롭다운의 뼈대 높이를 일반 텍스트창과 똑같은 30px로 짓누름 */
-            div[data-baseweb="select"] > div { 
-                min-height: 30px !important; 
-                height: 30px !important; 
-                padding-top: 0px !important; 
-                padding-bottom: 0px !important; 
+            
+            /* 라벨(제목) 여백과 폰트 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
+                margin-bottom: -5px !important; 
             }
-            /* 드롭다운 내부에 표시되는 글자(span, div) 크기를 완벽히 통일 */
-            div[data-baseweb="select"] * { 
-                font-size: 13px !important; 
-                line-height: 1.2 !important; 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
+                font-size: 13px !important; font-weight: 700 !important; color: #222 !important; 
             }
-            /* 클릭 시 열리는 리스트 글자 크기 축소 */
-            ul[data-baseweb="menu"] li { 
+            
+            /* 일반 텍스트 입력창 높이/글자 축소 */
+            div[data-testid="stVerticalBlockBorderWrapper"] input { 
                 font-size: 13px !important; 
-                min-height: 25px !important; 
-                padding-top: 4px !important; 
-                padding-bottom: 4px !important; 
-            }
-
-            /* ---------------------------------------------------- */
-            /* ★ 3. 일반 입력창 및 위젯 간격 타겟팅 ★ */
-            /* ---------------------------------------------------- */
-            /* 일반 텍스트, 날짜 입력창 폰트 및 높이 30px로 통일 */
-            div[data-testid="stTextInput"] input, 
-            div[data-testid="stDateInput"] input, 
-            div[data-testid="stTimeInput"] input,
-            div[data-testid="stNumberInput"] input { 
-                font-size: 13px !important; 
-                min-height: 30px !important; 
-                height: 30px !important; 
+                min-height: 30px !important; height: 30px !important; 
                 padding: 0px 10px !important;
             }
             
-            /* 제목(라벨) 아래 공백 완전 제거 */
-            div[data-testid="stWidgetLabel"] { 
-                margin-bottom: -5px !important; 
+            /* 드롭다운 박스 높이/글자 축소 (상단 탭 메뉴는 이 영향을 받지 않음!) */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
+                min-height: 30px !important; height: 30px !important; 
+                padding-top: 0px !important; padding-bottom: 0px !important; 
             }
-            div[data-testid="stWidgetLabel"] p { 
-                font-size: 12px !important; 
-                font-weight: 700 !important; 
-                color: #222 !important; 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { 
+                font-size: 13px !important; 
             }
 
-            /* ★ 스트림릿 고유의 줄바꿈 간격(Gap) 완전 소각 ★ */
-            /* 테두리 안쪽의 줄(Row)을 묶는 컨테이너의 갭을 0으로 만듦 */
+            /* ★ 스트림릿 숨겨진 여백(Gap) 완벽 소각 ★ */
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] {
-                gap: 0rem !important;
+                gap: 0.1rem !important; /* 태평양 같던 1rem 여백을 0.1로 쥐어짬 */
             }
-            /* 각 입력창의 하단 마진을 마이너스로 깊게 당겨버림 */
             div[data-testid="stVerticalBlockBorderWrapper"] .element-container { 
-                margin-bottom: -15px !important; 
+                margin-bottom: -10px !important; /* 요소들 간의 꼬리 마진을 마이너스로 겹침 */
             }
-            /* H/W 구분선 간격 압축 */
+            
             div[data-testid="stVerticalBlockBorderWrapper"] hr {
-                margin-top: 8px !important;
-                margin-bottom: 8px !important;
+                margin-top: 8px !important; margin-bottom: 8px !important;
+            }
+            
+            /* (팝업 리스트는 구조상 바깥에 생성되므로 일괄 폰트 적용) */
+            ul[role="listbox"] li { 
+                font-size: 13px !important; min-height: 28px !important; padding-top: 4px !important; padding-bottom: 4px !important; 
             }
             </style>
         """, unsafe_allow_html=True)
 
         # ==========================================
-        # 상단 네비게이션 & 우측 액션 버튼
+        # 상단 네비게이션 & 우측 액션 버튼 (정상 크기 유지됨)
         # ==========================================
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
@@ -132,6 +106,7 @@ class JamLogTab:
         
         nav_cols = st.columns([6, 1, 1, 1])
         with nav_cols[0]:
+            # 이 드롭다운은 테두리 밖이므로 글자가 작아지지 않고 본래의 큼직한 크기를 유지합니다.
             selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
             if selected_menu != st.session_state.get('current_menu'):
                 st.session_state['current_menu'] = selected_menu; st.rerun()
@@ -141,7 +116,7 @@ class JamLogTab:
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼
+        # 입력 폼 (이 테두리 내부만 초밀착 압축 발동)
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
@@ -156,6 +131,7 @@ class JamLogTab:
             with r2[0]: err_point_val = st.text_input("Err.Point", key="err_point", on_change=autofill, args=("err_point",))
             with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
             
+            # 카테고리 10종 유지
             category_options = [
                 "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원익파악불가", "장비대여불가,추후 대응"
