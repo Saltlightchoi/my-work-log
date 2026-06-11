@@ -103,7 +103,7 @@ class JamLogTab:
             
             category_options = [
                 "S/W Logic 불량","H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
-                "자재 불량", "작업자 실수", "기타", "원익파악불가", "장비대여불가,추후 대응"
+                "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원익파악불가", "장비대여불가,추후 대응"
             ]
             with r2[2]: type_val = st.selectbox("분류", category_options)
 
