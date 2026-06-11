@@ -41,38 +41,74 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 [가장 안정적인 CSS] 화면 전체 폼 강제 압축 🚨
+        # 🚨 실패를 딛고 수정한 '절대 잘리지 않는' CSS 🚨
         # ========================================================
-        # 주의: 이 CSS는 상단 메뉴를 포함한 '모든' 입력창과 드롭다운을 일괄 축소합니다. 
-        # 분리하려고 하면 화면이 또 깨지므로 일괄 적용하는 것이 유일한 해답입니다.
         st.markdown("""
             <style>
-            .block-container { padding-top: 3rem !important; padding-bottom: 1rem !important; }
+            /* 1. 상단 여백 정리 */
+            .block-container { padding-top: 2.5rem !important; padding-bottom: 1rem !important; }
             
-            /* 모든 제목(라벨) 여백 및 크기 통일 */
-            div[data-testid="stWidgetLabel"] { min-height: 14px !important; margin-bottom: -5px !important; }
-            div[data-testid="stWidgetLabel"] p { font-size: 13px !important; font-weight: 700 !important; color: #333 !important; }
-            
-            /* 모든 일반 입력창 높이/글자 압축 */
-            .stTextInput input, .stDateInput input, .stTimeInput input, .stNumberInput input { 
-                font-size: 13px !important; min-height: 30px !important; height: 30px !important; padding: 0px 8px !important;
+            /* ---------------------------------------------------- */
+            /* ★ 2. 가장 안전한 줄 간격 축소법 (마이너스 마진 삭제) ★ */
+            /* ---------------------------------------------------- */
+            /* 위험한 margin-bottom 음수 값을 삭제하고, 스트림릿 고유의 Gap만 0으로 만듭니다. */
+            div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
+            div[data-testid="stHorizontalBlock"] { gap: 0.2rem !important; }
+
+            /* 라벨(제목) 밑의 불필요한 공백만 살짝 당깁니다 */
+            div[data-testid="stWidgetLabel"] { 
+                margin-bottom: -5px !important; 
+                min-height: auto !important; 
+            }
+            div[data-testid="stWidgetLabel"] p { 
+                font-size: 13px !important; 
+                font-weight: 700 !important; 
+                color: #222 !important; 
             }
             
-            /* 모든 드롭다운 높이/글자 압축 (상단 메뉴 포함) */
+            /* ---------------------------------------------------- */
+            /* ★ 3. 모든 입력창 글자 크기 13px 강제 통일 ★ */
+            /* ---------------------------------------------------- */
+            div[data-testid="stTextInput"] input, 
+            div[data-testid="stNumberInput"] input, 
+            div[data-testid="stDateInput"] input, 
+            div[data-testid="stTimeInput"] input { 
+                font-size: 13px !important; 
+                padding: 4px 10px !important;
+            }
+            
+            /* ---------------------------------------------------- */
+            /* ★ 4. 드롭다운 '절반 날아감' 원천 차단 ★ */
+            /* ---------------------------------------------------- */
+            /* 모든 하위 태그(*)에 13px을 뿌려서 멍청하게 커지는 것을 차단 */
+            div[data-baseweb="select"] * { 
+                font-size: 13px !important; 
+            }
+            /* 글자를 자르던 멍청한 height 고정을 없애고, min-height와 패딩으로만 얇게 만듦 */
             div[data-baseweb="select"] > div { 
-                min-height: 30px !important; height: 30px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
+                min-height: 34px !important; 
+                padding-top: 2px !important; 
+                padding-bottom: 2px !important; 
             }
-            div[data-baseweb="select"] span { font-size: 13px !important; }
-            ul[role="listbox"] li { font-size: 13px !important; min-height: 25px !important; padding-top: 2px !important; padding-bottom: 2px !important; }
-
-            /* 버튼 압축 */
-            .stButton > button { min-height: 30px !important; height: 30px !important; font-size: 13px !important; padding: 0px !important; margin-top: 15px !important; }
-
-            /* 스트림릿 고유의 줄바꿈 간격 완전 제거 */
-            div[data-testid="stVerticalBlock"] { gap: 0rem !important; }
-            div.element-container { margin-bottom: -8px !important; }
             
-            /* 구분선 간격 */
+            /* 드롭다운 리스트(팝업) 폰트도 통일 */
+            ul[role="listbox"] li { 
+                font-size: 13px !important; 
+                padding-top: 4px !important; 
+                padding-bottom: 4px !important; 
+                min-height: 25px !important; 
+            }
+
+            /* ---------------------------------------------------- */
+            /* 5. 우측 버튼 정렬 */
+            /* ---------------------------------------------------- */
+            .stButton > button { 
+                min-height: 34px !important; 
+                font-size: 13px !important; 
+                padding: 4px 10px !important; 
+                margin-top: 24px !important; /* 버튼 위치 보정 */
+            }
+            
             hr { margin-top: 5px !important; margin-bottom: 5px !important; }
             </style>
         """, unsafe_allow_html=True)
@@ -87,8 +123,8 @@ class JamLogTab:
         
         nav_cols = st.columns([6, 1, 1, 1])
         with nav_cols[0]:
-            # CSS 일괄 적용으로 인해 이 탭 메뉴도 글자가 작아지지만, 화면이 깨지는 일은 없습니다.
-            selected_menu = st.selectbox("메뉴 이동", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
+            # 전체 폰트를 13px로 맞추었기 때문에 이 메뉴도 13px로 출력됩니다.
+            selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
             if selected_menu != st.session_state.get('current_menu'):
                 st.session_state['current_menu'] = selected_menu; st.rerun()
                 
