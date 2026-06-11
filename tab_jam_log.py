@@ -108,11 +108,12 @@ class JamLogTab:
                 padding: 0px 8px !important; box-sizing: border-box !important;
             }
 
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
-                height: 10px !important; min-height: 10px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
-                box-sizing: border-box !important;
+           div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
+                min-height: 30px !important; height: 30px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
             }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { font-size: 13px !important; }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] * { 
+                font-size: 13px !important; 
+            }
 
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
