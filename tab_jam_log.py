@@ -9,11 +9,24 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # ★ Session State 초기화
+        # ★ Session State 초기화 (에러 방지 로직 추가)
         # ==========================================
         if "err_code" not in st.session_state: st.session_state.err_code = ""
         if "err_point" not in st.session_state: st.session_state.err_point = ""
         if "err_msg" not in st.session_state: st.session_state.err_msg = ""
+        if "clear_form" not in st.session_state: st.session_state.clear_form = False
+        if "save_success_msg" not in st.session_state: st.session_state.save_success_msg = ""
+
+        # [핵심 에러 해결] 화면을 그리기 전에 미리 폼을 초기화 (StreamlitAPIException 완벽 방지)
+        if st.session_state.clear_form:
+            st.session_state.err_code = ""
+            st.session_state.err_point = ""
+            st.session_state.err_msg = ""
+            st.session_state.clear_form = False
+            
+        if st.session_state.save_success_msg:
+            st.success(st.session_state.save_success_msg)
+            st.session_state.save_success_msg = "" # 메시지 1회 표출 후 삭제
 
         # ==========================================
         # ★ 자동완성 로직 (정확한 마스터 시트 타겟팅)
@@ -21,27 +34,23 @@ class JamLogTab:
         def autofill(source_field):
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
             
-            # 1. 대표님이 지정해주신 정확한 에러 마스터 시트명 분기
             if equip_name == "SLH1 #1":
                 target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
             elif equip_name == "SLH1 #4":
                 target_error_tab = "SLH1_SoCAMM ErrorList"
             else:
-                target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList" # 기본값
+                target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
                 
             try:
-                # 지정된 마스터 시트에서 데이터 로드
                 db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
                 df_err, _ = db_err.load()
                 if df_err.empty: return 
             except Exception: 
-                return # 해당 이름의 탭이 구글시트에 없으면 조용히 종료
+                return 
             
-            # 사용자가 방금 입력한 값
             search_val = str(st.session_state[source_field]).strip()
             if not search_val: return
             
-            # 2. 마스터 시트의 컬럼명이 한글일지 영어일지 모르므로 유연하게 스캔
             def get_real_col(*possible_names):
                 for c in df_err.columns:
                     c_clean = str(c).lower().replace(" ", "")
@@ -50,7 +59,6 @@ class JamLogTab:
                             return c
                 return None
 
-            # 엑셀의 헤더가 영어든 한글이든 대응
             col_code = get_real_col("errorcode", "알람코드", "code")
             col_point = get_real_col("err.point", "모듈", "point", "errpoint")
             col_msg = get_real_col("errormasage", "알람명", "errormessage", "message", "error message")
@@ -59,14 +67,11 @@ class JamLogTab:
             search_col = source_to_col.get(source_field)
             
             if search_col and search_col in df_err.columns:
-                # 1. 100% 일치하는 값 찾기
                 match = df_err[df_err[search_col].astype(str).str.strip() == search_val]
                 
-                # 2. 없으면 단어가 '포함된' 값 찾기
                 if match.empty: 
                     match = df_err[df_err[search_col].astype(str).str.contains(search_val, case=False, na=False)]
                 
-                # 3. 마스터 시트에서 매칭된 정보 가져와서 폼에 주입
                 if not match.empty:
                     row = match.iloc[0] 
                     
@@ -166,7 +171,7 @@ class JamLogTab:
             with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
             
             category_options = [
-                "S/W Logic 불량", "H/W 불량, 파 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
+                "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원인파악불가", "장비대기, 추후 대응"
             ]
             with r2[2]: type_val = st.selectbox("분류", category_options)
@@ -247,11 +252,10 @@ class JamLogTab:
                     "조치결과": result_val
                 }])
                 db_machine.save(pd.concat([df_machine, new_data], ignore_index=True).fillna(""))
-                st.success(f"✅ '{equip_val}' 시트에 데이터가 정상적으로 저장되었습니다.")
                 
-                st.session_state.err_code = ""
-                st.session_state.err_point = ""
-                st.session_state.err_msg = ""
+                # [핵심] 성공 메시지 저장 및 폼 초기화 예약 후 새로고침
+                st.session_state.save_success_msg = f"✅ '{equip_val}' 시트에 데이터가 정상적으로 저장되었습니다."
+                st.session_state.clear_form = True 
                 st.rerun()
             else:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
