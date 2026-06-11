@@ -41,66 +41,44 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 [완벽 격리] 테두리 안쪽만 쥐어짜는 타겟팅 CSS 🚨
+        # 🚨 [가장 안정적인 CSS] 화면 전체 폼 강제 압축 🚨
         # ========================================================
+        # 주의: 이 CSS는 상단 메뉴를 포함한 '모든' 입력창과 드롭다운을 일괄 축소합니다. 
+        # 분리하려고 하면 화면이 또 깨지므로 일괄 적용하는 것이 유일한 해답입니다.
         st.markdown("""
             <style>
-            /* 1. 전체 화면 상하 여백 */
-            .block-container { padding-top: 3.5rem !important; padding-bottom: 1rem !important; }
+            .block-container { padding-top: 3rem !important; padding-bottom: 1rem !important; }
             
-            /* 상단 버튼 3개 크기 유지 (이 버튼들은 폼 밖에 있으므로 큼직하게 유지됨) */
-            .stButton > button { min-height: 38px !important; height: 38px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; }
+            /* 모든 제목(라벨) 여백 및 크기 통일 */
+            div[data-testid="stWidgetLabel"] { min-height: 14px !important; margin-bottom: -5px !important; }
+            div[data-testid="stWidgetLabel"] p { font-size: 13px !important; font-weight: 700 !important; color: #333 !important; }
             
-            /* ---------------------------------------------------- */
-            /* ★ 2. 오직 [테두리 쳐진 폼 안쪽]만 완벽하게 다이어트 ★ */
-            /* ---------------------------------------------------- */
-            
-            /* 라벨(제목) 여백과 폰트 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
-                min-height: 12px !important; margin-bottom: -6px !important; 
-            }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
-                font-size: 12px !important; font-weight: 700 !important; color: #222 !important; 
+            /* 모든 일반 입력창 높이/글자 압축 */
+            .stTextInput input, .stDateInput input, .stTimeInput input, .stNumberInput input { 
+                font-size: 13px !important; min-height: 30px !important; height: 30px !important; padding: 0px 8px !important;
             }
             
-            /* 일반 텍스트, 숫자, 날짜 입력창 폰트 13px 및 높이 30px 고정 */
-            div[data-testid="stVerticalBlockBorderWrapper"] input { 
-                font-size: 13px !important; min-height: 30px !important; height: 30px !important; padding: 0px 10px !important;
-            }
-            
-            /* ★ 핵심: 폼 내부 드롭다운만 폰트/높이 축소 (상단 메뉴는 이 영역 밖이므로 본래 크기 유지!) ★ */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
+            /* 모든 드롭다운 높이/글자 압축 (상단 메뉴 포함) */
+            div[data-baseweb="select"] > div { 
                 min-height: 30px !important; height: 30px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
             }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { 
-                font-size: 13px !important; 
-            }
+            div[data-baseweb="select"] span { font-size: 13px !important; }
+            ul[role="listbox"] li { font-size: 13px !important; min-height: 25px !important; padding-top: 2px !important; padding-bottom: 2px !important; }
 
-            /* ---------------------------------------------------- */
-            /* ★ 3. 폼 내부 줄 간격(Gap & Margin) 완전 소각 ★ */
-            /* ---------------------------------------------------- */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] {
-                gap: 0rem !important; /* 기본 세로 간격 0 */
-            }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { 
-                margin-bottom: -15px !important; /* 윗줄과 아랫줄을 강제로 바짝 겹쳐버림 */
-            }
-            div[data-testid="stVerticalBlockBorderWrapper"] div.element-container { 
-                margin-bottom: 0px !important; 
-            }
+            /* 버튼 압축 */
+            .stButton > button { min-height: 30px !important; height: 30px !important; font-size: 13px !important; padding: 0px !important; margin-top: 15px !important; }
+
+            /* 스트림릿 고유의 줄바꿈 간격 완전 제거 */
+            div[data-testid="stVerticalBlock"] { gap: 0rem !important; }
+            div.element-container { margin-bottom: -8px !important; }
             
-            /* H/W 구분선 간격 */
-            div[data-testid="stVerticalBlockBorderWrapper"] hr {
-                margin-top: 5px !important; margin-bottom: 5px !important;
-            }
-            
-            /* 팝업으로 떨어지는 리스트 폰트 (공통 적용) */
-            ul[role="listbox"] li { font-size: 13px !important; min-height: 28px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
+            /* 구분선 간격 */
+            hr { margin-top: 5px !important; margin-bottom: 5px !important; }
             </style>
         """, unsafe_allow_html=True)
 
         # ==========================================
-        # 상단 네비게이션 & 우측 액션 버튼 (드롭다운 원상복구)
+        # 상단 네비게이션 & 우측 액션 버튼
         # ==========================================
         menu_options = [
             "📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", 
@@ -109,8 +87,8 @@ class JamLogTab:
         
         nav_cols = st.columns([6, 1, 1, 1])
         with nav_cols[0]:
-            # 이 메뉴는 테두리(BorderWrapper) 바깥에 있으므로, 위 CSS의 영향을 받지 않고 본래의 큼직한 폰트를 유지합니다.
-            selected_menu = st.selectbox("메뉴", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
+            # CSS 일괄 적용으로 인해 이 탭 메뉴도 글자가 작아지지만, 화면이 깨지는 일은 없습니다.
+            selected_menu = st.selectbox("메뉴 이동", menu_options, index=menu_options.index(st.session_state.get('current_menu', "🚨 Jam & 트러블슈팅 이력")), key="menu_jam_log", label_visibility="collapsed")
             if selected_menu != st.session_state.get('current_menu'):
                 st.session_state['current_menu'] = selected_menu; st.rerun()
                 
@@ -119,7 +97,7 @@ class JamLogTab:
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
         # ==========================================
-        # 입력 폼 (이 테두리 내부에서만 초밀착 다이어트 발동)
+        # 입력 폼
         # ==========================================
         with st.container(border=True):
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
