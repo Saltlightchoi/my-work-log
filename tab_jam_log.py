@@ -41,95 +41,68 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 대표님의 4가지 지적사항을 100% 반영한 CSS 🚨
+        # 🚨 [수정 완료] 픽셀 단위 일치화 & 여백 정상화 CSS 🚨
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. 상단 탭 메뉴 위로 잘림 완벽 해결 (상단 패딩 여유 확보) */
-            .block-container { padding-top: 4rem !important; padding-bottom: 1rem !important; }
+            /* 1. 상단 과한 여백 정상화 */
+            .block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
 
-            /* ==================================================== */
-            /* 2. 모든 입력창(텍스트, Date, 드롭다운)의 높이를 32px로 완벽 일치 */
-            /* ==================================================== */
-            
-            /* Date 입력창 및 일반 텍스트 입력창 고정 */
-            div[data-testid="stTextInput"] input, 
-            div[data-testid="stDateInput"] input, 
-            div[data-testid="stTimeInput"] input { 
-                font-size: 13px !important; 
-                height: 32px !important; 
-                min-height: 32px !important; 
-                padding: 0px 10px !important;
-            }
-
-            /* 장비명, 분류 등 드롭다운 폭(높이) 강제 고정 및 테두리 복구 */
-            div[data-testid="stSelectbox"] div[data-baseweb="select"] > div { 
-                height: 32px !important; 
-                min-height: 32px !important; 
-                border: 1px solid rgba(49, 51, 63, 0.2) !important; /* 사라졌던 테두리 완벽 복구 */
-                border-radius: 0.5rem !important;
-                padding-top: 0px !important; 
-                padding-bottom: 0px !important; 
-            }
-            
-            /* 드롭다운 내부 글자 크기 및 수직 중앙 정렬 */
-            div[data-testid="stSelectbox"] div[data-baseweb="select"] span { 
-                font-size: 13px !important; 
-                line-height: 32px !important; /* 글자가 박스 중앙에 오도록 맞춤 */
-                padding-top: 0px !important;
-                padding-bottom: 0px !important;
-            }
-
-            /* ==================================================== */
-            /* 3. 엉망이던 줄별 간격 및 라벨 들뜸 해결 */
-            /* ==================================================== */
-            
-            /* 제목(라벨) 아래 여백 제거 */
-            div[data-testid="stWidgetLabel"] { 
-                min-height: 14px !important; 
-                margin-bottom: 2px !important; 
-            }
-            div[data-testid="stWidgetLabel"] p { 
-                font-size: 12px !important; 
-                font-weight: bold !important; 
-                color: #222 !important; 
-            }
-
-            /* 가로 줄(Row) 간의 간격을 바짝 당김 (마이너스 꼼수 대신 스트림릿 기본 여백 0 처리) */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] {
-                gap: 0rem !important;
-            }
-            div[data-testid="stVerticalBlockBorderWrapper"] div.element-container { 
-                margin-bottom: -5px !important; /* 매우 안전한 수준의 최소 당김 */
-            }
-            
-            /* 줄 안에서 Date창과 텍스트창의 바닥 라인이 일치하도록 하단 정렬 */
-            div[data-testid="stHorizontalBlock"] {
-                align-items: flex-end !important;
-            }
-
-            /* ==================================================== */
-            /* 4. 상단 메뉴(첫 번째 드롭다운) 크기 복구 및 예외 처리 */
-            /* ==================================================== */
+            /* 2. 상단 탭 메뉴 (크고 선명하게 유지) */
             div[data-testid="stSelectbox"]:first-of-type div[data-baseweb="select"] > div {
-                height: 40px !important; 
-                min-height: 40px !important;
+                height: 38px !important; min-height: 38px !important;
             }
             div[data-testid="stSelectbox"]:first-of-type div[data-baseweb="select"] span {
-                font-size: 16px !important; 
-                line-height: 40px !important;
-                font-weight: bold !important;
+                font-size: 15px !important; font-weight: 800 !important;
             }
 
-            /* 우측 저장/수정/삭제 버튼 높이 일치 */
-            .stButton > button { 
-                height: 32px !important; 
-                min-height: 32px !important; 
+            /* ---------------------------------------------------- */
+            /* ★ 3. 폼 내부 요소 픽셀 단위 완벽 정렬 ★ */
+            /* ---------------------------------------------------- */
+            
+            /* (A) 모든 라벨(제목)의 높이를 16px로 강제 일치 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
+                height: 16px !important; min-height: 16px !important; margin-bottom: 4px !important; 
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
+                font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
+            }
+
+            /* (B) 일반 텍스트 및 Date 입력창 높이를 32px로 고정 */
+            div[data-testid="stVerticalBlockBorderWrapper"] input { 
+                height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
+                padding: 0px 8px !important; box-sizing: border-box !important;
+            }
+
+            /* (C) 드롭다운 껍데기 높이도 텍스트창과 똑같이 32px로 고정 (들쭉날쭉 원인 제거) */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
+                height: 32px !important; min-height: 32px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
+                box-sizing: border-box !important;
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { 
                 font-size: 13px !important; 
-                padding: 0px !important; 
+            }
+
+            /* ---------------------------------------------------- */
+            /* 4. 안전한 줄 간격 압축 */
+            /* ---------------------------------------------------- */
+            /* 마이너스 마진 꼼수를 지우고, 스트림릿 기본 갭만 아주 좁게 설정 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] {
+                gap: 0.1rem !important; 
+            }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { 
+                gap: 0.5rem !important; margin-bottom: -5px !important; /* 과하지 않은 선에서 밀착 */
             }
             
-            /* 구분선 두께 최소화 */
+            /* 드롭다운 리스트 글자 크기 */
+            ul[role="listbox"] li { font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; }
+
+            /* 5. 우측 상단 버튼 높이 일치 */
+            .stButton > button { 
+                height: 32px !important; min-height: 32px !important; font-size: 13px !important; padding: 0px 10px !important; 
+                margin-top: 20px !important; /* 라벨 높이만큼 아래로 밀어서 드롭다운과 열 맞춤 */
+            }
+            
             hr { margin-top: 5px !important; margin-bottom: 5px !important; }
             </style>
         """, unsafe_allow_html=True)
@@ -162,8 +135,6 @@ class JamLogTab:
             with r1[2]: time_val = st.time_input("Err.Time", value="now", step=60)
             with r1[3]: total_unit_val = st.text_input("Totalunit")
             with r1[4]: err_code_val = st.text_input("ErrorCode", key="err_code", on_change=autofill, args=("err_code",))
-            
-            # [해결 4] ErrorCount 증감 버튼 제거 (단순 텍스트 입력 후 변환)
             with r1[5]: err_cnt_val = st.text_input("ErrorCount", value="1")
 
             r2 = st.columns([1.5, 4.0, 1.5])
@@ -223,17 +194,16 @@ class JamLogTab:
             if db_machine is None:
                 st.error("🚨 구글 시트 탭이 연결되지 않아 저장할 수 없습니다. 탭 이름을 먼저 확인해 주세요.")
             elif err_code_val and err_msg_val:
-                # 숫자 외 입력 방지 및 정수 변환 처리
                 try:
                     final_err_cnt = int(err_cnt_val)
                 except ValueError:
-                    final_err_cnt = 1 # 숫자 아닐 시 기본값
+                    final_err_cnt = 1 
 
                 new_data = pd.DataFrame([{
                     "Date": date_val.strftime("%Y-%m-%d"),
                     "Totalunit": total_unit_val,
                     "Errorcode": err_code_val,
-                    "Errorcount": final_err_cnt, # 변환된 값 저장
+                    "Errorcount": final_err_cnt,
                     "Error Masage": err_msg_val,
                     "현상": symp_val,
                     "원인": cause_val,
