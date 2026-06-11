@@ -15,9 +15,6 @@ class JamLogTab:
         if "err_point" not in st.session_state: st.session_state.err_point = ""
         if "err_msg" not in st.session_state: st.session_state.err_msg = ""
 
-        # ==========================================
-        # ★ 자동완성 함수
-        # ==========================================
         def autofill(source_field):
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
             target_error_tab = "SLH1_Rdimm_ErrorList" if "#1" in equip_name else "SLH1_Socamm_ErrorList"
@@ -50,71 +47,74 @@ class JamLogTab:
                     if source_field != "err_msg" and "알람명" in df_err.columns:
                         st.session_state.err_msg = str(row["알람명"])
 
-        # ==========================================
-        # ★ 진짜 폰트/줄간격 타겟팅 CSS ★
-        # ==========================================
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
+        # ==========================================
+        # 🚨 대표님 지적사항 완벽 반영 CSS 🚨
+        # ==========================================
         st.markdown("""
             <style>
-            /* 1. 상단 메뉴 짤림 방지 */
+            /* 1. 상단 메뉴 짤림 방지 (여유 확보) */
             .block-container { padding-top: 3.5rem !important; padding-bottom: 1rem !important; }
-            .stButton > button { min-height: 36px !important; height: 36px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; }
+            .stButton > button { min-height: 32px !important; height: 32px !important; font-size: 14px !important; font-weight: bold !important; padding: 0px !important; margin-top: 25px !important;}
             
-            /* ----------------------------------------------------------------- */
-            /* 2. 폰트 사이즈 '13px' 완벽 일치화 (드롭다운의 숨겨진 span 태그 강제 타겟팅) */
-            /* ----------------------------------------------------------------- */
+            /* ---------------------------------------------------- */
+            /* ★ 2. 스트림릿 드롭다운(BaseWeb) 내부 태그 강제 압축 ★ */
+            /* ---------------------------------------------------- */
+            /* 드롭다운의 뼈대 높이를 일반 텍스트창과 똑같은 30px로 짓누름 */
+            div[data-baseweb="select"] > div { 
+                min-height: 30px !important; 
+                height: 30px !important; 
+                padding-top: 0px !important; 
+                padding-bottom: 0px !important; 
+            }
+            /* 드롭다운 내부에 표시되는 글자(span, div) 크기를 완벽히 통일 */
+            div[data-baseweb="select"] * { 
+                font-size: 13px !important; 
+                line-height: 1.2 !important; 
+            }
+            /* 클릭 시 열리는 리스트 글자 크기 축소 */
+            ul[data-baseweb="menu"] li { 
+                font-size: 13px !important; 
+                min-height: 25px !important; 
+                padding-top: 4px !important; 
+                padding-bottom: 4px !important; 
+            }
+
+            /* ---------------------------------------------------- */
+            /* ★ 3. 일반 입력창 및 위젯 간격 타겟팅 ★ */
+            /* ---------------------------------------------------- */
+            /* 일반 텍스트, 날짜 입력창 폰트 및 높이 30px로 통일 */
             div[data-testid="stTextInput"] input, 
             div[data-testid="stDateInput"] input, 
             div[data-testid="stTimeInput"] input,
             div[data-testid="stNumberInput"] input { 
                 font-size: 13px !important; 
-                min-height: 32px !important; 
-                height: 32px !important; 
+                min-height: 30px !important; 
+                height: 30px !important; 
                 padding: 0px 10px !important;
             }
             
-            /* 드롭다운 박스 높이 고정 및 내부 글자 강제 13px */
-            div[data-baseweb="select"] > div { 
-                min-height: 32px !important; 
-                height: 32px !important; 
-                padding-top: 0px !important; 
-                padding-bottom: 0px !important; 
+            /* 제목(라벨) 아래 공백 완전 제거 */
+            div[data-testid="stWidgetLabel"] { 
+                margin-bottom: -5px !important; 
             }
-            div[data-baseweb="select"] span { 
-                font-size: 13px !important; /* 이 코드가 드롭다운 멍청한 폰트를 죽입니다 */
-                color: #222 !important;
-            }
-            ul[role="listbox"] li { 
-                font-size: 13px !important; 
-                min-height: 28px !important; 
-                padding-top: 4px !important; 
-                padding-bottom: 4px !important; 
-            }
-
-            /* ----------------------------------------------------------------- */
-            /* 3. 새로운 줄 간격 타겟팅 (태평양 여백 완전 압축) */
-            /* ----------------------------------------------------------------- */
-            /* 제목(라벨) 밑의 쓸데없는 여백 제거 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
-                margin-bottom: -4px !important; 
-            }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
-                font-size: 13px !important; 
+            div[data-testid="stWidgetLabel"] p { 
+                font-size: 12px !important; 
                 font-weight: 700 !important; 
                 color: #222 !important; 
             }
-            
-            /* ★ 위젯들을 감싸는 투명 박스의 아래쪽 마진을 통째로 마이너스로 당김 ★ */
-            div[data-testid="stVerticalBlockBorderWrapper"] .element-container { 
-                margin-bottom: -12px !important; 
-            }
-            
-            /* 칼럼 사이의 기본 gap 0으로 소각 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="column"] > div[data-testid="stVerticalBlock"] {
+
+            /* ★ 스트림릿 고유의 줄바꿈 간격(Gap) 완전 소각 ★ */
+            /* 테두리 안쪽의 줄(Row)을 묶는 컨테이너의 갭을 0으로 만듦 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] {
                 gap: 0rem !important;
             }
-
+            /* 각 입력창의 하단 마진을 마이너스로 깊게 당겨버림 */
+            div[data-testid="stVerticalBlockBorderWrapper"] .element-container { 
+                margin-bottom: -15px !important; 
+            }
+            /* H/W 구분선 간격 압축 */
             div[data-testid="stVerticalBlockBorderWrapper"] hr {
                 margin-top: 8px !important;
                 margin-bottom: 8px !important;
