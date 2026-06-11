@@ -52,7 +52,7 @@ class JamLogTab:
         st.markdown("---")
 
         # ==========================================
-        # 입력 폼 (대표님 요청 순서 및 동적 UI 적용)
+        # 입력 폼 (비율 및 순서 완벽 세팅)
         # ==========================================
         with st.container(border=True):
             # ▶ 1줄: 장비명, Date, Err.Time, Totalunit, ErrorCode, ErrorCount
@@ -64,37 +64,40 @@ class JamLogTab:
             with r1[4]: err_code_val = st.text_input("ErrorCode")
             with r1[5]: err_cnt_val = st.number_input("ErrorCount", min_value=1, value=1, step=1)
 
-            # ▶ 2줄: Err.Point, ErrorMassage, 분류
+            # ▶ 2줄: Err.Point, ErrorMassage, 분류 (사진과 동일한 항목 적용!)
             r2 = st.columns([1.5, 4.0, 1.5])
             with r2[0]: err_point_val = st.text_input("Err.Point")
             with r2[1]: err_msg_val = st.text_input("ErrorMassage")
-            with r2[2]: type_val = st.selectbox("분류", ["장비대여불가,추후대응", "원인파악불가","H/W 불량 파손", "S/W Bug", "자재불량", "작업자실수","작업실수로 인한 재발생", "기타"])
+            
+            category_options = [
+                "S/W Bug", "H/W 불량,파손", "H/W 소모성 교체", "H/W 셋업, 조정",
+                "자재 불량", "작업자 실수", "기타", "원인파악불가", "장비대여불가,추후대응"
+            ]
+            with r2[2]: type_val = st.selectbox("분류", category_options)
 
-            # ▶ 3줄: 현상, 원인 (절반씩 넓게)
+            # ▶ 3줄: 현상, 원인
             r3 = st.columns([1, 1])
             with r3[0]: symp_val = st.text_input("현상")
             with r3[1]: cause_val = st.text_input("원인")
 
-            # ▶ 5줄: 조치, 조치자 (조치자는 3글자 크기에 맞춰 극도로 축소)
+            # ▶ 5줄: 조치, 조치자
             r4 = st.columns([5.0, 0.6])
             with r4[0]: action_val = st.text_input("조치")
             with r4[1]: worker_val = st.text_input("조치자")
 
-            # ▶ 6줄: MTBA, MTTR, MTBI (우측에 빈 공간(여백)을 두어 억지로 늘어나지 않게 방어)
+            # ▶ 6줄: MTBA, MTTR, MTBI
             r5 = st.columns([1, 1, 1, 3.5]) 
             with r5[0]: mtba_val = st.text_input("MTBA")
             with r5[1]: mttr_val = st.text_input("MTTR")
             with r5[2]: mtbi_val = st.text_input("MTBI")
 
             # ==========================================
-            # ★ 7줄: 분류가 "H/W 불량 파손"일 때만 나타나는 숨겨진 폼 ★
+            # ★ 7줄: 분류가 "H/W 불량, 파손"일 때만 나타나는 숨겨진 폼 ★
             # ==========================================
-            # 1. H/W가 아닐 때 저장될 기본값(빈칸) 세팅
             part_no_val, qty_val, in_date_val, out_date_val, action_loc_val, result_val = "", "", "", "", "", ""
             
-            # 2. H/W를 선택한 경우에만 화면에 표출
-            if type_val == "H/W 불량 파손":
-                st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True) # 구분선 추가
+            if type_val == "H/W 불량, 파손":
+                st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
                 r6 = st.columns([1.5, 0.8, 1.2, 1.2, 1.5, 1.2])
                 with r6[0]: part_no_val = st.text_input("도번 (Part No.)")
                 with r6[1]: qty_val = st.text_input("수량")
@@ -144,7 +147,7 @@ class JamLogTab:
                     "MTBA": mtba_val,
                     "MTTR": mttr_val,
                     "MTBI": mtbi_val,
-                    "도번": part_no_val, # H/W가 아닐 땐 자동으로 빈칸("") 저장됨
+                    "도번": part_no_val,
                     "수량": qty_val,
                     "입고일": in_date_val,
                     "반입일": out_date_val,
