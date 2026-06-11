@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import io  # 엑셀 다운로드를 위한 라이브러리 추가
 from datetime import datetime
 from config import DataManager
 
@@ -9,7 +10,7 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # ★ Session State 초기화 (텍스트 입력창 전체 Key 등록)
+        # ★ Session State 초기화
         # ==========================================
         TEXT_KEYS = [
             "err_code", "err_point", "err_msg", "total_unit", "err_cnt", 
@@ -24,11 +25,10 @@ class JamLogTab:
         if "save_success_msg" not in st.session_state: st.session_state.save_success_msg = ""
         if "search_mode" not in st.session_state: st.session_state.search_mode = False
 
-        # 폼 초기화 로직 (저장 직후 또는 검색모드 켤 때 발동)
         if st.session_state.clear_form:
             for k in TEXT_KEYS:
                 st.session_state[k] = ""
-            st.session_state.err_cnt = "1" # ErrorCount 기본값 복구
+            st.session_state.err_cnt = "1" 
             st.session_state.clear_form = False
             
         if st.session_state.save_success_msg:
@@ -36,10 +36,10 @@ class JamLogTab:
             st.session_state.save_success_msg = ""
 
         # ==========================================
-        # ★ 자동완성 로직 (검색 모드일 때는 작동 정지)
+        # ★ 자동완성 로직 
         # ==========================================
         def autofill(source_field):
-            if st.session_state.search_mode: return # 검색 모드일 땐 자동완성 방해 금지
+            if st.session_state.search_mode: return 
             
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
             
@@ -83,7 +83,7 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (1픽셀도 건드리지 않음)
+        # 🚨 UI 레이아웃 CSS (안정화된 픽셀 100% 유지)
         # ========================================================
         st.markdown("""
             <style>
@@ -142,14 +142,13 @@ class JamLogTab:
         with nav_cols[2]: btn_edit = st.button("✏️ 수정", use_container_width=True)
         with nav_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
 
-        # 🚨 [신규] 버튼들 바로 아래에 검색 모드 토글 버튼 추가
+        # 🚨 상세 검색 버튼
         search_row = st.columns([8.5, 1.5])
         with search_row[1]:
-            # 검색 모드 상태에 따라 버튼 텍스트 변경
             search_btn_text = "❌ 검색 종료 (입력 복귀)" if st.session_state.search_mode else "🔍 상세 검색 (필터링)"
             if st.button(search_btn_text, use_container_width=True):
                 st.session_state.search_mode = not st.session_state.search_mode
-                st.session_state.clear_form = True # 검색모드 진입/종료 시 무조건 폼 비우기
+                st.session_state.clear_form = True 
                 st.rerun()
 
         # ==========================================
@@ -157,13 +156,12 @@ class JamLogTab:
         # ==========================================
         with st.container(border=True):
             if st.session_state.search_mode:
-                st.info("🔍 **[검색 모드 활성화]** 빈칸에 찾고 싶은 내용을 입력하고 엔터를 누르시면, 아래 표가 실시간으로 걸러집니다. (일부만 입력해도 검색됨)")
+                st.info("🔍 **[검색 모드 활성화]** 빈칸에 찾고 싶은 내용을 입력하고 엔터를 누르시면, 아래 표가 실시간으로 걸러집니다.")
 
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
             with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS, key="equip_val")
             with r1[1]: 
                 if st.session_state.search_mode:
-                    # 검색 모드일 땐 날짜를 자유롭게 적을 수 있도록 텍스트창으로 변경 (안 적으면 무시됨)
                     date_val_search = st.text_input("Date (예: 2024-05)", key="date_search")
                 else:
                     date_val = st.date_input("Date", value=datetime.today())
@@ -181,7 +179,7 @@ class JamLogTab:
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원인파악불가", "장비대기, 추후 대응"
             ]
             if st.session_state.search_mode:
-                category_options.insert(0, "전체") # 검색 모드일 땐 '전체' 옵션 추가
+                category_options.insert(0, "전체") 
             
             with r2[2]: type_val = st.selectbox("분류", category_options, key="type_val")
 
@@ -211,7 +209,7 @@ class JamLogTab:
                 with r6[5]: result_val = st.selectbox("조치결과", ["완료", "진행중", "대기"], key="result")
 
         # ==========================================
-        # DB 연결 및 저장 로직
+        # DB 연결 및 데이터 로드
         # ==========================================
         exact_columns = [
             "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
@@ -228,9 +226,10 @@ class JamLogTab:
         except Exception as e:
             st.error(f"🚨 구글 시트 연결 실패: 새로 만드신 Jam 파일에 '{equip_val}' 이라는 이름의 탭(시트)이 없습니다.")
 
+        # 저장 로직
         if btn_write:
             if st.session_state.search_mode:
-                st.warning("🚨 현재 '검색 모드'가 켜져 있습니다. 데이터를 저장하시려면 우측의 [❌ 검색 종료] 버튼을 눌러 모드를 꺼주세요.")
+                st.warning("🚨 현재 '검색 모드'가 켜져 있습니다. 데이터를 저장하시려면 우측의 [❌ 검색 종료] 버튼을 눌러주세요.")
             elif db_machine is None:
                 st.error("🚨 구글 시트 탭이 연결되지 않아 저장할 수 없습니다. 탭 이름을 먼저 확인해 주세요.")
             elif err_code_val and err_msg_val:
@@ -238,27 +237,12 @@ class JamLogTab:
                 except ValueError: final_err_cnt = 1 
 
                 new_data = pd.DataFrame([{
-                    "Date": date_val.strftime("%Y-%m-%d"),
-                    "Totalunit": total_unit_val,
-                    "Errorcode": err_code_val,
-                    "Errorcount": final_err_cnt,
-                    "Error Masage": err_msg_val,
-                    "현상": symp_val,
-                    "원인": cause_val,
-                    "조치": action_val,
-                    "Err.Point": err_point_val,
-                    "분류": type_val,
-                    "조치자": worker_val,
-                    "Err. Time": time_val.strftime("%H:%M"),
-                    "MTBA": mtba_val,
-                    "MTTR": mttr_val,
-                    "MTBI": mtbi_val,
-                    "도번": part_no_val,
-                    "수량": qty_val,
-                    "입고일": in_date_val,
-                    "반입일": out_date_val,
-                    "조치위치": action_loc_val,
-                    "조치결과": result_val
+                    "Date": date_val.strftime("%Y-%m-%d"), "Totalunit": total_unit_val, "Errorcode": err_code_val,
+                    "Errorcount": final_err_cnt, "Error Masage": err_msg_val, "현상": symp_val, "원인": cause_val,
+                    "조치": action_val, "Err.Point": err_point_val, "분류": type_val, "조치자": worker_val,
+                    "Err. Time": time_val.strftime("%H:%M"), "MTBA": mtba_val, "MTTR": mttr_val, "MTBI": mtbi_val,
+                    "도번": part_no_val, "수량": qty_val, "입고일": in_date_val, "반입일": out_date_val,
+                    "조치위치": action_loc_val, "조치결과": result_val
                 }])
                 db_machine.save(pd.concat([df_machine, new_data], ignore_index=True).fillna(""))
                 st.session_state.save_success_msg = f"✅ '{equip_val}' 시트에 데이터가 정상적으로 저장되었습니다."
@@ -266,19 +250,14 @@ class JamLogTab:
                 st.rerun()
             else:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
-                
-        if btn_edit or btn_del:
-            st.info("💡 데이터 수정/삭제는 아래 표(누적 이력)를 직접 클릭해서 고치거나 지운 후 표 하단의 [변경사항 저장] 버튼을 누르시면 됩니다.")
 
         # ==========================================
-        # 통합 조회 표 (★ 검색 필터링 로직 반영)
+        # 통합 조회 표 및 ★ 엑셀 다운로드 추가 ★
         # ==========================================
-        st.markdown(f"#### 🔍 {equip_val} 누적 이력 조회")
-        
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
-            # 🚨 검색 모드일 때만 작동하는 엑셀식 다중 필터링
+            # 검색 모드 필터링
             if st.session_state.search_mode:
                 if st.session_state.date_search:
                     df_display = df_display[df_display["Date"].astype(str).str.contains(st.session_state.date_search, case=False, na=False)]
@@ -291,21 +270,48 @@ class JamLogTab:
                 if type_val != "전체":
                     df_display = df_display[df_display["분류"] == type_val]
                 if st.session_state.symp:
-                    df_display = df_display[df_display["현상"].astype(str).str.contains(st.session_state.symp, case=False, 가=False)]
+                    df_display = df_display[df_display["현상"].astype(str).str.contains(st.session_state.symp, case=False, na=False)]
                 if st.session_state.cause:
                     df_display = df_display[df_display["원인"].astype(str).str.contains(st.session_state.cause, case=False, na=False)]
                 if st.session_state.worker:
                     df_display = df_display[df_display["조치자"].astype(str).str.contains(st.session_state.worker, case=False, na=False)]
 
-            # 정렬 후 표출
+            # 정렬
             if "Date" in df_display.columns:
                 df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
             
+            # 타이틀 및 다운로드 버튼 가로 배치
+            view_cols = st.columns([8.5, 1.5])
+            with view_cols[0]:
+                st.markdown(f"#### 🔍 {equip_val} 누적 이력 조회 ({len(df_display)}건)")
+            with view_cols[1]:
+                # 엑셀 엔진 에러 방지를 위한 안전장치 (오류 시 CSV로 자동 전환)
+                buffer = io.BytesIO()
+                try:
+                    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                        df_display.to_excel(writer, index=False, sheet_name='데이터')
+                    download_data = buffer.getvalue()
+                    file_name = f"{equip_val}_데이터_{datetime.now().strftime('%Y%m%d')}.xlsx"
+                    mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                except Exception:
+                    download_data = df_display.to_csv(index=False).encode('utf-8-sig') # 한글 안 깨지는 CSV
+                    file_name = f"{equip_val}_데이터_{datetime.now().strftime('%Y%m%d')}.csv"
+                    mime_type = "text/csv"
+
+                st.download_button(
+                    label="📥 엑셀 다운로드",
+                    data=download_data,
+                    file_name=file_name,
+                    mime=mime_type,
+                    use_container_width=True
+                )
+
+            # 데이터 에디터 표출
             edited_df = st.data_editor(df_display, use_container_width=True, hide_index=True, num_rows="dynamic")
 
             if st.button(f"💾 '{equip_val}' 표 변경사항 저장", type="primary"):
                 if st.session_state.search_mode:
-                    st.warning("⚠️ 검색 모드 중에는 표 수정을 권장하지 않습니다. 전체 표 상태에서 수정 후 저장해주세요.")
+                    st.warning("⚠️ 검색 모드 중에는 표 수정을 권장하지 않습니다. ❌검색 종료 버튼을 눌러 전체 표 상태에서 수정해주세요.")
                 else:
                     db_machine.save(edited_df.fillna(""))
                     st.success("✅ 변경사항이 저장되었습니다!")
