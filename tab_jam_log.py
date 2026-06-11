@@ -76,7 +76,7 @@ class JamLogTab:
             with r1[4]: total_unit_val = st.text_input("Totalunit")
 
             # ▶ Row 2 (Err.Point, Errorcode 축소 / 메시지는 아주 넓게)
-            r2 = st.columns([1.0, 0.8, 0.5, 4.5])
+            r2 = st.columns([1.0, 0.8, 0.45, 3.5])
             with r2[0]: err_point_val = st.text_input("Err.Point (발생위치)")
             with r2[1]: err_code_val = st.text_input("Errorcode")
             with r2[2]: err_cnt_val = st.number_input("Errorcount", min_value=1, value=1, step=1)
