@@ -9,11 +9,78 @@ class JamLogTab:
         self.db_jam = db_jam
 
     def render(self):
+        # ========================================================
+        # 🚨 UI 레이아웃 CSS (드롭다운 절대 복종 & 여백 압축)
+        # ========================================================
+        st.markdown("""
+            <style>
+            /* 1. 드롭다운(Selectbox) 껍데기와 글자 크기 100% 강제 고정 */
+            div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+                height: 32px !important; 
+                min-height: 32px !important; 
+                padding-top: 0px !important; 
+                padding-bottom: 0px !important;
+            }
+            div[data-testid="stSelectbox"] div[data-baseweb="select"] span {
+                font-size: 13px !important; 
+                line-height: 1 !important;
+            }
+            /* 드롭다운 항목 리스트 글자 크기 */
+            ul[role="listbox"] li { 
+                font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
+            }
+
+            /* 2. 일반 입력창(텍스트, 날짜 등) 완벽 고정 */
+            div[data-testid="stVerticalBlockBorderWrapper"] input { 
+                height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
+                padding: 0px 8px !important; box-sizing: border-box !important;
+            }
+
+            /* 3. 라벨(제목) 높이와 아래 여백 압축 */
+            div[data-testid="stWidgetLabel"] { 
+                height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
+            }
+            div[data-testid="stWidgetLabel"] p { 
+                font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
+            }
+
+            /* 4. 버튼 여백 완전 제거 (버튼이 위로 딱 붙게 만듬) */
+            .stButton > button { 
+                height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
+                padding: 0px 10px !important; margin-top: 0px !important; 
+            }
+
+            /* 5. 위아래, 좌우 틈새(Gap) 소각 */
+            div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
+            div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
+            </style>
+        """, unsafe_allow_html=True)
+
         # ==========================================
-        # ★ 대제목과 밑줄 (여백 바짝 당기기)
+        # ★ 물리적 구조 변경: 대제목과 버튼을 아예 "한 줄"에 나란히 배치! 
+        # (이러면 절대 붕 뜰 수 없습니다)
         # ==========================================
-        st.markdown("### 🚨 Jam & 트러블슈팅 이력")
-        st.markdown("<hr style='margin-top: 5px; margin-bottom: 5px;'>", unsafe_allow_html=True)
+        header_cols = st.columns([5.5, 1, 1, 1, 1.5]) 
+        
+        with header_cols[0]:
+            # 제목의 위아래 마진을 강제로 0으로 만들어 버튼과 높이를 수평으로 맞춥니다.
+            st.markdown("<h3 style='margin:0; padding:0; line-height:32px;'>🚨 Jam & 트러블슈팅 이력</h3>", unsafe_allow_html=True)
+            
+        with header_cols[1]: 
+            btn_write = st.button("📝 저장", use_container_width=True)
+        with header_cols[2]: 
+            btn_edit = st.button("✏️ 수정", use_container_width=True)
+        with header_cols[3]: 
+            btn_del = st.button("🗑️ 삭제", use_container_width=True)
+        with header_cols[4]:
+            search_btn_text = "❌ 검색 종료" if st.session_state.get('search_mode', False) else "🔍 상세 검색"
+            if st.button(search_btn_text, use_container_width=True):
+                st.session_state.search_mode = not st.session_state.get('search_mode', False)
+                st.session_state.clear_form = True 
+                st.rerun()
+
+        # 대제목과 버튼이 한 줄에 배치된 바로 밑에 얇은 선을 긋습니다.
+        st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         # ==========================================
         # ★ Session State 초기화
@@ -23,7 +90,6 @@ class JamLogTab:
             "symp", "cause", "action", "worker", "mtba", "mttr", "mtbi",
             "part_no", "qty", "in_date", "out_date", "action_loc", "date_search"
         ]
-        
         for k in TEXT_KEYS:
             if k not in st.session_state: st.session_state[k] = ""
             
@@ -86,66 +152,6 @@ class JamLogTab:
 
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
-        # ========================================================
-        # 🚨 UI 레이아웃 CSS (사이드바 분리로 인한 '전체 강제 축소' 적용)
-        # ========================================================
-        st.markdown("""
-            <style>
-            /* 1. 대제목(h3) 아래의 태평양 같은 기본 여백 날려버리기 */
-            h3 { padding-bottom: 0px !important; margin-bottom: -15px !important; }
-
-            /* 2. 라벨(제목) 높이와 아래 여백 압축 */
-            div[data-testid="stWidgetLabel"] { 
-                height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
-            }
-            div[data-testid="stWidgetLabel"] p { 
-                font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
-            }
-
-            /* 3. 모든 입력창(텍스트, 날짜 등) 32px 고정 및 폰트 13px */
-            .stTextInput input, .stDateInput input, .stTimeInput input { 
-                height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
-                padding: 0px 8px !important; box-sizing: border-box !important;
-            }
-
-            /* 4. [핵심] 드롭다운 전체 강제 축소 (대표님 말씀대로 싹 다 잡아 줄임) */
-            div[data-baseweb="select"] * { 
-                font-size: 13px !important; /* 드롭다운 안의 모든 글자 13px 강제 */
-            }
-            div[data-baseweb="select"] > div { 
-                height: 32px !important; min-height: 32px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
-                box-sizing: border-box !important;
-            }
-            ul[role="listbox"] li { 
-                font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
-            }
-
-            /* 5. 위아래, 좌우 틈새(Gap) 소각 */
-            div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
-            div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
-            
-            /* 6. 버튼 여백 날리기 */
-            .stButton > button { 
-                height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
-                padding: 0px 10px !important; margin-top: 0px !important; 
-            }
-            </style>
-        """, unsafe_allow_html=True)
-
-        # ==========================================
-        # 우측 상단 액션 버튼
-        # ==========================================
-        action_cols = st.columns([5.5, 1, 1, 1, 1.5]) 
-        with action_cols[1]: btn_write = st.button("📝 저장", use_container_width=True)
-        with action_cols[2]: btn_edit = st.button("✏️ 수정", use_container_width=True)
-        with action_cols[3]: btn_del = st.button("🗑️ 삭제", use_container_width=True)
-        with action_cols[4]:
-            search_btn_text = "❌ 검색 종료" if st.session_state.search_mode else "🔍 상세 검색"
-            if st.button(search_btn_text, use_container_width=True):
-                st.session_state.search_mode = not st.session_state.search_mode
-                st.session_state.clear_form = True 
-                st.rerun()
-
         # ==========================================
         # 입력 및 검색 폼
         # ==========================================
@@ -173,9 +179,7 @@ class JamLogTab:
                 "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원인파악불가", "장비대기, 추후 대응"
             ]
-            if st.session_state.search_mode:
-                category_options.insert(0, "전체") 
-            
+            if st.session_state.search_mode: category_options.insert(0, "전체") 
             with r2[2]: type_val = st.selectbox("분류", category_options, key="type_val")
 
             r3 = st.columns([1, 1])
