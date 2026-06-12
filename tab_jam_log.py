@@ -10,33 +10,32 @@ class JamLogTab:
 
     def render(self):
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (드롭다운 절대 복종 & 여백 압축)
+        # 🚨 UI 레이아웃 CSS (★ 이전에 완벽하게 작동했던 그 방식 그대로 ★)
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. 드롭다운(Selectbox) 껍데기와 글자 크기 100% 강제 고정 */
-            div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+            /* 1. 드롭다운 무조건 32px 강제 축소 (예전 성공 코드 100% 롤백) */
+            div[data-baseweb="select"] > div {
                 height: 32px !important; 
                 min-height: 32px !important; 
                 padding-top: 0px !important; 
                 padding-bottom: 0px !important;
+                box-sizing: border-box !important;
             }
-            div[data-testid="stSelectbox"] div[data-baseweb="select"] span {
+            div[data-baseweb="select"] span {
                 font-size: 13px !important; 
-                line-height: 1 !important;
             }
-            /* 드롭다운 항목 리스트 글자 크기 */
             ul[role="listbox"] li { 
                 font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
             }
 
-            /* 2. 일반 입력창(텍스트, 날짜 등) 완벽 고정 */
+            /* 2. 일반 텍스트, 숫자, 날짜 입력창 32px 강제 축소 */
             div[data-testid="stVerticalBlockBorderWrapper"] input { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
                 padding: 0px 8px !important; box-sizing: border-box !important;
             }
 
-            /* 3. 라벨(제목) 높이와 아래 여백 압축 */
+            /* 3. 라벨(제목) 여백 압축 */
             div[data-testid="stWidgetLabel"] { 
                 height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
             }
@@ -44,27 +43,26 @@ class JamLogTab:
                 font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
             }
 
-            /* 4. 버튼 여백 완전 제거 (버튼이 위로 딱 붙게 만듬) */
+            /* 4. 버튼 높이 32px */
             .stButton > button { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
-                padding: 0px 10px !important; margin-top: 0px !important; 
+                padding: 0px 10px !important; 
             }
 
-            /* 5. 위아래, 좌우 틈새(Gap) 소각 */
+            /* 5. 줄 간격 소각 */
             div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
             div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
             </style>
         """, unsafe_allow_html=True)
 
         # ==========================================
-        # ★ 물리적 구조 변경: 대제목과 버튼을 아예 "한 줄"에 나란히 배치! 
-        # (이러면 절대 붕 뜰 수 없습니다)
+        # 상단 타이틀 & 버튼 (짤림 현상 원천 차단)
         # ==========================================
+        # 마이너스 마진 꼼수를 지우고 정상적인 컬럼 배치로 롤백
         header_cols = st.columns([5.5, 1, 1, 1, 1.5]) 
         
         with header_cols[0]:
-            # 제목의 위아래 마진을 강제로 0으로 만들어 버튼과 높이를 수평으로 맞춥니다.
-            st.markdown("<h3 style='margin:0; padding:0; line-height:32px;'>🚨 Jam & 트러블슈팅 이력</h3>", unsafe_allow_html=True)
+            st.markdown("### 🚨 Jam & 트러블슈팅 이력")
             
         with header_cols[1]: 
             btn_write = st.button("📝 저장", use_container_width=True)
@@ -79,7 +77,6 @@ class JamLogTab:
                 st.session_state.clear_form = True 
                 st.rerun()
 
-        # 대제목과 버튼이 한 줄에 배치된 바로 밑에 얇은 선을 긋습니다.
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         # ==========================================
