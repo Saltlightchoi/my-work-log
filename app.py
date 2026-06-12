@@ -71,6 +71,20 @@ st.markdown("""
             color: #888 !important;
             margin-top: 5px !important;
         }
+
+        /* 메인 화면 여백 */
+        .block-container { max-width: 98% !important; padding-top: 2rem !important; padding-bottom: 2rem !important; }
+        
+        /* ★ 사이드바 내부의 버튼과 드롭다운 사이 간격 바짝 당기기 ★ */
+        [data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
+            gap: 0.1rem !important;
+        }
+        
+        /* 사이드바 가로 구분선(---) 위아래 여백 최소화 */
+        [data-testid="stSidebar"] hr {
+            margin-top: 5px !important;
+            margin-bottom: 5px !important;
+        }
     </style>
 """, unsafe_allow_html=True)
 
