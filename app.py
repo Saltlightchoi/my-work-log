@@ -5,6 +5,7 @@ from tab_work_log import WorkLogTab
 from tab_cs_check import CSCheckSheetTab
 from tab_equipment_data import EquipmentDataTab
 from tab_ecn_stn import ECNSTNTab
+from tab_jam_log import JamLogTab
 
 # ==========================================
 # 0. 구글 시트 및 깃허브 연결 (★ 캐싱 적용)
