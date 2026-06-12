@@ -17,7 +17,7 @@ class EquipmentDataTab:
         # =====================================================================
         # 기존 로직 시작 (장비 가동 데이터 정밀 분석)
         # =====================================================================
-        st.markdown("<div class='main-title'>📊 장비 가동 데이터 정밀 분석</div>", unsafe_allow_html=True)
+        st.markdown("### 📊 장비 가동 데이터 정밀 분석")
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         col1, col2, col3 = st.columns([1, 1, 2])
