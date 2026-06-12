@@ -8,6 +8,9 @@ class CSCheckSheetTab:
         self.db_flow = db_flow
 
     def render(self):
+        st.markdown("### ✅ 장비 제작 Flow 전체 현황판")
+        st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+        
         df_flow, _ = self.db_flow.load()
         
         if 'view_project_detail' not in st.session_state:
