@@ -73,7 +73,7 @@ st.markdown("""
         }
 
         /* 메인 화면 여백 */
-        .block-container { max-width: 98% !important; padding-top: 2rem !important; padding-bottom: 2rem !important; }
+        .block-container { max-width: 98% !important; padding-top: 3rem !important; padding-bottom: 2rem !important; }
         
         /* ★ 사이드바 내부의 버튼과 드롭다운 사이 간격 바짝 당기기 ★ */
         [data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
