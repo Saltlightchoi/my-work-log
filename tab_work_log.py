@@ -78,22 +78,22 @@ class WorkLogTab:
                 st.cache_data.clear() 
                 st.rerun()
 
-        # ==========================================
-        # ★ 대제목 그 자체가 드롭다운 리스트입니다.
+       # ==========================================
+        # ★ 통일된 상단 대제목 및 엑셀 다운로드 버튼
         # ==========================================
         col_title, col_excel = st.columns([8.5, 1.5])
+        
         with col_title:
-            menu_options = ["📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"]
-            selected_menu = st.selectbox(
-                "메뉴",
-                menu_options,
-                index=menu_options.index(st.session_state['current_menu']),
-                key="menu_worklog",
-                label_visibility="collapsed"
-            )
-            if selected_menu != st.session_state['current_menu']:
-                st.session_state['current_menu'] = selected_menu
-                st.rerun()
+            # 드롭다운을 지우고 고정된 텍스트 제목으로 변경!
+            st.markdown("### 📝 팀 업무일지 대시보드")
+                
+        with col_excel:
+            export_df = df_log.drop(columns=['날짜_dt'], errors='ignore') if not df_log.empty else df_log
+            export_df = export_df.rename(columns={"비고": "첨부 2", "첨부": "첨부 1"})
+            csv_data = export_df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
+            st.download_button(label="📥 엑셀 다운로드", data=csv_data, file_name=f"work_log_{datetime.now().strftime('%Y%m%d')}.csv", use_container_width=True)
+
+        st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
                 
         with col_excel:
             export_df = df_log.drop(columns=['날짜_dt'], errors='ignore') if not df_log.empty else df_log
