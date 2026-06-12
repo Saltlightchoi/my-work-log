@@ -10,7 +10,7 @@ class JamLogTab:
 
     def render(self):
         # ==========================================
-        # ★ 통일된 대제목 (밑줄 여백 바짝 당기기)
+        # ★ 대제목과 밑줄 (여백 바짝 당기기)
         # ==========================================
         st.markdown("### 🚨 Jam & 트러블슈팅 이력")
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 5px;'>", unsafe_allow_html=True)
@@ -87,42 +87,44 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
 
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (간격 밀착 및 드롭다운 일치화 완결판)
+        # 🚨 UI 레이아웃 CSS (사이드바 분리로 인한 '전체 강제 축소' 적용)
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. 라벨(제목) 높이와 아래 여백 압축 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
+            /* 1. 대제목(h3) 아래의 태평양 같은 기본 여백 날려버리기 */
+            h3 { padding-bottom: 0px !important; margin-bottom: -15px !important; }
+
+            /* 2. 라벨(제목) 높이와 아래 여백 압축 */
+            div[data-testid="stWidgetLabel"] { 
                 height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
             }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
+            div[data-testid="stWidgetLabel"] p { 
                 font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
             }
 
-            /* 2. 일반 텍스트, 날짜, 숫자 입력창 완벽 고정 */
-            div[data-testid="stVerticalBlockBorderWrapper"] input { 
+            /* 3. 모든 입력창(텍스트, 날짜 등) 32px 고정 및 폰트 13px */
+            .stTextInput input, .stDateInput input, .stTimeInput input { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
                 padding: 0px 8px !important; box-sizing: border-box !important;
             }
 
-            /* 3. 드롭다운(selectbox) 껍데기 높이를 텍스트창과 100% 동일하게 고정 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stSelectbox"] div[data-baseweb="select"] > div { 
+            /* 4. [핵심] 드롭다운 전체 강제 축소 (대표님 말씀대로 싹 다 잡아 줄임) */
+            div[data-baseweb="select"] * { 
+                font-size: 13px !important; /* 드롭다운 안의 모든 글자 13px 강제 */
+            }
+            div[data-baseweb="select"] > div { 
                 height: 32px !important; min-height: 32px !important; padding-top: 0px !important; padding-bottom: 0px !important; 
                 box-sizing: border-box !important;
             }
-            /* 드롭다운 안에 표시되는 글자 크기를 텍스트창과 동일한 13px로 강제 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stSelectbox"] div[data-baseweb="select"] span { 
-                font-size: 13px !important; line-height: normal !important;
+            ul[role="listbox"] li { 
+                font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
             }
 
-            /* 4. 위아래, 좌우 간격 소각 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
+            /* 5. 위아래, 좌우 틈새(Gap) 소각 */
+            div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
+            div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
             
-            /* 5. 드롭다운 눌렀을 때 나오는 리스트 줄 간격/글자 크기 압축 */
-            ul[role="listbox"] li { font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; }
-
-            /* 6. 버튼 여백 날리기 (제목과 붕 뜨는 현상 원천 차단) */
+            /* 6. 버튼 여백 날리기 */
             .stButton > button { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
                 padding: 0px 10px !important; margin-top: 0px !important; 
@@ -131,7 +133,7 @@ class JamLogTab:
         """, unsafe_allow_html=True)
 
         # ==========================================
-        # 우측 상단 액션 버튼 (대제목 바로 밑에 촥! 달라붙음)
+        # 우측 상단 액션 버튼
         # ==========================================
         action_cols = st.columns([5.5, 1, 1, 1, 1.5]) 
         with action_cols[1]: btn_write = st.button("📝 저장", use_container_width=True)
@@ -295,7 +297,7 @@ class JamLogTab:
                     file_name=file_name,
                     mime=mime_type,
                     use_container_width=True,
-                    key="jam_log_download_btn" # 에러 방지용 고유키 추가
+                    key="jam_log_download_btn" 
                 )
             with view_cols[2]:
                 st.empty() 
