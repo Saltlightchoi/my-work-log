@@ -10,21 +10,7 @@ class ECNSTNTab:
         self.db_ecn = db_ecn
 
     def render(self):
-        # ==========================================
-        # ★ 대제목 그 자체가 드롭다운 리스트입니다.
-        # ==========================================
-        menu_options = ["📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"]
-        selected_menu = st.selectbox(
-            "메뉴",
-            menu_options,
-            index=menu_options.index(st.session_state['current_menu']),
-            key="menu_ecn",
-            label_visibility="collapsed"
-        )
-        if selected_menu != st.session_state['current_menu']:
-            st.session_state['current_menu'] = selected_menu
-            st.rerun()
-                
+                      
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         col1, col2, col3, col_search = st.columns([1.5, 1.5, 2.5, 4.5])
