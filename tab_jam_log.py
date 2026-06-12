@@ -33,6 +33,9 @@ class JamLogTab:
         if st.session_state.save_success_msg:
             st.success(st.session_state.save_success_msg)
             st.session_state.save_success_msg = ""
+            
+            st.markdown("### 🚨 Jam & 트러블슈팅 이력")
+            st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         # ==========================================
         # ★ 자동완성 로직 
