@@ -138,5 +138,6 @@ elif menu == "🛠️ ECN & STN (장비 파트 및 수정사항 관리)":
     tab = ECNSTNTab(db_ecn)
     tab.render()
 elif menu == "🚨 Jam & 트러블슈팅 이력":
-    tab = JamLogTab(db_jam) # db_jam 연결 객체가 있다고 가정
+    # JamLogTab은 구글 시트 ID만 알면 되므로 db_work_log를 넘겨주면 완벽히 작동합니다.
+    tab = JamLogTab(db_work_log) 
     tab.render()
