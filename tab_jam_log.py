@@ -10,55 +10,53 @@ class JamLogTab:
 
     def render(self):
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (★ 이전에 완벽하게 작동했던 그 방식 그대로 ★)
+        # 🚨 UI 레이아웃 CSS (★ 대표님이 말씀하신 '예전 성공 방식' 100% 반영)
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. 드롭다운 무조건 32px 강제 축소 (예전 성공 코드 100% 롤백) */
-            div[data-baseweb="select"] > div {
-                height: 32px !important; 
-                min-height: 32px !important; 
-                padding-top: 0px !important; 
-                padding-bottom: 0px !important;
+            /* 1. [핵심] 메인 화면의 모든 드롭다운 껍데기와 글자 크기 32px 강제 축소 
+               (예전에 상단 탭까지 다 작아졌던 그 코드를 본문에만 적용되게 살려냈습니다!) */
+            [data-testid="stMain"] div[data-baseweb="select"] > div { 
+                height: 32px !important; min-height: 32px !important; 
+                padding-top: 0px !important; padding-bottom: 0px !important; 
                 box-sizing: border-box !important;
             }
-            div[data-baseweb="select"] span {
-                font-size: 13px !important; 
+            [data-testid="stMain"] div[data-baseweb="select"] span { 
+                font-size: 13px !important; line-height: 1.2 !important;
             }
-            ul[role="listbox"] li { 
+            [data-testid="stMain"] ul[role="listbox"] li { 
                 font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
             }
 
-            /* 2. 일반 텍스트, 숫자, 날짜 입력창 32px 강제 축소 */
-            div[data-testid="stVerticalBlockBorderWrapper"] input { 
+            /* 2. 일반 텍스트, 날짜, 숫자 입력창 높이 32px 강제 통일 */
+            [data-testid="stMain"] input { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
                 padding: 0px 8px !important; box-sizing: border-box !important;
             }
 
-            /* 3. 라벨(제목) 여백 압축 */
-            div[data-testid="stWidgetLabel"] { 
+            /* 3. 라벨(제목) 높이와 아래 여백 압축 */
+            [data-testid="stMain"] div[data-testid="stWidgetLabel"] { 
                 height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
             }
-            div[data-testid="stWidgetLabel"] p { 
+            [data-testid="stMain"] div[data-testid="stWidgetLabel"] p { 
                 font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
             }
 
-            /* 4. 버튼 높이 32px */
-            .stButton > button { 
-                height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
-                padding: 0px 10px !important; 
-            }
+            /* 4. 위아래, 좌우 간격(Gap) 소각 */
+            [data-testid="stMain"] div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
+            [data-testid="stMain"] div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
 
-            /* 5. 줄 간격 소각 */
-            div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
-            div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
+            /* 5. 버튼 짤림 방지 (마이너스 마진 꼼수 전부 폐기, 안전하게 배치) */
+            [data-testid="stMain"] .stButton > button { 
+                height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
+                padding: 0px 10px !important; margin-top: 8px !important; 
+            }
             </style>
         """, unsafe_allow_html=True)
 
         # ==========================================
-        # 상단 타이틀 & 버튼 (짤림 현상 원천 차단)
+        # ★ 제목과 액션 버튼 한 줄에 안정적으로 배치
         # ==========================================
-        # 마이너스 마진 꼼수를 지우고 정상적인 컬럼 배치로 롤백
         header_cols = st.columns([5.5, 1, 1, 1, 1.5]) 
         
         with header_cols[0]:
@@ -80,7 +78,7 @@ class JamLogTab:
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         # ==========================================
-        # ★ Session State 초기화
+        # Session State 초기화
         # ==========================================
         TEXT_KEYS = [
             "err_code", "err_point", "err_msg", "total_unit", "err_cnt", 
@@ -104,7 +102,7 @@ class JamLogTab:
             st.session_state.save_success_msg = ""
 
         # ==========================================
-        # ★ 자동완성 로직 
+        # 자동완성 로직 
         # ==========================================
         def autofill(source_field):
             if st.session_state.search_mode: return 
@@ -253,26 +251,16 @@ class JamLogTab:
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
-            # 검색 모드 필터링
             if st.session_state.search_mode:
-                if st.session_state.date_search:
-                    df_display = df_display[df_display["Date"].astype(str).str.contains(st.session_state.date_search, case=False, na=False)]
-                if st.session_state.err_code:
-                    df_display = df_display[df_display["Errorcode"].astype(str).str.contains(st.session_state.err_code, case=False, na=False)]
-                if st.session_state.err_point:
-                    df_display = df_display[df_display["Err.Point"].astype(str).str.contains(st.session_state.err_point, case=False, na=False)]
-                if st.session_state.err_msg:
-                    df_display = df_display[df_display["Error Masage"].astype(str).str.contains(st.session_state.err_msg, case=False, na=False)]
-                if type_val != "전체":
-                    df_display = df_display[df_display["분류"] == type_val]
-                if st.session_state.symp:
-                    df_display = df_display[df_display["현상"].astype(str).str.contains(st.session_state.symp, case=False, na=False)]
-                if st.session_state.cause:
-                    df_display = df_display[df_display["원인"].astype(str).str.contains(st.session_state.cause, case=False, na=False)]
-                if st.session_state.worker:
-                    df_display = df_display[df_display["조치자"].astype(str).str.contains(st.session_state.worker, case=False, na=False)]
+                if st.session_state.date_search: df_display = df_display[df_display["Date"].astype(str).str.contains(st.session_state.date_search, case=False, na=False)]
+                if st.session_state.err_code: df_display = df_display[df_display["Errorcode"].astype(str).str.contains(st.session_state.err_code, case=False, na=False)]
+                if st.session_state.err_point: df_display = df_display[df_display["Err.Point"].astype(str).str.contains(st.session_state.err_point, case=False, na=False)]
+                if st.session_state.err_msg: df_display = df_display[df_display["Error Masage"].astype(str).str.contains(st.session_state.err_msg, case=False, na=False)]
+                if type_val != "전체": df_display = df_display[df_display["분류"] == type_val]
+                if st.session_state.symp: df_display = df_display[df_display["현상"].astype(str).str.contains(st.session_state.symp, case=False, na=False)]
+                if st.session_state.cause: df_display = df_display[df_display["원인"].astype(str).str.contains(st.session_state.cause, case=False, na=False)]
+                if st.session_state.worker: df_display = df_display[df_display["조치자"].astype(str).str.contains(st.session_state.worker, case=False, na=False)]
 
-            # 정렬
             if "Date" in df_display.columns:
                 df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
             
@@ -293,12 +281,8 @@ class JamLogTab:
                     mime_type = "text/csv"
 
                 st.download_button(
-                    label="📥 엑셀 다운로드",
-                    data=download_data,
-                    file_name=file_name,
-                    mime=mime_type,
-                    use_container_width=True,
-                    key="jam_log_download_btn" 
+                    label="📥 엑셀 다운로드", data=download_data, file_name=file_name, mime=mime_type,
+                    use_container_width=True, key="jam_log_download_btn" 
                 )
             with view_cols[2]:
                 st.empty() 
