@@ -77,21 +77,28 @@ class WorkLogTab:
                 self.db_log.save(save_df)
                 st.cache_data.clear() 
                 st.rerun()
-
+                
        # ==========================================
         # ★ 통일된 상단 대제목 및 엑셀 다운로드 버튼
         # ==========================================
         col_title, col_excel = st.columns([8.5, 1.5])
         
         with col_title:
-            # 드롭다운을 지우고 고정된 텍스트 제목으로 변경!
             st.markdown("### 📝 팀 업무일지 대시보드")
                 
         with col_excel:
             export_df = df_log.drop(columns=['날짜_dt'], errors='ignore') if not df_log.empty else df_log
             export_df = export_df.rename(columns={"비고": "첨부 2", "첨부": "첨부 1"})
             csv_data = export_df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
-            st.download_button(label="📥 엑셀 다운로드", data=csv_data, file_name=f"work_log_{datetime.now().strftime('%Y%m%d')}.csv", use_container_width=True)
+            
+            # 🚨 아래 다운로드 버튼 맨 끝에 key="..." 가 추가되었습니다!
+            st.download_button(
+                label="📥 엑셀 다운로드", 
+                data=csv_data, 
+                file_name=f"work_log_{datetime.now().strftime('%Y%m%d')}.csv", 
+                use_container_width=True,
+                key="work_log_download_btn"  # <--- 이 부분이 추가됨!
+            )
 
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
                 
