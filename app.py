@@ -44,7 +44,7 @@ st.set_page_config(layout="wide", page_title="장비 관리 통합 시스템")
 
 st.markdown("""
     <style>
-        .block-container { max-width: 98% !important; padding-top: 3rem !important; padding-bottom: 2rem !important; }
+        .block-container { max-width: 98% !important; padding-top: 4rem !important; padding-bottom: 2rem !important; }
         
         /* 드롭다운 박스의 높이를 강제로 늘려서 글자가 숨막히지 않게 여백을 줍니다 */
         section[data-testid="stMain"] div[data-testid="stSelectbox"]:first-of-type > div[data-baseweb="select"] > div {
