@@ -174,18 +174,7 @@ class CSCheckSheetTab:
         # 뷰 2: 전체 현황판 메인 화면
         # ==========================================
         else:
-            menu_options = ["📝 팀 업무일지 대시보드", "✅ 장비 제작 Flow 전체 현황판", "📊 장비가동데이터", "🛠️ ECN & STN (장비 파트 및 수정사항 관리)", "🚨 Jam & 트러블슈팅 이력"]
-            selected_menu = st.selectbox(
-                "메뉴",
-                menu_options,
-                index=menu_options.index(st.session_state['current_menu']),
-                key="menu_cs_main",
-                label_visibility="collapsed"
-            )
-            if selected_menu != st.session_state['current_menu']:
-                st.session_state['current_menu'] = selected_menu
-                st.rerun()
-
+           
             st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
             with st.expander("➕ 새 장비(호기) 제작 시작하기"):
