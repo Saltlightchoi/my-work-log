@@ -11,6 +11,7 @@ class ECNSTNTab:
 
     def render(self):
                       
+        st.markdown("### 📊 장비 가동 데이터 정밀 분석")
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         col1, col2, col3, col_search = st.columns([1.5, 1.5, 2.5, 4.5])
