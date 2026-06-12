@@ -8,11 +8,11 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from config import EQUIPMENT_OPTIONS
 
-    class EquipmentDataTab:
-        def __init__(self, repo):
-            self.repo = repo
+class EquipmentDataTab:
+    def __init__(self, repo):
+        self.repo = repo
 
-        def render(self);
+    def render(self):
             
         # =====================================================================
         # 기존 로직 시작 (장비 가동 데이터 정밀 분석)
