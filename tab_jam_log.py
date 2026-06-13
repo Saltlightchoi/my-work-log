@@ -10,24 +10,28 @@ class JamLogTab:
 
     def render(self):
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (예전 성공 방식 100% 롤백 & 버튼 짤림 방지)
+        # 🚨 UI 레이아웃 CSS (예전 성공 방식 100% 복원 + 2중 안전장치)
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. [가장 중요] 세상의 모든 드롭다운 껍데기를 무조건 32px로 강제 축소 */
-            div[data-baseweb="select"] > div { 
+            /* 1. [핵심] 입력 폼 테두리 안의 모든 드롭다운 32px 강제 고정 
+               (예전에 "좋아 여기까지 정상 작동해" 라고 하셨을 때 썼던 바로 그 코드입니다!) */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
                 height: 32px !important; min-height: 32px !important; 
                 padding-top: 0px !important; padding-bottom: 0px !important; 
                 box-sizing: border-box !important;
             }
-            div[data-baseweb="select"] span { 
-                font-size: 13px !important; 
-            }
-            ul[role="listbox"] li { 
-                font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { 
+                font-size: 13px !important; line-height: normal !important;
             }
 
-            /* [예외처리] 사이드바 메뉴는 쪼그라들지 않게 보호 */
+            /* 혹시나 테두리 밖에 있는 드롭다운이 있을 경우를 대비한 전체 강제 적용 */
+            div[data-baseweb="select"] > div {
+                height: 32px !important; min-height: 32px !important;
+            }
+            div[data-baseweb="select"] span { font-size: 13px !important; }
+
+            /* 단, 사이드바의 탭 메뉴는 무조건 크게 유지 */
             [data-testid="stSidebar"] div[data-baseweb="select"] > div {
                 height: 38px !important; min-height: 38px !important;
             }
@@ -35,29 +39,34 @@ class JamLogTab:
                 font-size: 15px !important; font-weight: bold !important;
             }
 
-            /* 2. 일반 텍스트, 숫자, 날짜 입력창 32px 고정 */
-            input { 
+            /* 2. 일반 텍스트, 날짜, 숫자 입력창 높이 32px 완벽 고정 */
+            div[data-testid="stVerticalBlockBorderWrapper"] input { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
                 padding: 0px 8px !important; box-sizing: border-box !important;
             }
 
             /* 3. 라벨(제목) 높이와 아래 여백 압축 */
-            div[data-testid="stWidgetLabel"] { 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
                 height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
             }
-            div[data-testid="stWidgetLabel"] p { 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
                 font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
             }
 
             /* 4. 위아래, 좌우 간격(Gap) 소각 */
-            div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
-            div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
 
-            /* 5. ★ 버튼 테두리 짤림 완벽 해결 ★ (위에서 16px 띄워서 안전하게 표시) */
+            /* 5. 드롭다운 클릭 시 리스트 크기 13px 압축 */
+            ul[role="listbox"] li { 
+                font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
+            }
+
+            /* 6. ★ 버튼 테두리 짤림 방지 ★ 
+               과도한 margin-top을 없애서 테두리가 박스 바깥으로 잘려나가는 현상을 완전히 막았습니다. */
             .stButton > button { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
-                padding: 0px 10px !important; 
-                margin-top: 16px !important; 
+                padding: 0px 10px !important; margin-top: 5px !important; 
             }
             </style>
         """, unsafe_allow_html=True)
@@ -68,7 +77,8 @@ class JamLogTab:
         header_cols = st.columns([5.5, 1, 1, 1, 1.5]) 
         
         with header_cols[0]:
-            st.markdown("### 🚨 Jam & 트러블슈팅 이력")
+            # 기본 ### 마크다운이 가진 불규칙한 여백 때문에 버튼과 어긋나는 것을 방지하기 위해 HTML로 직접 높이를 고정했습니다.
+            st.markdown("<div style='font-size: 22px; font-weight: 700; padding-top: 5px;'>🚨 Jam & 트러블슈팅 이력</div>", unsafe_allow_html=True)
             
         with header_cols[1]: 
             btn_write = st.button("📝 저장", use_container_width=True)
@@ -83,7 +93,7 @@ class JamLogTab:
                 st.session_state.clear_form = True 
                 st.rerun()
 
-        st.markdown("<hr style='margin-top: 0px; margin-bottom: 10px;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         # ==========================================
         # Session State 초기화
