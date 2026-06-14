@@ -17,54 +17,57 @@ class JamLogTab:
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. 드롭다운 껍데기 높이 32px 강제 고정 (★ 성공했던 원본 코드로 완벽 복구 ★) */
-            div[data-testid="stSelectbox"] div[data-baseweb="select"] > div { 
+            /* 1. 드롭다운 껍데기 높이 32px 강제 고정 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
                 height: 32px !important; min-height: 32px !important; 
                 padding-top: 0px !important; padding-bottom: 0px !important; 
                 box-sizing: border-box !important;
             }
-            
-            /* 2. 드롭다운 안의 '모든' 글자 크기 13px 강제 축소 (span, div 전부 타겟팅) */
-            div[data-testid="stSelectbox"] div[data-baseweb="select"] span,
-            div[data-testid="stSelectbox"] div[data-baseweb="select"] div { 
-                font-size: 13px !important; 
-                line-height: normal !important;
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { 
+                font-size: 13px !important; line-height: normal !important;
             }
 
-            /* 3. 사이드바의 탭 메뉴는 무조건 크게 유지 */
-            [data-testid="stSidebar"] div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+            /* 혹시나 테두리 밖에 있는 드롭다운 전체 강제 적용 */
+            div[data-baseweb="select"] > div {
+                height: 32px !important; min-height: 32px !important;
+            }
+            div[data-baseweb="select"] span { font-size: 13px !important; }
+
+            /* 단, 사이드바의 탭 메뉴는 무조건 크게 유지 */
+            [data-testid="stSidebar"] div[data-baseweb="select"] > div {
                 height: 38px !important; min-height: 38px !important;
             }
-            [data-testid="stSidebar"] div[data-testid="stSelectbox"] div[data-baseweb="select"] span,
-            [data-testid="stSidebar"] div[data-testid="stSelectbox"] div[data-baseweb="select"] div {
+            [data-testid="stSidebar"] div[data-baseweb="select"] span {
                 font-size: 15px !important; font-weight: bold !important;
             }
 
-            /* 4. 일반 텍스트, 날짜, 숫자 입력창 높이 32px 완벽 고정 */
-            input { 
+            /* 2. 일반 텍스트, 날짜, 숫자 입력창 높이 32px 완벽 고정 */
+            div[data-testid="stVerticalBlockBorderWrapper"] input { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
                 padding: 0px 8px !important; box-sizing: border-box !important;
             }
 
-            /* 5. 라벨(제목) 높이와 아래 여백 압축 */
-            div[data-testid="stWidgetLabel"] { 
+            /* 3. 라벨(제목) 높이와 아래 여백 압축 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
                 height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
             }
-            div[data-testid="stWidgetLabel"] p { 
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
                 font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
             }
 
-            /* 6. 위아래, 좌우 간격(Gap) 조절 */
-            div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
+            /* 4. 위아래, 좌우 간격(Gap) 조절 */
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
             /* ★ 핵심: 줄과 줄 사이 간격을 -5px에서 2px로 늘려 숨통을 틔워줍니다 ★ */
-            div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: 2px !important; }
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { 
+                gap: 0.5rem !important; margin-bottom: 2px !important; 
+            }
 
-            /* 7. 드롭다운 클릭 시 리스트 크기 13px 압축 */
+            /* 5. 드롭다운 클릭 시 리스트 크기 13px 압축 */
             ul[role="listbox"] li { 
                 font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
             }
 
-            /* 8. ★ 버튼 테두리 짤림 방지 ★ 
+            /* 6. ★ 버튼 테두리 짤림 방지 ★ 
                (여백을 15px로 넉넉하게 주어 천장에서 안전하게 띄웁니다) */
             .stButton > button { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
@@ -122,15 +125,20 @@ class JamLogTab:
             st.session_state.save_success_msg = ""
 
         # ==========================================
-        # 자동완성 로직 
+        # 자동완성 로직 (★ 5,6,7호기 SoCAMM 에러리스트 연동 추가)
         # ==========================================
         def autofill(source_field):
             if st.session_state.search_mode: return 
             
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
-            if equip_name == "SLH1 #1": target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
-            elif equip_name == "SLH1 #4": target_error_tab = "SLH1_SoCAMM ErrorList"
-            else: target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
+            
+            # #4, #5, #6, #7 장비는 모두 SoCAMM ErrorList를 참조하도록 세팅
+            if equip_name == "SLH1 #1": 
+                target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
+            elif equip_name in ["SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]: 
+                target_error_tab = "SLH1_SoCAMM ErrorList"
+            else: 
+                target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
                 
             try:
                 db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
@@ -165,7 +173,8 @@ class JamLogTab:
                     if source_field != "err_point" and col_point: st.session_state.err_point = str(row[col_point])
                     if source_field != "err_msg" and col_msg: st.session_state.err_msg = str(row[col_msg])
 
-        DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4"]
+        # ★ 장비 선택 옵션에 5,6,7호기 추가
+        DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
 
         # ==========================================
         # 입력 및 검색 폼
@@ -223,7 +232,7 @@ class JamLogTab:
                 with r6[5]: result_val = st.selectbox("조치결과", ["완료", "진행중", "대기"], key="result")
 
         # ==========================================
-        # DB 연결 및 데이터 로드
+        # DB 연결 및 데이터 로드 
         # ==========================================
         exact_columns = [
             "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
@@ -238,7 +247,7 @@ class JamLogTab:
             db_machine = DataManager(self.db_jam.spreadsheet_id, equip_val, exact_columns)
             df_machine, _ = db_machine.load()
         except Exception as e:
-            st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 탭 연결 중 오류가 발생했습니다. (상세에러: {e})")
+            st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 탭 연결 중 오류가 발생했습니다. 구글 시트에 '{equip_val}' 탭이 존재하는지 확인해주세요! (상세에러: {e})")
 
         # 저장 로직
         if btn_write:
