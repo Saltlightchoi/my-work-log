@@ -10,63 +10,52 @@ class JamLogTab:
 
     def render(self):
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (예전 성공 방식 100% 복원 + 2중 안전장치)
+        # 🚨 UI 레이아웃 CSS (드롭다운 글자 끝판왕 강제 축소 & 짤림 방지)
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. [핵심] 입력 폼 테두리 안의 모든 드롭다운 32px 강제 고정 
-               (예전에 "좋아 여기까지 정상 작동해" 라고 하셨을 때 썼던 바로 그 코드입니다!) */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] > div { 
+            /* 1. 드롭다운 껍데기 높이 32px 강제 고정 */
+            div[data-testid="stSelectbox"] div[data-baseweb="select"] > div { 
                 height: 32px !important; min-height: 32px !important; 
                 padding-top: 0px !important; padding-bottom: 0px !important; 
                 box-sizing: border-box !important;
             }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-baseweb="select"] span { 
-                font-size: 13px !important; line-height: normal !important;
+            
+            /* 2. [가장 중요] 드롭다운 안의 '모든' 글자 크기 13px 강제 축소 (span, div 전부 타겟팅) */
+            div[data-testid="stSelectbox"] div[data-baseweb="select"] span,
+            div[data-testid="stSelectbox"] div[data-baseweb="select"] div { 
+                font-size: 13px !important; 
+                line-height: normal !important;
             }
 
-            /* 혹시나 테두리 밖에 있는 드롭다운이 있을 경우를 대비한 전체 강제 적용 */
-            div[data-baseweb="select"] > div {
-                height: 32px !important; min-height: 32px !important;
-            }
-            div[data-baseweb="select"] span { font-size: 13px !important; }
-
-            /* 단, 사이드바의 탭 메뉴는 무조건 크게 유지 */
-            [data-testid="stSidebar"] div[data-baseweb="select"] > div {
-                height: 38px !important; min-height: 38px !important;
-            }
-            [data-testid="stSidebar"] div[data-baseweb="select"] span {
-                font-size: 15px !important; font-weight: bold !important;
-            }
-
-            /* 2. 일반 텍스트, 날짜, 숫자 입력창 높이 32px 완벽 고정 */
-            div[data-testid="stVerticalBlockBorderWrapper"] input { 
-                height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
-                padding: 0px 8px !important; box-sizing: border-box !important;
-            }
-
-            /* 3. 라벨(제목) 높이와 아래 여백 압축 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] { 
-                height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
-            }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stWidgetLabel"] p { 
-                font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
-            }
-
-            /* 4. 위아래, 좌우 간격(Gap) 소각 */
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
-            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
-
-            /* 5. 드롭다운 클릭 시 리스트 크기 13px 압축 */
+            /* 3. 드롭다운 눌렀을 때 튀어나오는 리스트 항목도 13px */
             ul[role="listbox"] li { 
                 font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
             }
 
-            /* 6. ★ 버튼 테두리 짤림 방지 ★ 
-               과도한 margin-top을 없애서 테두리가 박스 바깥으로 잘려나가는 현상을 완전히 막았습니다. */
+            /* 4. 일반 텍스트, 날짜, 숫자 입력창 높이 32px 완벽 고정 */
+            input { 
+                height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
+                padding: 0px 8px !important; box-sizing: border-box !important;
+            }
+
+            /* 5. 라벨(제목) 높이와 아래 여백 압축 */
+            div[data-testid="stWidgetLabel"] { 
+                height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
+            }
+            div[data-testid="stWidgetLabel"] p { 
+                font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
+            }
+
+            /* 6. 위아래, 좌우 간격(Gap) 소각 */
+            div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
+            div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: -5px !important; }
+
+            /* 7. ★ 버튼 테두리 짤림 원천 차단 ★ 
+               (억지 마진을 지우고, 높이와 글자 크기만 32px/13px로 안전하게 세팅) */
             .stButton > button { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
-                padding: 0px 10px !important; margin-top: 5px !important; 
+                padding: 0px 10px !important; margin: 0px !important; 
             }
             </style>
         """, unsafe_allow_html=True)
@@ -77,8 +66,8 @@ class JamLogTab:
         header_cols = st.columns([5.5, 1, 1, 1, 1.5]) 
         
         with header_cols[0]:
-            # 기본 ### 마크다운이 가진 불규칙한 여백 때문에 버튼과 어긋나는 것을 방지하기 위해 HTML로 직접 높이를 고정했습니다.
-            st.markdown("<div style='font-size: 22px; font-weight: 700; padding-top: 5px;'>🚨 Jam & 트러블슈팅 이력</div>", unsafe_allow_html=True)
+            # 마크다운 기본 여백 때문에 버튼과 어긋나는 것을 방지 (padding으로 살짝 내림)
+            st.markdown("<h3 style='margin:0; padding-top:3px;'>🚨 Jam & 트러블슈팅 이력</h3>", unsafe_allow_html=True)
             
         with header_cols[1]: 
             btn_write = st.button("📝 저장", use_container_width=True)
@@ -221,7 +210,7 @@ class JamLogTab:
                 with r6[5]: result_val = st.selectbox("조치결과", ["완료", "진행중", "대기"], key="result")
 
         # ==========================================
-        # DB 연결 및 데이터 로드
+        # DB 연결 및 데이터 로드 (🚨 에러 원인 표출 강화)
         # ==========================================
         exact_columns = [
             "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
@@ -235,8 +224,9 @@ class JamLogTab:
         try:
             db_machine = DataManager(self.db_jam.spreadsheet_id, equip_val, exact_columns)
             df_machine, _ = db_machine.load()
-        except Exception:
-            st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 시트가 없습니다.")
+        except Exception as e:
+            # 에러가 나면 왜 났는지 진짜 이유를 화면에 띄웁니다!
+            st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 탭 연결 중 오류가 발생했습니다. (상세에러: {e})")
 
         # 저장 로직
         if btn_write:
@@ -314,5 +304,3 @@ class JamLogTab:
                     db_machine.save(edited_df.fillna(""))
                     st.success("✅ 변경사항이 저장되었습니다!")
                     st.rerun()
-        elif db_machine is not None:
-            st.info(f"'{equip_val}' 시트에 등록된 데이터가 없습니다.")
