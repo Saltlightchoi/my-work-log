@@ -152,5 +152,5 @@ elif menu == "🛠️ ECN & STN (장비 파트 및 수정사항 관리)":
     tab = ECNSTNTab(db_ecn)
     tab.render()
 elif menu == "🚨 Jam & 트러블슈팅 이력":
-    tab = JamLogTab(db_jam)
+    tab = JamLogTab(db_jam_log)
     tab.render()
