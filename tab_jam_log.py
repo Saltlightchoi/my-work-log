@@ -13,7 +13,7 @@ class JamLogTab:
         st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
 
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (★ 멍청한 구역 제한자 완전히 삭제! 진짜 원본 복구 ★)
+        # 🚨 UI 레이아웃 CSS (★ 6월 14일 원본 복구 보존 ★)
         # ========================================================
         st.markdown("""
             <style>
@@ -120,14 +120,14 @@ class JamLogTab:
             st.session_state.save_success_msg = ""
 
         # ==========================================
-        # 자동완성 로직 (★ 6월 14일 원본 로직 유지 + 정밀 매칭 필터 적용)
+        # 자동완성 로직 (★ 문제의 .worksheet 완전히 삭제 & .load() 방식 복구)
         # ==========================================
         def autofill(source_field):
             if st.session_state.search_mode: return 
             
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
             
-            # 1호기: R-dimm 탭 / 4~7호기: SoCAMM 탭 참조
+            # 장비별 에러 리스트 분기 처리
             if equip_name == "SLH1 #1": 
                 target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
             elif equip_name in ["SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]: 
@@ -136,19 +136,18 @@ class JamLogTab:
                 target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
                 
             try:
-                # ✅ 검증된 원본 방식(.load)으로 정상 파싱
+                # ✅ 완벽히 검증된 원본 방식 (.load) 사용 -> 에러 발생 원천 차단!
                 db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
                 df_err, _ = db_err.load()
                 if df_err.empty: return 
             except Exception as e:
-                # 연결 실패 시 침묵하지 않고 우측 하단에 에러 알림 표출
                 st.toast(f"⚠️ ErrorList 로드 실패: {e}")
                 return 
             
             search_val = str(st.session_state[source_field]).strip()
             if not search_val: return
 
-            # ✅ 핵심 보완: 데이터프레임 내 숫자의 '.0' 소수점 변환 잔재 및 공백 완전 제거
+            # ✅ 강력한 전처리: Pandas가 숫자를 '.0'으로 바꾸는 문제 & 공백 문제 완벽 제거
             df_err = df_err.fillna("")
             for col in df_err.columns:
                 df_err[col] = df_err[col].astype(str).str.replace(r"\.0$", "", regex=True).str.strip()
@@ -168,8 +167,10 @@ class JamLogTab:
             search_col = source_to_col.get(source_field)
             
             if search_col and search_col in df_err.columns:
-                # 1차 정확한 매칭 -> 실패 시 2차 부분 매칭 시도
+                # 1차: 완벽 일치 검색
                 match = df_err[df_err[search_col].str.lower() == search_val.lower()]
+                
+                # 2차: 포함 단어 검색
                 if match.empty: 
                     match = df_err[df_err[search_col].str.contains(search_val, case=False, na=False)]
                 
@@ -178,6 +179,10 @@ class JamLogTab:
                     if source_field != "err_code" and col_code: st.session_state.err_code = str(row[col_code])
                     if source_field != "err_point" and col_point: st.session_state.err_point = str(row[col_point])
                     if source_field != "err_msg" and col_msg: st.session_state.err_msg = str(row[col_msg])
+
+        # ★ 장비 선택 옵션
+        DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
+
         # ==========================================
         # 입력 및 검색 폼
         # ==========================================
