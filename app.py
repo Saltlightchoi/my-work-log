@@ -146,7 +146,7 @@ elif menu == "✅ 장비 제작 Flow 전체 현황판":
     tab = CSCheckSheetTab(db_cs_check)
     tab.render()
 elif menu == "📊 장비가동데이터":
-    tab = EquipmentDataTab(repo)
+    tab = EquipmentDataTab(db_jam_log) # <- 수정: Jam 시트 데이터를 넘겨줌
     tab.render()
 elif menu == "🛠️ ECN & STN (장비 파트 및 수정사항 관리)":
     tab = ECNSTNTab(db_ecn)
