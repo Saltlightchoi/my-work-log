@@ -122,12 +122,15 @@ class JamLogTab:
         # ==========================================
         # 자동완성 로직 (★ 5,6,7호기 SoCAMM 에러리스트 연동 추가)
         # ==========================================
+        # ==========================================
+        # ★ 자동완성 로직 정밀 스캔 엔진 (표 병합/빈 줄 완벽 무시) ★
+        # ==========================================
         def autofill(source_field):
             if st.session_state.search_mode: return 
             
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
             
-            # #4, #5, #6, #7 장비는 모두 SoCAMM ErrorList를 참조하도록 세팅
+            # 한 파일(SLH1) 안에 있는 2가지 Error List 탭을 정확히 매칭
             if equip_name == "SLH1 #1": 
                 target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
             elif equip_name in ["SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]: 
@@ -136,10 +139,62 @@ class JamLogTab:
                 target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
                 
             try:
-                db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
-                df_err, _ = db_err.load()
+                fresh_db = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
+                # 시트의 겉모양(병합 등)에 속지 않고 2차원 배열 그대로 전부 긁어옵니다.
+                raw_matrix = fresh_db.worksheet.get_all_values()
+                if not raw_matrix: return
+
+                # '알람코드', 'errorcode' 등 헤더가 위치한 진짜 행(Row)을 추적합니다.
+                header_idx = -1
+                for idx, row in enumerate(raw_matrix):
+                    row_str = "".join(row).lower().replace(" ", "")
+                    if any(k in row_str for k in ["errorcode", "알람코드", "code"]):
+                        header_idx = idx
+                        break
+                
+                if header_idx == -1: return
+
+                # 진짜 헤더 위치부터 표를 다시 생성합니다.
+                headers = raw_matrix[header_idx]
+                data_rows = raw_matrix[header_idx + 1:]
+                df_err = pd.DataFrame(data_rows, columns=headers)
                 if df_err.empty: return 
-            except Exception: return 
+            except Exception as e:
+                st.toast(f"⚠️ ErrorList 로드 실패: {e}")
+                return 
+            
+            search_val = str(st.session_state[source_field]).strip()
+            if not search_val: return
+
+            # 타입 불일치 및 소수점(.0) 전처리 필터
+            df_err = df_err.fillna("")
+            for col in df_err.columns:
+                df_err[col] = df_err[col].astype(str).str.replace(r"\.0$", "", regex=True).str.strip()
+            
+            def get_real_col(*possible_names):
+                for c in df_err.columns:
+                    c_clean = str(c).lower().replace(" ", "")
+                    for p in possible_names:
+                        if c_clean == p.lower().replace(" ", ""): return c
+                return None
+
+            col_code = get_real_col("errorcode", "알람코드", "code")
+            col_point = get_real_col("err.point", "모듈", "point", "errpoint")
+            col_msg = get_real_col("errormasage", "알람명", "errormessage", "message", "error message")
+            
+            source_to_col = {"err_code": col_code, "err_point": col_point, "err_msg": col_msg}
+            search_col = source_to_col.get(source_field)
+            
+            if search_col and search_col in df_err.columns:
+                match = df_err[df_err[search_col].str.lower() == search_val.lower()]
+                if match.empty: 
+                    match = df_err[df_err[search_col].str.contains(search_val, case=False, na=False)]
+                
+                if not match.empty:
+                    row = match.iloc[0] 
+                    if source_field != "err_code" and col_code: st.session_state.err_code = str(row[col_code])
+                    if source_field != "err_point" and col_point: st.session_state.err_point = str(row[col_point])
+                    if source_field != "err_msg" and col_msg: st.session_state.err_msg = str(row[col_msg])
             
             search_val = str(st.session_state[source_field]).strip()
             if not search_val: return
