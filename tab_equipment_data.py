@@ -144,12 +144,14 @@ class EquipmentDataTab:
         # 4. 하단: 정밀 분석 그래프 3개 (MTBA/MTTR/MTBI 및 분류)
         # ==========================================
         st.markdown(f"#### 📈 {selected_month} 정밀 분석 추이")
-        df_daily_mt = df_month.groupby(df_month['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].mean().reset_index()
+        
+        # ✅ 변경점: MTBA, MTTR, MTBI를 평균(mean)이 아닌 그날 입력된 최대치(max) 수치 그대로 가져옵니다.
+        df_daily_mt = df_month.groupby(df_month['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].max().reset_index()
         
         fig1 = go.Figure()
-        fig1.add_trace(go.Scatter(x=df_daily_mt['Date'], y=df_daily_mt['MTBA'], mode='lines+markers', name='MTBA (평균)', line=dict(color='#2E86C1', width=3)))
-        fig1.add_trace(go.Scatter(x=df_daily_mt['Date'], y=df_daily_mt['MTTR'], mode='lines+markers', name='MTTR (평균)', line=dict(color='#E74C3C', width=3)))
-        fig1.add_trace(go.Scatter(x=df_daily_mt['Date'], y=df_daily_mt['MTBI'], mode='lines+markers', name='MTBI (평균)', line=dict(color='#27AE60', width=3)))
+        fig1.add_trace(go.Scatter(x=df_daily_mt['Date'], y=df_daily_mt['MTBA'], mode='lines+markers', name='MTBA', line=dict(color='#2E86C1', width=3)))
+        fig1.add_trace(go.Scatter(x=df_daily_mt['Date'], y=df_daily_mt['MTTR'], mode='lines+markers', name='MTTR', line=dict(color='#E74C3C', width=3)))
+        fig1.add_trace(go.Scatter(x=df_daily_mt['Date'], y=df_daily_mt['MTBI'], mode='lines+markers', name='MTBI', line=dict(color='#27AE60', width=3)))
         
         fig1.update_layout(
             height=350, 
