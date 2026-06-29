@@ -7,7 +7,7 @@ from datetime import datetime
 
 class EquipmentDataTab:
     def __init__(self, db_jam):
-        # app.py로부터 repo가 아닌 db_jam(구글시트 객체)을 받습니다.
+        # app.py로부터 db_jam(구글시트 객체)을 받습니다.
         self.db_jam = db_jam
 
     def render(self):
@@ -54,8 +54,8 @@ class EquipmentDataTab:
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
         df = df.dropna(subset=['Date']).sort_values('Date')
         
-        # 숫자 타입 변환 (MTBA, MTTR, MTBI, Errorcount)
-        numeric_cols = ['MTBA', 'MTTR', 'MTBI', 'Errorcount']
+        # 숫자 타입 변환 (문자열 등 오류 방지)
+        numeric_cols = ['Totalunit', 'Errorcount', 'MTBA', 'MTTR', 'MTBI']
         for c in numeric_cols:
             df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
             
@@ -77,17 +77,50 @@ class EquipmentDataTab:
             return
 
         # ==========================================
-        # 3. 그래프 그리기 (하단 로우 데이터 표는 삭제됨)
+        # 3. 상단: 기존에 사용하던 기본 데이터 그래프 2개 복원
         # ==========================================
+        st.markdown(f"#### 📊 {selected_month} 기본 가동 현황 (생산량 및 에러 건수)")
         
-        # [그래프 1] 일별 MTBA, MTTR 평균 추이 (꺾은선)
-        st.markdown(f"#### 📈 {selected_month} 일별 MTBA / MTTR / MTBI 추이")
-        df_daily = df_month.groupby(df_month['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].mean().reset_index()
+        # 일별 최대 생산량(Totalunit) 및 총 에러 건수(Errorcount) 산출
+        df_daily_basic = df_month.groupby(df_month['Date'].dt.date).agg({
+            'Totalunit': 'max',  # 누적 생산량이므로 일별 최대값
+            'Errorcount': 'sum'  # 발생한 에러 건수의 총합
+        }).reset_index()
+
+        col_top1, col_top2 = st.columns(2)
+        
+        with col_top1:
+            fig_tu = go.Figure()
+            fig_tu.add_trace(go.Bar(
+                x=df_daily_basic['Date'], y=df_daily_basic['Totalunit'], 
+                name='Total Unit', marker_color='#3498DB', 
+                text=df_daily_basic['Totalunit'], textposition='auto'
+            ))
+            fig_tu.update_layout(title="일별 생산량 (Total Unit)", margin=dict(l=20, r=20, t=40, b=20), height=320)
+            st.plotly_chart(fig_tu, use_container_width=True)
+
+        with col_top2:
+            fig_ec = go.Figure()
+            fig_ec.add_trace(go.Bar(
+                x=df_daily_basic['Date'], y=df_daily_basic['Errorcount'], 
+                name='Error Count', marker_color='#E74C3C', 
+                text=df_daily_basic['Errorcount'], textposition='auto'
+            ))
+            fig_ec.update_layout(title="일별 에러 건수 (Error Count)", margin=dict(l=20, r=20, t=40, b=20), height=320)
+            st.plotly_chart(fig_ec, use_container_width=True)
+
+        st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
+
+        # ==========================================
+        # 4. 하단: 정밀 분석 그래프 3개 (MTBA/MTTR/MTBI 및 분류)
+        # ==========================================
+        st.markdown(f"#### 📈 {selected_month} 정밀 분석 추이")
+        df_daily_mt = df_month.groupby(df_month['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].mean().reset_index()
         
         fig1 = go.Figure()
-        fig1.add_trace(go.Scatter(x=df_daily['Date'], y=df_daily['MTBA'], mode='lines+markers', name='MTBA (평균)', line=dict(color='#2E86C1', width=3)))
-        fig1.add_trace(go.Scatter(x=df_daily['Date'], y=df_daily['MTTR'], mode='lines+markers', name='MTTR (평균)', line=dict(color='#E74C3C', width=3)))
-        fig1.add_trace(go.Scatter(x=df_daily['Date'], y=df_daily['MTBI'], mode='lines+markers', name='MTBI (평균)', line=dict(color='#27AE60', width=3)))
+        fig1.add_trace(go.Scatter(x=df_daily_mt['Date'], y=df_daily_mt['MTBA'], mode='lines+markers', name='MTBA (평균)', line=dict(color='#2E86C1', width=3)))
+        fig1.add_trace(go.Scatter(x=df_daily_mt['Date'], y=df_daily_mt['MTTR'], mode='lines+markers', name='MTTR (평균)', line=dict(color='#E74C3C', width=3)))
+        fig1.add_trace(go.Scatter(x=df_daily_mt['Date'], y=df_daily_mt['MTBI'], mode='lines+markers', name='MTBI (평균)', line=dict(color='#27AE60', width=3)))
         
         fig1.update_layout(
             height=350, 
@@ -99,7 +132,7 @@ class EquipmentDataTab:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # [그래프 2 & 3] 에러 발생 분류 및 원인 분석
+        # 에러 발생 모듈(파이) & 분류별 발생 건수(가로바)
         col_g1, col_g2 = st.columns(2)
         
         with col_g1:
@@ -124,7 +157,9 @@ class EquipmentDataTab:
                     y=type_counts['분류'], 
                     x=type_counts['Errorcount'], 
                     orientation='h', 
-                    marker_color='#F39C12'
+                    marker_color='#F39C12',
+                    text=type_counts['Errorcount'], 
+                    textposition='auto'
                 )])
                 fig3.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, xaxis_title="발생 건수")
                 st.plotly_chart(fig3, use_container_width=True)
