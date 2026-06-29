@@ -23,7 +23,7 @@ class EquipmentDataTab:
             equip_val = st.selectbox("분석할 장비 선택", DB_SHEET_OPTIONS)
 
         # ==========================================
-        # 1. Jam 데이터 로드 (표 형태의 UI 출력 없음)
+        # 1. Jam 데이터 로드
         # ==========================================
         if equip_val == "SLH1 #1": 
             target_tab = "SLH1 #1"
@@ -48,18 +48,15 @@ class EquipmentDataTab:
             return
 
         # ==========================================
-        # 2. 데이터 전처리 (그래프용 가공)
+        # 2. 데이터 전처리
         # ==========================================
-        # 날짜 타입 변환
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
         df = df.dropna(subset=['Date']).sort_values('Date')
         
-        # 숫자 타입 변환 (문자열 등 오류 방지)
         numeric_cols = ['Totalunit', 'Errorcount', 'MTBA', 'MTTR', 'MTBI']
         for c in numeric_cols:
             df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
             
-        # 월별 필터링
         df['Month'] = df['Date'].dt.strftime('%Y-%m')
         available_months = sorted(df['Month'].unique(), reverse=True)
         
@@ -77,37 +74,69 @@ class EquipmentDataTab:
             return
 
         # ==========================================
-        # 3. 상단: 기존에 사용하던 기본 데이터 그래프 2개 복원
+        # 3. 상단: 생산 Unit 대비 Jam 발생 & PPJ 그래프 (점선/이중축 적용)
         # ==========================================
-        st.markdown(f"#### 📊 {selected_month} 기본 가동 현황 (생산량 및 에러 건수)")
+        st.markdown(f"#### 📊 {selected_month} 기본 가동 현황 (PPJ 및 생산대비 Jam)")
         
-        # 일별 최대 생산량(Totalunit) 및 총 에러 건수(Errorcount) 산출
+        # 일별 데이터 집계
         df_daily_basic = df_month.groupby(df_month['Date'].dt.date).agg({
-            'Totalunit': 'max',  # 누적 생산량이므로 일별 최대값
-            'Errorcount': 'sum'  # 발생한 에러 건수의 총합
+            'Totalunit': 'max',  # 일별 최대 생산량
+            'Errorcount': 'sum'  # 일별 에러 건수 총합
         }).reset_index()
+
+        # PPJ (Parts Per Jam) 계산: 생산량 / 에러건수 (에러가 0일 경우 생산량 전체를 PPJ로 간주)
+        df_daily_basic['PPJ'] = df_daily_basic.apply(
+            lambda row: row['Totalunit'] / row['Errorcount'] if row['Errorcount'] > 0 else row['Totalunit'], 
+            axis=1
+        )
+        
+        # 기간별(월별) 평균 PPJ 계산
+        total_unit_month = df_daily_basic['Totalunit'].sum()
+        total_error_month = df_daily_basic['Errorcount'].sum()
+        period_ppj = total_unit_month / total_error_month if total_error_month > 0 else total_unit_month
 
         col_top1, col_top2 = st.columns(2)
         
+        # [그래프 1] 생산 Unit 대비 Jam 발생 (이중 축 점선 그래프)
         with col_top1:
-            fig_tu = go.Figure()
-            fig_tu.add_trace(go.Bar(
-                x=df_daily_basic['Date'], y=df_daily_basic['Totalunit'], 
-                name='Total Unit', marker_color='#3498DB', 
-                text=df_daily_basic['Totalunit'], textposition='auto'
-            ))
-            fig_tu.update_layout(title="일별 생산량 (Total Unit)", margin=dict(l=20, r=20, t=40, b=20), height=320)
+            fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
+            
+            # 생산량 (좌측 축, 실선+마커)
+            fig_tu.add_trace(
+                go.Scatter(x=df_daily_basic['Date'], y=df_daily_basic['Totalunit'], 
+                           mode='lines+markers', name='생산량 (Total Unit)', line=dict(color='#3498DB', width=2)),
+                secondary_y=False
+            )
+            # Jam 발생 (우측 축, 점선+마커)
+            fig_tu.add_trace(
+                go.Scatter(x=df_daily_basic['Date'], y=df_daily_basic['Errorcount'], 
+                           mode='lines+markers', name='Jam 발생 (건)', line=dict(color='#E74C3C', width=2, dash='dot')),
+                secondary_y=True
+            )
+            
+            fig_tu.update_layout(title="생산 Unit 대비 Jam 발생 추이", margin=dict(l=20, r=20, t=40, b=20), height=350, hovermode="x unified")
+            fig_tu.update_yaxes(title_text="생산량", secondary_y=False)
+            fig_tu.update_yaxes(title_text="Jam 건수", secondary_y=True)
             st.plotly_chart(fig_tu, use_container_width=True)
 
+        # [그래프 2] 일별 PPJ 및 기간별 PPJ
         with col_top2:
-            fig_ec = go.Figure()
-            fig_ec.add_trace(go.Bar(
-                x=df_daily_basic['Date'], y=df_daily_basic['Errorcount'], 
-                name='Error Count', marker_color='#E74C3C', 
-                text=df_daily_basic['Errorcount'], textposition='auto'
+            fig_ppj = go.Figure()
+            
+            # 일별 PPJ (점선+마커)
+            fig_ppj.add_trace(go.Scatter(
+                x=df_daily_basic['Date'], y=df_daily_basic['PPJ'], 
+                mode='lines+markers', name='일별 PPJ', line=dict(color='#27AE60', width=2)
             ))
-            fig_ec.update_layout(title="일별 에러 건수 (Error Count)", margin=dict(l=20, r=20, t=40, b=20), height=320)
-            st.plotly_chart(fig_ec, use_container_width=True)
+            
+            # 기간별 평균 PPJ (수평 점선)
+            fig_ppj.add_trace(go.Scatter(
+                x=df_daily_basic['Date'], y=[period_ppj] * len(df_daily_basic), 
+                mode='lines', name=f'기간별 평균 PPJ ({int(period_ppj):,}개)', line=dict(color='#F39C12', width=2, dash='dash')
+            ))
+            
+            fig_ppj.update_layout(title="일별 PPJ 및 기간별 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=350, hovermode="x unified")
+            st.plotly_chart(fig_ppj, use_container_width=True)
 
         st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
