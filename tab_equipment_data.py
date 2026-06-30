@@ -7,7 +7,6 @@ from datetime import datetime
 
 class EquipmentDataTab:
     def __init__(self, db_jam):
-        # app.py로부터 db_jam(구글시트 객체)을 받습니다.
         self.db_jam = db_jam
 
     def render(self):
@@ -25,10 +24,7 @@ class EquipmentDataTab:
         # ==========================================
         # 1. Jam 데이터 로드
         # ==========================================
-        if equip_val == "SLH1 #1": 
-            target_tab = "SLH1 #1"
-        else: 
-            target_tab = equip_val
+        target_tab = "SLH1 #1" if equip_val == "SLH1 #1" else equip_val
             
         exact_columns = [
             "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
@@ -40,11 +36,11 @@ class EquipmentDataTab:
             db_machine = DataManager(self.db_jam.spreadsheet_id, target_tab, exact_columns)
             df, _ = db_machine.load()
         except Exception as e:
-            st.error(f"🚨 데이터를 불러오지 못했습니다. 시트를 확인해주세요: {e}")
+            st.error(f"🚨 데이터를 불러오지 못했습니다: {e}")
             return
             
         if df.empty:
-            st.info(f"💡 '{equip_val}' 장비에 등록된 Jam 데이터가 없어 그래프를 그릴 수 없습니다.")
+            st.info(f"💡 '{equip_val}' 장비 데이터가 없습니다.")
             return
 
         # ==========================================
@@ -80,11 +76,11 @@ class EquipmentDataTab:
         
         # 일별 데이터 집계
         df_daily_basic = df_month.groupby(df_month['Date'].dt.date).agg({
-            'Totalunit': 'max',  # 일별 최대 생산량
-            'Errorcount': 'sum'  # 일별 에러 건수 총합
+            'Totalunit': 'max',
+            'Errorcount': 'sum'
         }).reset_index()
 
-        # PPJ 계산: 생산량 / 에러건수 (에러가 0일 경우 생산량 전체를 PPJ로 간주)
+        # PPJ 계산
         df_daily_basic['PPJ'] = df_daily_basic.apply(
             lambda row: row['Totalunit'] / row['Errorcount'] if row['Errorcount'] > 0 else row['Totalunit'], 
             axis=1
@@ -97,15 +93,17 @@ class EquipmentDataTab:
 
         col_top1, col_top2 = st.columns(2)
         
-        # [그래프 1] 생산 Unit 대비 Jam 발생 (이중 축, ★ 모두 실선 적용)
+        # [그래프 1] 생산 Unit 대비 Jam 발생 (이중 축, ★ 완벽한 실선 적용)
         with col_top1:
             fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
             
+            # 생산량 (파란색 실선)
             fig_tu.add_trace(
                 go.Scatter(x=df_daily_basic['Date'], y=df_daily_basic['Totalunit'], 
                            mode='lines+markers', name='생산량 (Total Unit)', line=dict(color='#3498DB', width=3)),
                 secondary_y=False
             )
+            # Jam 발생 (빨간색 실선)
             fig_tu.add_trace(
                 go.Scatter(x=df_daily_basic['Date'], y=df_daily_basic['Errorcount'], 
                            mode='lines+markers', name='Jam 발생 (건)', line=dict(color='#E74C3C', width=3)),
@@ -117,42 +115,40 @@ class EquipmentDataTab:
             fig_tu.update_yaxes(title_text="Jam 건수", secondary_y=True)
             st.plotly_chart(fig_tu, use_container_width=True)
 
-        # [그래프 2] 일별 PPJ 및 기간별 PPJ (★ 간격 2500 강제 적용, 모두 실선)
+        # [그래프 2] 일별 PPJ 및 기간별 PPJ (★ 간격 2500 고정, 완벽한 실선 적용)
         with col_top2:
             fig_ppj = go.Figure()
             
-            # 일별 PPJ (실선)
+            # 일별 PPJ (초록색 실선)
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['Date'], y=df_daily_basic['PPJ'], 
                 mode='lines+markers', name='일별 PPJ', line=dict(color='#27AE60', width=3)
             ))
             
-            # 월간 평균 PPJ (실선)
+            # 월간 평균 PPJ (노란색 실선)
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['Date'], y=[period_ppj] * len(df_daily_basic), 
                 mode='lines', name=f'평균 PPJ ({int(period_ppj):,}개)', line=dict(color='#F39C12', width=3)
             ))
             
+            # ★ Y축 눈금 간격을 2500 단위로 강제 고정하고 숫자 형식을 예쁘게 표시
             fig_ppj.update_layout(title="일별 PPJ 및 기간별 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=350, hovermode="x unified")
-            
-            # ★ Y축 눈금 간격을 2500 단위로 고정하여 촘촘하게 표시합니다
-            fig_ppj.update_yaxes(dtick=2500) 
+            fig_ppj.update_yaxes(dtick=2500, tickformat=",") 
             
             st.plotly_chart(fig_ppj, use_container_width=True)
 
         st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
         # ==========================================
-        # 4. 하단: 정밀 분석 추이 (★ 막대 그래프 + 평균선)
+        # 4. 하단: 정밀 분석 추이 (★ 막대 그래프 + 겹친 가로 평균 실선)
         # ==========================================
         st.markdown(f"#### 📈 {selected_month} 정밀 분석 추이 (MTBA / MTTR / MTBI)")
         
-        # 평균이 아닌 입력된 최대치(원 데이터) 적용
         df_daily_mt = df_month.groupby(df_month['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].max().reset_index()
         
         fig1 = go.Figure()
 
-        # 각 지표에 대해 막대그래프(일별)와 꺾은선(월간 평균)을 겹쳐서 그립니다.
+        # 각 지표에 대해 막대그래프(Bar)와 평균선(Scatter-Line) 조합
         metrics = [
             ('MTBA', '#AED6F1', '#2E86C1'), 
             ('MTTR', '#F5B7B1', '#E74C3C'), 
@@ -160,25 +156,26 @@ class EquipmentDataTab:
         ]
 
         for col, bar_color, line_color in metrics:
-            # 일별 입력치: 막대그래프(Bar)
+            # 1. 일별 원본 수치 (막대 그래프)
             fig1.add_trace(go.Bar(
                 x=df_daily_mt['Date'], y=df_daily_mt[col], 
                 name=f'{col} (일별)', marker_color=bar_color
             ))
             
-            # 월 평균치: 점선(Line)
+            # 2. 월간 평균 수치 (직관적인 가로 실선)
             avg_val = df_daily_mt[col].mean()
             fig1.add_trace(go.Scatter(
                 x=df_daily_mt['Date'], y=[avg_val] * len(df_daily_mt), 
                 mode='lines', name=f'{col} 평균 ({avg_val:.1f})', 
-                line=dict(color=line_color, width=2, dash='dash')
+                line=dict(color=line_color, width=2)
             ))
         
+        # 막대들이 겹치지 않게 그룹화(barmode='group')
         fig1.update_layout(
             height=380, 
             margin=dict(l=20, r=20, t=30, b=20),
             hovermode="x unified",
-            barmode='group', # 막대그래프가 겹치지 않고 옆으로 나란히 정렬됩니다
+            barmode='group', 
             legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="right", x=1)
         )
         st.plotly_chart(fig1, use_container_width=True)
