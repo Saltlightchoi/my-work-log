@@ -14,7 +14,6 @@ class EquipmentDataTab:
         st.markdown("### 📊 장비 가동 정밀 데이터 분석")
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
         
-        # 장비 선택 폼
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
         
         col1, col2 = st.columns([2, 8])
@@ -74,23 +73,22 @@ class EquipmentDataTab:
         # ==========================================
         st.markdown(f"#### 📊 {selected_month} 기본 가동 현황 (PPJ 및 생산대비 Jam)")
         
-        # 일별 데이터 집계
         df_daily_basic = df_month.groupby(df_month['Date'].dt.date).agg({
             'Totalunit': 'max',
             'Errorcount': 'sum'
         }).reset_index()
 
-        # [수정 1] 단순 평균이 아닌 "누적(Cumulative) 데이터" 산출
+        # [핵심 1] 날짜를 '카테고리형 문자열(MM/DD)'로 변환하여 X축이 주 단위로 묶이는 현상 차단
+        df_daily_basic['DateStr'] = pd.to_datetime(df_daily_basic['Date']).dt.strftime('%m/%d')
+
         df_daily_basic['Cum_Totalunit'] = df_daily_basic['Totalunit'].cumsum()
         df_daily_basic['Cum_Errorcount'] = df_daily_basic['Errorcount'].cumsum()
 
-        # 일별 PPJ
         df_daily_basic['PPJ'] = df_daily_basic.apply(
             lambda row: row['Totalunit'] / row['Errorcount'] if row['Errorcount'] > 0 else row['Totalunit'], 
             axis=1
         )
         
-        # 누적 평균 PPJ (해당 일자까지의 총 생산량 / 총 에러건수)
         df_daily_basic['Cum_PPJ'] = df_daily_basic.apply(
             lambda row: row['Cum_Totalunit'] / row['Cum_Errorcount'] if row['Cum_Errorcount'] > 0 else row['Cum_Totalunit'], 
             axis=1
@@ -98,56 +96,61 @@ class EquipmentDataTab:
 
         col_top1, col_top2 = st.columns(2)
         
-        # [그래프 1] 생산 Unit 대비 Jam 발생 (이중 축, 실선 적용)
+        # [그래프 1] 생산 Unit 대비 Jam 발생
         with col_top1:
             fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
             
+            # [핵심 2] mode에 '+text'를 추가하고, text 값을 매핑하여 각 점에 수치 표출
             fig_tu.add_trace(
-                go.Scatter(x=df_daily_basic['Date'], y=df_daily_basic['Totalunit'], 
-                           mode='lines+markers', name='생산량 (Total Unit)', line=dict(color='#3498DB', width=3)),
-                secondary_y=False
+                go.Scatter(
+                    x=df_daily_basic['DateStr'], y=df_daily_basic['Totalunit'], 
+                    mode='lines+markers+text', name='생산량', line=dict(color='#3498DB', width=3),
+                    text=df_daily_basic['Totalunit'].apply(lambda x: f"{x:,.0f}"), textposition='top center'
+                ), secondary_y=False
             )
             fig_tu.add_trace(
-                go.Scatter(x=df_daily_basic['Date'], y=df_daily_basic['Errorcount'], 
-                           mode='lines+markers', name='Jam 발생 (건)', line=dict(color='#E74C3C', width=3)),
-                secondary_y=True
+                go.Scatter(
+                    x=df_daily_basic['DateStr'], y=df_daily_basic['Errorcount'], 
+                    mode='lines+markers+text', name='Jam 발생', line=dict(color='#E74C3C', width=3),
+                    text=df_daily_basic['Errorcount'].apply(lambda x: f"{x:,.0f}"), textposition='bottom center'
+                ), secondary_y=True
             )
             
-            fig_tu.update_layout(title="생산 Unit 대비 Jam 발생 추이", margin=dict(l=20, r=20, t=40, b=20), height=350, hovermode="x unified")
-            fig_tu.update_yaxes(title_text="생산량", secondary_y=False)
-            fig_tu.update_yaxes(title_text="Jam 건수", secondary_y=True)
+            fig_tu.update_layout(title="생산량 대비 Jam 발생", margin=dict(l=20, r=20, t=40, b=20), height=380, hovermode="x unified")
+            fig_tu.update_xaxes(type='category') # X축 강제 표시 옵션 추가
             st.plotly_chart(fig_tu, use_container_width=True)
 
         # [그래프 2] 일별 PPJ 및 누적 평균 PPJ
         with col_top2:
             fig_ppj = go.Figure()
             
-            # 일별 PPJ
             fig_ppj.add_trace(go.Scatter(
-                x=df_daily_basic['Date'], y=df_daily_basic['PPJ'], 
-                mode='lines+markers', name='일별 PPJ', line=dict(color='#27AE60', width=3)
+                x=df_daily_basic['DateStr'], y=df_daily_basic['PPJ'], 
+                mode='lines+markers+text', name='일별 PPJ', line=dict(color='#27AE60', width=3),
+                text=df_daily_basic['PPJ'].apply(lambda x: f"{x:,.0f}"), textposition='top center'
             ))
             
-            # 누적 평균 PPJ (일자별로 변화하는 누적선)
             fig_ppj.add_trace(go.Scatter(
-                x=df_daily_basic['Date'], y=df_daily_basic['Cum_PPJ'], 
-                mode='lines', name='누적 평균 PPJ', line=dict(color='#F39C12', width=3)
+                x=df_daily_basic['DateStr'], y=df_daily_basic['Cum_PPJ'], 
+                mode='lines+markers+text', name='누적 평균 PPJ', line=dict(color='#F39C12', width=3),
+                text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"{x:,.0f}"), textposition='bottom right'
             ))
             
-            fig_ppj.update_layout(title="일별 PPJ 및 누적 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=350, hovermode="x unified")
+            fig_ppj.update_layout(title="일별 PPJ 및 누적 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=380, hovermode="x unified")
             fig_ppj.update_yaxes(dtick=2500, tickformat=",") 
+            fig_ppj.update_xaxes(type='category')
             st.plotly_chart(fig_ppj, use_container_width=True)
 
         st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
         # ==========================================
-        # 4. 하단: 정밀 분석 추이 (★ 이중 축 적용: 막대(일별) + 점선(누적평균))
+        # 4. 하단: 정밀 분석 추이
         # ==========================================
         st.markdown(f"#### 📈 {selected_month} 정밀 분석 추이 (MTBA / MTTR / MTBI)")
         
         df_daily_mt = df_month.groupby(df_month['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].max().reset_index()
+        df_daily_mt['DateStr'] = pd.to_datetime(df_daily_mt['Date']).dt.strftime('%m/%d')
         
-        # [수정 2] 막대와 평균선 수치 이격을 막기 위해 이중 축(secondary_y) 도입
         fig1 = make_subplots(specs=[[{"secondary_y": True}]])
 
         metrics = [
@@ -157,28 +160,31 @@ class EquipmentDataTab:
         ]
 
         for col, bar_color, line_color in metrics:
-            # 1. 일별 원본 수치 (좌측 축: 막대그래프)
+            # 1. 일별 원본 수치 (막대 그래프) - 숫자 표출 추가
             fig1.add_trace(go.Bar(
-                x=df_daily_mt['Date'], y=df_daily_mt[col], 
-                name=f'{col} (일별)', marker_color=bar_color
+                x=df_daily_mt['DateStr'], y=df_daily_mt[col], 
+                name=f'{col} (일별)', marker_color=bar_color,
+                text=df_daily_mt[col].apply(lambda x: f"{x:,.0f}"), textposition='auto'
             ), secondary_y=False)
             
-            # 2. 날짜별 누적 평균 수치 계산 (우측 축: 선 그래프)
+            # 2. 날짜별 누적 평균 수치 (꺾은선) - 숫자 표출 추가
             df_daily_mt[f'{col}_cum_avg'] = df_daily_mt[col].expanding().mean()
             
             fig1.add_trace(go.Scatter(
-                x=df_daily_mt['Date'], y=df_daily_mt[f'{col}_cum_avg'], 
-                mode='lines+markers', name=f'{col} 누적평균', 
-                line=dict(color=line_color, width=2)
+                x=df_daily_mt['DateStr'], y=df_daily_mt[f'{col}_cum_avg'], 
+                mode='lines+markers+text', name=f'{col} 누적평균', 
+                line=dict(color=line_color, width=2),
+                text=df_daily_mt[f'{col}_cum_avg'].apply(lambda x: f"{x:,.1f}"), textposition='top center'
             ), secondary_y=True)
         
         fig1.update_layout(
-            height=400, 
+            height=450, 
             margin=dict(l=20, r=20, t=30, b=20),
             hovermode="x unified",
             barmode='group', 
             legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="right", x=1)
         )
+        fig1.update_xaxes(type='category')
         fig1.update_yaxes(title_text="일별 측정 수치", secondary_y=False)
         fig1.update_yaxes(title_text="누적 평균 수치", secondary_y=True, showgrid=False)
         
@@ -197,12 +203,11 @@ class EquipmentDataTab:
             if not err_point_counts.empty:
                 fig2 = go.Figure(data=[go.Pie(labels=err_point_counts['Err.Point'], values=err_point_counts['Errorcount'], hole=.4)])
                 
-                # [수정 3] 파이 차트 내부 글씨와 범례(Legend) 글씨 크기 대폭 확대
                 fig2.update_traces(textfont_size=16)
                 fig2.update_layout(
                     margin=dict(l=20, r=20, t=20, b=20), 
                     height=350,
-                    legend=dict(font=dict(size=14)) # 범례 크기 키움
+                    legend=dict(font=dict(size=14))
                 )
                 st.plotly_chart(fig2, use_container_width=True)
             else:
@@ -227,7 +232,7 @@ class EquipmentDataTab:
                     margin=dict(l=20, r=20, t=20, b=20), 
                     height=350, 
                     xaxis_title="발생 건수",
-                    yaxis=dict(tickfont=dict(size=13)) # y축(분류명) 글씨도 키움
+                    yaxis=dict(tickfont=dict(size=13))
                 )
                 st.plotly_chart(fig3, use_container_width=True)
             else:
