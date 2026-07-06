@@ -86,7 +86,6 @@ class EquipmentDataTab:
             lambda row: row['Totalunit'] / row['Errorcount'] if row['Errorcount'] > 0 else row['Totalunit'], 
             axis=1
         )
-        
         df_daily_basic['Cum_PPJ'] = df_daily_basic.apply(
             lambda row: row['Cum_Totalunit'] / row['Cum_Errorcount'] if row['Cum_Errorcount'] > 0 else row['Cum_Totalunit'], 
             axis=1
@@ -98,60 +97,79 @@ class EquipmentDataTab:
         with col_top1:
             fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
             
+            # 텍스트에 <b> 태그를 달아 굵고 선명하게 만들고 위치를 좌측으로 배치
             fig_tu.add_trace(
                 go.Scatter(
                     x=df_daily_basic['DateStr'], y=df_daily_basic['Totalunit'], 
                     mode='lines+markers+text', name='생산량', line=dict(color='#3498DB', width=3),
-                    text=df_daily_basic['Totalunit'].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
-                    textposition='top center', textfont=dict(size=11, color='#21618C') # 파란색 글씨
+                    text=df_daily_basic['Totalunit'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                    textposition='top left', textfont=dict(size=12, color='#154360') 
                 ), secondary_y=False
             )
+            # Jam 건수는 우측으로 배치하여 겹침 방지
             fig_tu.add_trace(
                 go.Scatter(
                     x=df_daily_basic['DateStr'], y=df_daily_basic['Errorcount'], 
                     mode='lines+markers+text', name='Jam 발생', line=dict(color='#E74C3C', width=3),
-                    text=df_daily_basic['Errorcount'].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
-                    textposition='bottom center', textfont=dict(size=11, color='#943126') # 빨간색 글씨
+                    text=df_daily_basic['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                    textposition='top right', textfont=dict(size=12, color='#78281F') 
                 ), secondary_y=True
             )
             
             fig_tu.update_layout(title="생산량 대비 Jam 발생", margin=dict(l=20, r=20, t=40, b=20), height=400, hovermode="x unified")
             fig_tu.update_xaxes(type='category')
+            
+            # ★ 천장 여유 공간 확보 (최고수치의 1.2배)
+            max_tu = df_daily_basic['Totalunit'].max()
+            max_err = df_daily_basic['Errorcount'].max()
+            fig_tu.update_yaxes(title_text="생산량", secondary_y=False, range=[0, max_tu * 1.2 if max_tu > 0 else 10])
+            fig_tu.update_yaxes(title_text="Jam 건수", secondary_y=True, range=[0, max_err * 1.2 if max_err > 0 else 10])
+            
             st.plotly_chart(fig_tu, use_container_width=True)
 
         # [그래프 2] 일별 PPJ 및 누적 평균 PPJ
         with col_top2:
             fig_ppj = go.Figure()
             
+            # 일별 PPJ (좌측 배치)
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['DateStr'], y=df_daily_basic['PPJ'], 
                 mode='lines+markers+text', name='일별 PPJ', line=dict(color='#27AE60', width=3),
-                text=df_daily_basic['PPJ'].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
-                textposition='top center', textfont=dict(size=11, color='#196F3D')
+                text=df_daily_basic['PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                textposition='top left', textfont=dict(size=12, color='#145A32')
             ))
             
+            # 누적 PPJ (우측 배치)
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['DateStr'], y=df_daily_basic['Cum_PPJ'], 
                 mode='lines+markers+text', name='누적 평균 PPJ', line=dict(color='#F39C12', width=3),
-                text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
-                textposition='bottom right', textfont=dict(size=11, color='#B9770E')
+                text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                textposition='top right', textfont=dict(size=12, color='#935116')
             ))
             
             fig_ppj.update_layout(title="일별 PPJ 및 누적 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=400, hovermode="x unified")
-            fig_ppj.update_yaxes(dtick=2500, tickformat=",") 
             fig_ppj.update_xaxes(type='category')
+            
+            # ★ 천장 여유 공간 확보 (최고수치의 1.2배) & 눈금 2500 고정
+            max_ppj = max(df_daily_basic['PPJ'].max(), df_daily_basic['Cum_PPJ'].max())
+            fig_ppj.update_yaxes(dtick=2500, tickformat=",", range=[0, max_ppj * 1.2 if max_ppj > 0 else 10])
+            
             st.plotly_chart(fig_ppj, use_container_width=True)
 
         st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
         # ==========================================
-        # 4. 하단: 정밀 분석 추이 (★ 텍스트 분리 및 가독성 최적화)
+        # 4. 하단: 정밀 분석 추이 (MTBA / MTTR / MTBI)
         # ==========================================
         st.markdown(f"#### 📈 {selected_month} 정밀 분석 추이 (MTBA / MTTR / MTBI)")
         
         df_daily_mt = df_month.groupby(df_month['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].max().reset_index()
         df_daily_mt['DateStr'] = pd.to_datetime(df_daily_mt['Date']).dt.strftime('%m/%d')
         
+        # 누적 평균 미리 계산
+        for col in ['MTBA', 'MTTR', 'MTBI']:
+            df_daily_mt[f'{col}_cum_avg'] = df_daily_mt[col].expanding().mean()
+            
         fig1 = make_subplots(specs=[[{"secondary_y": True}]])
 
         metrics = [
@@ -161,36 +179,37 @@ class EquipmentDataTab:
         ]
 
         for col, bar_color, line_color in metrics:
-            # 1. 일별 원본 수치 (막대 그래프) - ★ 숫자를 막대 '안(inside)'으로 가둡니다.
+            # 1. 일별 수치 막대 그래프 (★ 숫자를 outside로 빼내어 시원하게 표시)
             fig1.add_trace(go.Bar(
                 x=df_daily_mt['DateStr'], y=df_daily_mt[col], 
                 name=f'{col} (일별)', marker_color=bar_color,
-                text=df_daily_mt[col].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
-                textposition='inside', insidetextanchor='middle', textfont=dict(size=10, color='black')
+                text=df_daily_mt[col].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                textposition='outside', textfont=dict(size=11, color='#2C3E50')
             ), secondary_y=False)
             
-            # 2. 날짜별 누적 평균 수치 (꺾은선) - ★ 숫자를 선 '위(top)'로 띄우고 선 색상과 깔맞춤!
-            df_daily_mt[f'{col}_cum_avg'] = df_daily_mt[col].expanding().mean()
-            
+            # 2. 날짜별 누적 평균 수치 꺾은선 (★ 숫자를 top right로 배치하여 막대 수치와 겹침 방지)
             fig1.add_trace(go.Scatter(
                 x=df_daily_mt['DateStr'], y=df_daily_mt[f'{col}_cum_avg'], 
                 mode='lines+markers+text', name=f'{col} 누적평균', 
                 line=dict(color=line_color, width=2),
-                text=df_daily_mt[f'{col}_cum_avg'].apply(lambda x: f"{x:,.1f}" if x > 0 else ""), 
-                textposition='top center', textfont=dict(size=11, color=line_color)
+                text=df_daily_mt[f'{col}_cum_avg'].apply(lambda x: f"<b>{x:,.1f}</b>" if x > 0 else ""), 
+                textposition='top right', textfont=dict(size=12, color=line_color)
             ), secondary_y=True)
         
-        # ★ 높이를 550으로 확장하여 위아래 겹침 최소화
         fig1.update_layout(
-            height=550, 
-            margin=dict(l=20, r=20, t=30, b=20),
+            height=500, 
+            margin=dict(l=20, r=20, t=40, b=20),
             hovermode="x unified",
             barmode='group', 
             legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="right", x=1)
         )
         fig1.update_xaxes(type='category')
-        fig1.update_yaxes(title_text="일별 측정 수치", secondary_y=False)
-        fig1.update_yaxes(title_text="누적 평균 수치", secondary_y=True, showgrid=False)
+        
+        # ★ 천장 여유 공간 확보 (막대와 선 모두 최고치의 1.2배 확장)
+        max_mt_daily = df_daily_mt[['MTBA', 'MTTR', 'MTBI']].max().max()
+        max_mt_cum = df_daily_mt[['MTBA_cum_avg', 'MTTR_cum_avg', 'MTBI_cum_avg']].max().max()
+        fig1.update_yaxes(title_text="일별 측정 수치", secondary_y=False, range=[0, max_mt_daily * 1.2 if max_mt_daily > 0 else 10])
+        fig1.update_yaxes(title_text="누적 평균 수치", secondary_y=True, showgrid=False, range=[0, max_mt_cum * 1.2 if max_mt_cum > 0 else 10])
         
         st.plotly_chart(fig1, use_container_width=True)
 
@@ -208,11 +227,7 @@ class EquipmentDataTab:
                 fig2 = go.Figure(data=[go.Pie(labels=err_point_counts['Err.Point'], values=err_point_counts['Errorcount'], hole=.4)])
                 
                 fig2.update_traces(textfont_size=16)
-                fig2.update_layout(
-                    margin=dict(l=20, r=20, t=20, b=20), 
-                    height=350,
-                    legend=dict(font=dict(size=14))
-                )
+                fig2.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, legend=dict(font=dict(size=14)))
                 st.plotly_chart(fig2, use_container_width=True)
             else:
                 st.info("해당 월에 Err.Point 데이터가 없습니다.")
@@ -228,16 +243,14 @@ class EquipmentDataTab:
                     x=type_counts['Errorcount'], 
                     orientation='h', 
                     marker_color='#F39C12',
-                    text=type_counts['Errorcount'], 
-                    textposition='auto',
-                    textfont=dict(size=14)
+                    text=type_counts['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
+                    textposition='outside', # 가로막대도 글씨를 밖으로 빼서 선명하게!
+                    textfont=dict(size=14, color='black')
                 )])
-                fig3.update_layout(
-                    margin=dict(l=20, r=20, t=20, b=20), 
-                    height=350, 
-                    xaxis_title="발생 건수",
-                    yaxis=dict(tickfont=dict(size=13))
-                )
+                # X축 범위를 1.2배 늘려 글자가 짤리지 않게 보호
+                max_type = type_counts['Errorcount'].max()
+                fig3.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, xaxis_title="발생 건수", yaxis=dict(tickfont=dict(size=13)))
+                fig3.update_xaxes(range=[0, max_type * 1.2 if max_type > 0 else 10])
                 st.plotly_chart(fig3, use_container_width=True)
             else:
                 st.info("해당 월에 분류 데이터가 없습니다.")
