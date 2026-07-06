@@ -52,12 +52,11 @@ class EquipmentDataTab:
         for c in numeric_cols:
             df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
 
-        # ★ 조회 기간(날짜) 선택 필터 복구
+        # ★ 조회 기간(날짜) 선택 필터
         min_date = df['Date'].min().date()
         max_date = df['Date'].max().date()
         
         with col2:
-            # 기본값: 최근 30일 (데이터가 적으면 전체 기간)
             default_start = max_date - datetime.timedelta(days=30)
             if default_start < min_date: 
                 default_start = min_date
@@ -69,7 +68,6 @@ class EquipmentDataTab:
                 max_value=max_date
             )
             
-        # 날짜 선택 예외 처리 (시작/종료일 모두 선택되도록 유도)
         if len(date_range) == 2:
             start_date, end_date = date_range
         elif len(date_range) == 1:
@@ -79,7 +77,6 @@ class EquipmentDataTab:
             st.warning("날짜를 선택해주세요.")
             return
             
-        # 선택한 날짜 구간으로 데이터 필터링
         mask = (df['Date'].dt.date >= start_date) & (df['Date'].dt.date <= end_date)
         df_filtered = df.loc[mask]
         
@@ -87,7 +84,6 @@ class EquipmentDataTab:
             st.info("선택한 기간에 해당하는 데이터가 없습니다.")
             return
 
-        # 타이틀용 날짜 텍스트
         date_title_str = f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}"
 
         # ==========================================
@@ -119,12 +115,13 @@ class EquipmentDataTab:
         with col_top1:
             fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
             
+            # [수정] textfont에서 강제 color 속성 제거 -> 테마 자동 적용 (다크/라이트 완벽 대응)
             fig_tu.add_trace(
                 go.Scatter(
                     x=df_daily_basic['DateStr'], y=df_daily_basic['Totalunit'], 
                     mode='lines+markers+text', name='생산량', line=dict(color='#3498DB', width=3),
                     text=df_daily_basic['Totalunit'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
-                    textposition='top left', textfont=dict(size=12, color='#154360') 
+                    textposition='top left', textfont=dict(size=12) 
                 ), secondary_y=False
             )
             fig_tu.add_trace(
@@ -132,7 +129,7 @@ class EquipmentDataTab:
                     x=df_daily_basic['DateStr'], y=df_daily_basic['Errorcount'], 
                     mode='lines+markers+text', name='Jam 발생', line=dict(color='#E74C3C', width=3),
                     text=df_daily_basic['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
-                    textposition='top right', textfont=dict(size=12, color='#78281F') 
+                    textposition='top right', textfont=dict(size=12) 
                 ), secondary_y=True
             )
             
@@ -144,24 +141,26 @@ class EquipmentDataTab:
             fig_tu.update_yaxes(title_text="생산량", secondary_y=False, range=[0, max_tu * 1.2 if max_tu > 0 else 10])
             fig_tu.update_yaxes(title_text="Jam 건수", secondary_y=True, range=[0, max_err * 1.2 if max_err > 0 else 10])
             
-            st.plotly_chart(fig_tu, use_container_width=True)
+            # Streamlit 전용 테마 엔진 활성화 (글자색상 등 자동 최적화)
+            st.plotly_chart(fig_tu, use_container_width=True, theme="streamlit")
 
         # [그래프 2] 일별 PPJ 및 누적 평균 PPJ
         with col_top2:
             fig_ppj = go.Figure()
             
+            # [수정] textfont color 제거
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['DateStr'], y=df_daily_basic['PPJ'], 
                 mode='lines+markers+text', name='일별 PPJ', line=dict(color='#27AE60', width=3),
                 text=df_daily_basic['PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
-                textposition='top left', textfont=dict(size=12, color='#145A32')
+                textposition='top left', textfont=dict(size=12)
             ))
             
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['DateStr'], y=df_daily_basic['Cum_PPJ'], 
                 mode='lines+markers+text', name='누적 평균 PPJ', line=dict(color='#F39C12', width=3),
                 text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
-                textposition='top right', textfont=dict(size=12, color='#935116')
+                textposition='top right', textfont=dict(size=12)
             ))
             
             fig_ppj.update_layout(title="일별 PPJ 및 누적 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=400, hovermode="x unified")
@@ -170,7 +169,7 @@ class EquipmentDataTab:
             max_ppj = max(df_daily_basic['PPJ'].max(), df_daily_basic['Cum_PPJ'].max())
             fig_ppj.update_yaxes(dtick=2500, tickformat=",", range=[0, max_ppj * 1.2 if max_ppj > 0 else 10])
             
-            st.plotly_chart(fig_ppj, use_container_width=True)
+            st.plotly_chart(fig_ppj, use_container_width=True, theme="streamlit")
 
         st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
@@ -194,11 +193,12 @@ class EquipmentDataTab:
         ]
 
         for col, bar_color, line_color in metrics:
+            # [수정] textfont color 제거
             fig1.add_trace(go.Bar(
                 x=df_daily_mt['DateStr'], y=df_daily_mt[col], 
                 name=f'{col} (일별)', marker_color=bar_color,
                 text=df_daily_mt[col].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
-                textposition='outside', textfont=dict(size=11, color='#2C3E50')
+                textposition='outside', textfont=dict(size=12)
             ), secondary_y=False)
             
             fig1.add_trace(go.Scatter(
@@ -206,7 +206,7 @@ class EquipmentDataTab:
                 mode='lines+markers+text', name=f'{col} 누적평균', 
                 line=dict(color=line_color, width=2),
                 text=df_daily_mt[f'{col}_cum_avg'].apply(lambda x: f"<b>{x:,.1f}</b>" if x > 0 else ""), 
-                textposition='top right', textfont=dict(size=12, color=line_color)
+                textposition='top right', textfont=dict(size=12)
             ), secondary_y=True)
         
         fig1.update_layout(
@@ -223,7 +223,7 @@ class EquipmentDataTab:
         fig1.update_yaxes(title_text="일별 측정 수치", secondary_y=False, range=[0, max_mt_daily * 1.2 if max_mt_daily > 0 else 10])
         fig1.update_yaxes(title_text="누적 평균 수치", secondary_y=True, showgrid=False, range=[0, max_mt_cum * 1.2 if max_mt_cum > 0 else 10])
         
-        st.plotly_chart(fig1, use_container_width=True)
+        st.plotly_chart(fig1, use_container_width=True, theme="streamlit")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -240,7 +240,7 @@ class EquipmentDataTab:
                 
                 fig2.update_traces(textfont_size=16)
                 fig2.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, legend=dict(font=dict(size=14)))
-                st.plotly_chart(fig2, use_container_width=True)
+                st.plotly_chart(fig2, use_container_width=True, theme="streamlit")
             else:
                 st.info("해당 기간에 Err.Point 데이터가 없습니다.")
 
@@ -257,11 +257,11 @@ class EquipmentDataTab:
                     marker_color='#F39C12',
                     text=type_counts['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
                     textposition='outside', 
-                    textfont=dict(size=14, color='black')
+                    textfont=dict(size=14) # [수정] color='black' 제거
                 )])
                 max_type = type_counts['Errorcount'].max()
                 fig3.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, xaxis_title="발생 건수", yaxis=dict(tickfont=dict(size=13)))
                 fig3.update_xaxes(range=[0, max_type * 1.2 if max_type > 0 else 10])
-                st.plotly_chart(fig3, use_container_width=True)
+                st.plotly_chart(fig3, use_container_width=True, theme="streamlit")
             else:
                 st.info("해당 기간에 분류 데이터가 없습니다.")
