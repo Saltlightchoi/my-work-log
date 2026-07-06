@@ -78,9 +78,7 @@ class EquipmentDataTab:
             'Errorcount': 'sum'
         }).reset_index()
 
-        # [핵심 1] 날짜를 '카테고리형 문자열(MM/DD)'로 변환하여 X축이 주 단위로 묶이는 현상 차단
         df_daily_basic['DateStr'] = pd.to_datetime(df_daily_basic['Date']).dt.strftime('%m/%d')
-
         df_daily_basic['Cum_Totalunit'] = df_daily_basic['Totalunit'].cumsum()
         df_daily_basic['Cum_Errorcount'] = df_daily_basic['Errorcount'].cumsum()
 
@@ -100,24 +98,25 @@ class EquipmentDataTab:
         with col_top1:
             fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
             
-            # [핵심 2] mode에 '+text'를 추가하고, text 값을 매핑하여 각 점에 수치 표출
             fig_tu.add_trace(
                 go.Scatter(
                     x=df_daily_basic['DateStr'], y=df_daily_basic['Totalunit'], 
                     mode='lines+markers+text', name='생산량', line=dict(color='#3498DB', width=3),
-                    text=df_daily_basic['Totalunit'].apply(lambda x: f"{x:,.0f}"), textposition='top center'
+                    text=df_daily_basic['Totalunit'].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
+                    textposition='top center', textfont=dict(size=11, color='#21618C') # 파란색 글씨
                 ), secondary_y=False
             )
             fig_tu.add_trace(
                 go.Scatter(
                     x=df_daily_basic['DateStr'], y=df_daily_basic['Errorcount'], 
                     mode='lines+markers+text', name='Jam 발생', line=dict(color='#E74C3C', width=3),
-                    text=df_daily_basic['Errorcount'].apply(lambda x: f"{x:,.0f}"), textposition='bottom center'
+                    text=df_daily_basic['Errorcount'].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
+                    textposition='bottom center', textfont=dict(size=11, color='#943126') # 빨간색 글씨
                 ), secondary_y=True
             )
             
-            fig_tu.update_layout(title="생산량 대비 Jam 발생", margin=dict(l=20, r=20, t=40, b=20), height=380, hovermode="x unified")
-            fig_tu.update_xaxes(type='category') # X축 강제 표시 옵션 추가
+            fig_tu.update_layout(title="생산량 대비 Jam 발생", margin=dict(l=20, r=20, t=40, b=20), height=400, hovermode="x unified")
+            fig_tu.update_xaxes(type='category')
             st.plotly_chart(fig_tu, use_container_width=True)
 
         # [그래프 2] 일별 PPJ 및 누적 평균 PPJ
@@ -127,16 +126,18 @@ class EquipmentDataTab:
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['DateStr'], y=df_daily_basic['PPJ'], 
                 mode='lines+markers+text', name='일별 PPJ', line=dict(color='#27AE60', width=3),
-                text=df_daily_basic['PPJ'].apply(lambda x: f"{x:,.0f}"), textposition='top center'
+                text=df_daily_basic['PPJ'].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
+                textposition='top center', textfont=dict(size=11, color='#196F3D')
             ))
             
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['DateStr'], y=df_daily_basic['Cum_PPJ'], 
                 mode='lines+markers+text', name='누적 평균 PPJ', line=dict(color='#F39C12', width=3),
-                text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"{x:,.0f}"), textposition='bottom right'
+                text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
+                textposition='bottom right', textfont=dict(size=11, color='#B9770E')
             ))
             
-            fig_ppj.update_layout(title="일별 PPJ 및 누적 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=380, hovermode="x unified")
+            fig_ppj.update_layout(title="일별 PPJ 및 누적 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=400, hovermode="x unified")
             fig_ppj.update_yaxes(dtick=2500, tickformat=",") 
             fig_ppj.update_xaxes(type='category')
             st.plotly_chart(fig_ppj, use_container_width=True)
@@ -144,7 +145,7 @@ class EquipmentDataTab:
         st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
         # ==========================================
-        # 4. 하단: 정밀 분석 추이
+        # 4. 하단: 정밀 분석 추이 (★ 텍스트 분리 및 가독성 최적화)
         # ==========================================
         st.markdown(f"#### 📈 {selected_month} 정밀 분석 추이 (MTBA / MTTR / MTBI)")
         
@@ -160,25 +161,28 @@ class EquipmentDataTab:
         ]
 
         for col, bar_color, line_color in metrics:
-            # 1. 일별 원본 수치 (막대 그래프) - 숫자 표출 추가
+            # 1. 일별 원본 수치 (막대 그래프) - ★ 숫자를 막대 '안(inside)'으로 가둡니다.
             fig1.add_trace(go.Bar(
                 x=df_daily_mt['DateStr'], y=df_daily_mt[col], 
                 name=f'{col} (일별)', marker_color=bar_color,
-                text=df_daily_mt[col].apply(lambda x: f"{x:,.0f}"), textposition='auto'
+                text=df_daily_mt[col].apply(lambda x: f"{x:,.0f}" if x > 0 else ""), 
+                textposition='inside', insidetextanchor='middle', textfont=dict(size=10, color='black')
             ), secondary_y=False)
             
-            # 2. 날짜별 누적 평균 수치 (꺾은선) - 숫자 표출 추가
+            # 2. 날짜별 누적 평균 수치 (꺾은선) - ★ 숫자를 선 '위(top)'로 띄우고 선 색상과 깔맞춤!
             df_daily_mt[f'{col}_cum_avg'] = df_daily_mt[col].expanding().mean()
             
             fig1.add_trace(go.Scatter(
                 x=df_daily_mt['DateStr'], y=df_daily_mt[f'{col}_cum_avg'], 
                 mode='lines+markers+text', name=f'{col} 누적평균', 
                 line=dict(color=line_color, width=2),
-                text=df_daily_mt[f'{col}_cum_avg'].apply(lambda x: f"{x:,.1f}"), textposition='top center'
+                text=df_daily_mt[f'{col}_cum_avg'].apply(lambda x: f"{x:,.1f}" if x > 0 else ""), 
+                textposition='top center', textfont=dict(size=11, color=line_color)
             ), secondary_y=True)
         
+        # ★ 높이를 550으로 확장하여 위아래 겹침 최소화
         fig1.update_layout(
-            height=450, 
+            height=550, 
             margin=dict(l=20, r=20, t=30, b=20),
             hovermode="x unified",
             barmode='group', 
