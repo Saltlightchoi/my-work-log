@@ -12,7 +12,7 @@ class JamLogTab:
         st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
 
         # ========================================================
-        # 🚨 UI 레이아웃 CSS (★ 6월 14일 원본 복구 보존 ★)
+        # 🚨 UI 레이아웃 CSS
         # ========================================================
         st.markdown("""
             <style>
@@ -76,7 +76,7 @@ class JamLogTab:
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         # ==========================================
-        # Session State 초기화 (★ 필터 함정 제거 로직 적용)
+        # Session State 초기화
         # ==========================================
         TEXT_KEYS = [
             "err_code", "err_point", "err_msg", "total_unit", "err_cnt", 
@@ -93,7 +93,6 @@ class JamLogTab:
         if st.session_state.clear_form:
             for k in TEXT_KEYS: 
                 st.session_state[k] = ""
-            # ★ 핵심 수정: 검색 모드일 때는 ErrorCount(1) 마저도 빈칸으로 완전히 날려버립니다!
             if not st.session_state.get('search_mode', False):
                 st.session_state.err_cnt = "1" 
             st.session_state.clear_form = False
@@ -164,10 +163,17 @@ class JamLogTab:
             with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS, key="equip_val")
             with r1[1]: 
                 if st.session_state.get('search_mode', False):
-                    date_val_search = st.text_input("Date (예: 2024-05)", key="date_search")
+                    date_val_search = st.text_input("Date", placeholder="예: 2024-05", key="date_search")
                 else:
                     date_val = st.date_input("Date", value=datetime.today())
-            with r1[2]: time_val = st.time_input("Err.Time", value="now", step=60)
+            
+            # ✅ 수정 포인트: 검색 모드일 때 시간(Err.Time) 창을 완전히 비활성화(Disabled) 시켜 오해 방지!
+            with r1[2]: 
+                if st.session_state.get('search_mode', False):
+                    st.text_input("Err.Time", value="🚫 검색 제외", disabled=True, key="time_disabled")
+                else:
+                    time_val = st.time_input("Err.Time", value="now", step=60)
+            
             with r1[3]: total_unit_val = st.text_input("Totalunit", key="total_unit")
             with r1[4]: err_code_val = st.text_input("ErrorCode", key="err_code", on_change=autofill, args=("err_code",))
             with r1[5]: err_cnt_val = st.text_input("ErrorCount", key="err_cnt")
@@ -251,18 +257,16 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 엑셀 다운로드 (★ 무적 필터링 전처리 적용)
+        # 통합 조회 표 및 엑셀 다운로드 (★ 무적 필터링)
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
             if st.session_state.get('search_mode', False):
-                # ★ 필터링 전 데이터 전처리: 소수점(.0), 빈칸(nan)을 완전 제거하여 문자열 매칭이 완벽하게 물리도록 세팅
                 df_display = df_display.fillna("")
                 for col in df_display.columns:
                     df_display[col] = df_display[col].astype(str).str.replace(r"\.0$", "", regex=True).str.replace("nan", "", regex=False).str.strip()
 
-                # ★ 모든 항목에 대한 강력한 필터링 연결 (좌우 공백 strip 포함)
                 search_mapping = {
                     'date_search': 'Date', 'total_unit': 'Totalunit', 'err_code': 'Errorcode',
                     'err_cnt': 'Errorcount', 'err_point': 'Err.Point', 'err_msg': 'Error Masage',
