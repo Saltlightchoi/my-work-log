@@ -120,14 +120,14 @@ class JamLogTab:
             st.session_state.save_success_msg = ""
 
         # ==========================================
-        # 자동완성 로직
+        # 자동완성 로직 (★ 에러 방지 안전망 .get() 추가)
         # ==========================================
         def autofill(source_field):
-            if st.session_state.search_mode: return 
+            # [수정] AttributeError 방지! 변수가 아직 준비 안 됐으면 무조건 False로 간주합니다.
+            if st.session_state.get('search_mode', False): return 
             
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
             
-            # 장비별 에러 리스트 분기 처리
             if equip_name == "SLH1 #1": 
                 target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
             elif equip_name in ["SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]: 
@@ -143,7 +143,8 @@ class JamLogTab:
                 st.toast(f"⚠️ ErrorList 로드 실패: {e}")
                 return 
             
-            search_val = str(st.session_state[source_field]).strip()
+            # [수정] 입력값도 안전하게 .get()으로 호출하여 에러를 원천 차단합니다.
+            search_val = str(st.session_state.get(source_field, "")).strip()
             if not search_val: return
 
             df_err = df_err.fillna("")
@@ -165,10 +166,7 @@ class JamLogTab:
             search_col = source_to_col.get(source_field)
             
             if search_col and search_col in df_err.columns:
-                # 1차: 완벽 일치 검색
                 match = df_err[df_err[search_col].str.lower() == search_val.lower()]
-                
-                # 2차: 포함 단어 검색
                 if match.empty: 
                     match = df_err[df_err[search_col].str.contains(search_val, case=False, na=False)]
                 
@@ -178,20 +176,19 @@ class JamLogTab:
                     if source_field != "err_point" and col_point: st.session_state.err_point = str(row[col_point])
                     if source_field != "err_msg" and col_msg: st.session_state.err_msg = str(row[col_msg])
 
-        # ★ 장비 선택 옵션
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
 
         # ==========================================
         # 입력 및 검색 폼
         # ==========================================
         with st.container(border=True):
-            if st.session_state.search_mode:
-                st.info("🔍 **[검색 모드 활성화]** 빈칸에 찾고 싶은 내용을 입력하고 엔터를 누르시면, 아래 표가 실시간으로 걸러집니다.")
+            if st.session_state.get('search_mode', False):
+                st.info("🔍 **[검색 모드 활성화]** 빈칸에 찾고 싶은 내용을 입력하고 엔터를 누르시면, 아래 표가 즉시 필터링됩니다.")
 
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
             with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS, key="equip_val")
             with r1[1]: 
-                if st.session_state.search_mode:
+                if st.session_state.get('search_mode', False):
                     date_val_search = st.text_input("Date (예: 2024-05)", key="date_search")
                 else:
                     date_val = st.date_input("Date", value=datetime.today())
@@ -208,7 +205,7 @@ class JamLogTab:
                 "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원인파악불가", "장비대기, 추후 대응"
             ]
-            if st.session_state.search_mode: category_options.insert(0, "전체") 
+            if st.session_state.get('search_mode', False): category_options.insert(0, "전체") 
             with r2[2]: type_val = st.selectbox("분류", category_options, key="type_val")
 
             r3 = st.columns([1, 1])
@@ -252,11 +249,11 @@ class JamLogTab:
             db_machine = DataManager(self.db_jam.spreadsheet_id, equip_val, exact_columns)
             df_machine, _ = db_machine.load()
         except Exception as e:
-            st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 탭 연결 중 오류가 발생했습니다. 구글 시트에 '{equip_val}' 탭이 존재하는지 확인해주세요! (상세에러: {e})")
+            st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 탭 연결 중 오류가 발생했습니다. (상세에러: {e})")
 
         # 저장 로직
         if btn_write:
-            if st.session_state.search_mode:
+            if st.session_state.get('search_mode', False):
                 st.warning("🚨 현재 '검색 모드'가 켜져 있습니다. 데이터를 저장하시려면 우측의 [❌ 검색 종료] 버튼을 눌러주세요.")
             elif db_machine is None:
                 st.error("🚨 구글 시트 탭이 연결되지 않아 저장할 수 없습니다.")
@@ -280,27 +277,26 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 엑셀 다운로드 (★ 100% 실시간 필터링 및 표 강제 업데이트 로직)
+        # 통합 조회 표 및 엑셀 다운로드 (★ 100% 필터링 적용 유지)
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
-            if st.session_state.search_mode:
-                # ✅ 누락되었던 항목 추가: 사용자가 입력할 수 있는 모든 칸에 대해 100% 필터링 적용
-                if st.session_state.date_search: df_display = df_display[df_display["Date"].astype(str).str.contains(st.session_state.date_search, case=False, na=False)]
-                if st.session_state.total_unit: df_display = df_display[df_display["Totalunit"].astype(str).str.contains(st.session_state.total_unit, case=False, na=False)]
-                if st.session_state.err_code: df_display = df_display[df_display["Errorcode"].astype(str).str.contains(st.session_state.err_code, case=False, na=False)]
-                if st.session_state.err_cnt: df_display = df_display[df_display["Errorcount"].astype(str).str.contains(st.session_state.err_cnt, case=False, na=False)]
-                if st.session_state.err_point: df_display = df_display[df_display["Err.Point"].astype(str).str.contains(st.session_state.err_point, case=False, na=False)]
-                if st.session_state.err_msg: df_display = df_display[df_display["Error Masage"].astype(str).str.contains(st.session_state.err_msg, case=False, na=False)]
+            if st.session_state.get('search_mode', False):
+                if st.session_state.get('date_search', ""): df_display = df_display[df_display["Date"].astype(str).str.contains(st.session_state.date_search, case=False, na=False)]
+                if st.session_state.get('total_unit', ""): df_display = df_display[df_display["Totalunit"].astype(str).str.contains(st.session_state.total_unit, case=False, na=False)]
+                if st.session_state.get('err_code', ""): df_display = df_display[df_display["Errorcode"].astype(str).str.contains(st.session_state.err_code, case=False, na=False)]
+                if st.session_state.get('err_cnt', ""): df_display = df_display[df_display["Errorcount"].astype(str).str.contains(st.session_state.err_cnt, case=False, na=False)]
+                if st.session_state.get('err_point', ""): df_display = df_display[df_display["Err.Point"].astype(str).str.contains(st.session_state.err_point, case=False, na=False)]
+                if st.session_state.get('err_msg', ""): df_display = df_display[df_display["Error Masage"].astype(str).str.contains(st.session_state.err_msg, case=False, na=False)]
                 if type_val != "전체": df_display = df_display[df_display["분류"] == type_val]
-                if st.session_state.symp: df_display = df_display[df_display["현상"].astype(str).str.contains(st.session_state.symp, case=False, na=False)]
-                if st.session_state.cause: df_display = df_display[df_display["원인"].astype(str).str.contains(st.session_state.cause, case=False, na=False)]
-                if st.session_state.action: df_display = df_display[df_display["조치"].astype(str).str.contains(st.session_state.action, case=False, na=False)]
-                if st.session_state.worker: df_display = df_display[df_display["조치자"].astype(str).str.contains(st.session_state.worker, case=False, na=False)]
-                if st.session_state.mtba: df_display = df_display[df_display["MTBA"].astype(str).str.contains(st.session_state.mtba, case=False, na=False)]
-                if st.session_state.mttr: df_display = df_display[df_display["MTTR"].astype(str).str.contains(st.session_state.mttr, case=False, na=False)]
-                if st.session_state.mtbi: df_display = df_display[df_display["MTBI"].astype(str).str.contains(st.session_state.mtbi, case=False, na=False)]
+                if st.session_state.get('symp', ""): df_display = df_display[df_display["현상"].astype(str).str.contains(st.session_state.symp, case=False, na=False)]
+                if st.session_state.get('cause', ""): df_display = df_display[df_display["원인"].astype(str).str.contains(st.session_state.cause, case=False, na=False)]
+                if st.session_state.get('action', ""): df_display = df_display[df_display["조치"].astype(str).str.contains(st.session_state.action, case=False, na=False)]
+                if st.session_state.get('worker', ""): df_display = df_display[df_display["조치자"].astype(str).str.contains(st.session_state.worker, case=False, na=False)]
+                if st.session_state.get('mtba', ""): df_display = df_display[df_display["MTBA"].astype(str).str.contains(st.session_state.mtba, case=False, na=False)]
+                if st.session_state.get('mttr', ""): df_display = df_display[df_display["MTTR"].astype(str).str.contains(st.session_state.mttr, case=False, na=False)]
+                if st.session_state.get('mtbi', ""): df_display = df_display[df_display["MTBI"].astype(str).str.contains(st.session_state.mtbi, case=False, na=False)]
 
             if "Date" in df_display.columns:
                 df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
@@ -328,15 +324,14 @@ class JamLogTab:
             with view_cols[2]:
                 st.empty() 
 
-            # ✅ 핵심 갱신 로직: 검색 모드일 때는 즉각 반응하는 st.dataframe(읽기 전용)으로 강제 전환
-            if st.session_state.search_mode:
+            if st.session_state.get('search_mode', False):
                 st.dataframe(df_display, use_container_width=True, hide_index=True)
-                st.info("💡 검색 모드에서는 데이터 안전과 즉각적인 필터링을 위해 표가 '읽기 전용'으로 전환됩니다. (표를 수정하시려면 우측 상단의 [❌ 검색 종료]를 눌러주세요.)")
+                st.info("💡 검색 모드에서는 데이터 안전과 즉각적인 필터링을 위해 표가 '읽기 전용'으로 전환됩니다.")
             else:
                 edited_df = st.data_editor(df_display, use_container_width=True, hide_index=True, num_rows="dynamic")
                 if st.button(f"💾 '{equip_val}' 표 변경사항 저장", type="primary"):
-                    if st.session_state.search_mode:
-                        st.warning("⚠️ 검색 모드 중에는 표 수정을 권장하지 않습니다. ❌검색 종료 버튼을 눌러 전체 표 상태에서 수정해주세요.")
+                    if st.session_state.get('search_mode', False):
+                        st.warning("⚠️ 검색 모드 중에는 표 수정을 권장하지 않습니다. ❌검색 종료 버튼을 눌러주세요.")
                     else:
                         db_machine.save(edited_df.fillna(""))
                         st.success("✅ 변경사항이 저장되었습니다!")
