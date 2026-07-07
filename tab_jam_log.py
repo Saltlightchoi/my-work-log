@@ -120,7 +120,7 @@ class JamLogTab:
             st.session_state.save_success_msg = ""
 
         # ==========================================
-        # 자동완성 로직 (★ 문제의 .worksheet 완전히 삭제 & .load() 방식 복구)
+        # 자동완성 로직
         # ==========================================
         def autofill(source_field):
             if st.session_state.search_mode: return 
@@ -136,7 +136,6 @@ class JamLogTab:
                 target_error_tab = "SLH1_R-Dimm&LPCAMM ErrorList"
                 
             try:
-                # ✅ 완벽히 검증된 원본 방식 (.load) 사용 -> 에러 발생 원천 차단!
                 db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
                 df_err, _ = db_err.load()
                 if df_err.empty: return 
@@ -147,7 +146,6 @@ class JamLogTab:
             search_val = str(st.session_state[source_field]).strip()
             if not search_val: return
 
-            # ✅ 강력한 전처리: Pandas가 숫자를 '.0'으로 바꾸는 문제 & 공백 문제 완벽 제거
             df_err = df_err.fillna("")
             for col in df_err.columns:
                 df_err[col] = df_err[col].astype(str).str.replace(r"\.0$", "", regex=True).str.strip()
@@ -282,20 +280,27 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 엑셀 다운로드 
+        # 통합 조회 표 및 엑셀 다운로드 (★ 100% 실시간 필터링 및 표 강제 업데이트 로직)
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
             if st.session_state.search_mode:
+                # ✅ 누락되었던 항목 추가: 사용자가 입력할 수 있는 모든 칸에 대해 100% 필터링 적용
                 if st.session_state.date_search: df_display = df_display[df_display["Date"].astype(str).str.contains(st.session_state.date_search, case=False, na=False)]
+                if st.session_state.total_unit: df_display = df_display[df_display["Totalunit"].astype(str).str.contains(st.session_state.total_unit, case=False, na=False)]
                 if st.session_state.err_code: df_display = df_display[df_display["Errorcode"].astype(str).str.contains(st.session_state.err_code, case=False, na=False)]
+                if st.session_state.err_cnt: df_display = df_display[df_display["Errorcount"].astype(str).str.contains(st.session_state.err_cnt, case=False, na=False)]
                 if st.session_state.err_point: df_display = df_display[df_display["Err.Point"].astype(str).str.contains(st.session_state.err_point, case=False, na=False)]
                 if st.session_state.err_msg: df_display = df_display[df_display["Error Masage"].astype(str).str.contains(st.session_state.err_msg, case=False, na=False)]
                 if type_val != "전체": df_display = df_display[df_display["분류"] == type_val]
                 if st.session_state.symp: df_display = df_display[df_display["현상"].astype(str).str.contains(st.session_state.symp, case=False, na=False)]
                 if st.session_state.cause: df_display = df_display[df_display["원인"].astype(str).str.contains(st.session_state.cause, case=False, na=False)]
+                if st.session_state.action: df_display = df_display[df_display["조치"].astype(str).str.contains(st.session_state.action, case=False, na=False)]
                 if st.session_state.worker: df_display = df_display[df_display["조치자"].astype(str).str.contains(st.session_state.worker, case=False, na=False)]
+                if st.session_state.mtba: df_display = df_display[df_display["MTBA"].astype(str).str.contains(st.session_state.mtba, case=False, na=False)]
+                if st.session_state.mttr: df_display = df_display[df_display["MTTR"].astype(str).str.contains(st.session_state.mttr, case=False, na=False)]
+                if st.session_state.mtbi: df_display = df_display[df_display["MTBI"].astype(str).str.contains(st.session_state.mtbi, case=False, na=False)]
 
             if "Date" in df_display.columns:
                 df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
@@ -323,14 +328,19 @@ class JamLogTab:
             with view_cols[2]:
                 st.empty() 
 
-            edited_df = st.data_editor(df_display, use_container_width=True, hide_index=True, num_rows="dynamic")
-
-            if st.button(f"💾 '{equip_val}' 표 변경사항 저장", type="primary"):
-                if st.session_state.search_mode:
-                    st.warning("⚠️ 검색 모드 중에는 표 수정을 권장하지 않습니다. ❌검색 종료 버튼을 눌러 전체 표 상태에서 수정해주세요.")
-                else:
-                    db_machine.save(edited_df.fillna(""))
-                    st.success("✅ 변경사항이 저장되었습니다!")
-                    st.rerun()
+            # ✅ 핵심 갱신 로직: 검색 모드일 때는 즉각 반응하는 st.dataframe(읽기 전용)으로 강제 전환
+            if st.session_state.search_mode:
+                st.dataframe(df_display, use_container_width=True, hide_index=True)
+                st.info("💡 검색 모드에서는 데이터 안전과 즉각적인 필터링을 위해 표가 '읽기 전용'으로 전환됩니다. (표를 수정하시려면 우측 상단의 [❌ 검색 종료]를 눌러주세요.)")
+            else:
+                edited_df = st.data_editor(df_display, use_container_width=True, hide_index=True, num_rows="dynamic")
+                if st.button(f"💾 '{equip_val}' 표 변경사항 저장", type="primary"):
+                    if st.session_state.search_mode:
+                        st.warning("⚠️ 검색 모드 중에는 표 수정을 권장하지 않습니다. ❌검색 종료 버튼을 눌러 전체 표 상태에서 수정해주세요.")
+                    else:
+                        db_machine.save(edited_df.fillna(""))
+                        st.success("✅ 변경사항이 저장되었습니다!")
+                        st.rerun()
+                        
         elif db_machine is not None:
             st.info(f"'{equip_val}' 시트에 등록된 데이터가 없습니다.")
