@@ -9,7 +9,6 @@ class JamLogTab:
         self.db_jam = db_jam
 
     def render(self):
-        # 상단에 보이지 않는 안전 여백을 주어 천장 짤림을 원천 방지
         st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
 
         # ========================================================
@@ -17,21 +16,16 @@ class JamLogTab:
         # ========================================================
         st.markdown("""
             <style>
-            /* 1. 드롭다운 껍데기 높이 32px 강제 고정 */
             div[data-testid="stSelectbox"] div[data-baseweb="select"] > div { 
                 height: 32px !important; min-height: 32px !important; 
                 padding-top: 0px !important; padding-bottom: 0px !important; 
                 box-sizing: border-box !important;
             }
-            
-            /* 2. 드롭다운 안의 '모든' 글자 크기 13px 강제 축소 (span, div 전부 타겟팅) */
             div[data-testid="stSelectbox"] div[data-baseweb="select"] span,
             div[data-testid="stSelectbox"] div[data-baseweb="select"] div { 
                 font-size: 13px !important; 
                 line-height: normal !important;
             }
-
-            /* 3. 사이드바의 탭 메뉴는 무조건 크게 유지 */
             [data-testid="stSidebar"] div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
                 height: 38px !important; min-height: 38px !important;
             }
@@ -39,32 +33,21 @@ class JamLogTab:
             [data-testid="stSidebar"] div[data-testid="stSelectbox"] div[data-baseweb="select"] div {
                 font-size: 15px !important; font-weight: bold !important;
             }
-
-            /* 4. 일반 텍스트, 날짜, 숫자 입력창 높이 32px 완벽 고정 */
             input { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
                 padding: 0px 8px !important; box-sizing: border-box !important;
             }
-
-            /* 5. 라벨(제목) 높이와 아래 여백 압축 */
             div[data-testid="stWidgetLabel"] { 
                 height: 16px !important; min-height: 16px !important; margin-bottom: 2px !important; 
             }
             div[data-testid="stWidgetLabel"] p { 
                 font-size: 12px !important; font-weight: 700 !important; line-height: 1 !important; color: #222 !important; 
             }
-
-            /* 6. 위아래, 좌우 간격(Gap) 조절 */
             div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
-            /* 숨통을 틔워주는 줄 사이 간격 2px */
             div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; margin-bottom: 2px !important; }
-
-            /* 7. 드롭다운 클릭 시 리스트 크기 13px 압축 */
             ul[role="listbox"] li { 
                 font-size: 13px !important; min-height: 26px !important; padding: 2px 8px !important; 
             }
-
-            /* 8. ★ 버튼 테두리 짤림 방지 ★ */
             .stButton > button { 
                 height: 32px !important; min-height: 32px !important; font-size: 13px !important; 
                 padding: 0px 10px !important; margin-top: 15px !important; 
@@ -72,9 +55,6 @@ class JamLogTab:
             </style>
         """, unsafe_allow_html=True)
 
-        # ==========================================
-        # ★ 제목과 액션 버튼 한 줄에 안정적으로 배치
-        # ==========================================
         header_cols = st.columns([5.5, 1, 1, 1, 1.5]) 
         
         with header_cols[0]:
@@ -96,7 +76,7 @@ class JamLogTab:
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
         # ==========================================
-        # Session State 초기화
+        # Session State 초기화 (★ 필터 함정 제거 로직 적용)
         # ==========================================
         TEXT_KEYS = [
             "err_code", "err_point", "err_msg", "total_unit", "err_cnt", 
@@ -111,19 +91,18 @@ class JamLogTab:
         if "search_mode" not in st.session_state: st.session_state.search_mode = False
 
         if st.session_state.clear_form:
-            for k in TEXT_KEYS: st.session_state[k] = ""
-            st.session_state.err_cnt = "1" 
+            for k in TEXT_KEYS: 
+                st.session_state[k] = ""
+            # ★ 핵심 수정: 검색 모드일 때는 ErrorCount(1) 마저도 빈칸으로 완전히 날려버립니다!
+            if not st.session_state.get('search_mode', False):
+                st.session_state.err_cnt = "1" 
             st.session_state.clear_form = False
             
         if st.session_state.save_success_msg:
             st.success(st.session_state.save_success_msg)
             st.session_state.save_success_msg = ""
 
-        # ==========================================
-        # 자동완성 로직 (★ 에러 방지 안전망 .get() 추가)
-        # ==========================================
         def autofill(source_field):
-            # [수정] AttributeError 방지! 변수가 아직 준비 안 됐으면 무조건 False로 간주합니다.
             if st.session_state.get('search_mode', False): return 
             
             equip_name = st.session_state.get("equip_val", "SLH1 #1")
@@ -143,7 +122,6 @@ class JamLogTab:
                 st.toast(f"⚠️ ErrorList 로드 실패: {e}")
                 return 
             
-            # [수정] 입력값도 안전하게 .get()으로 호출하여 에러를 원천 차단합니다.
             search_val = str(st.session_state.get(source_field, "")).strip()
             if not search_val: return
 
@@ -178,9 +156,6 @@ class JamLogTab:
 
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
 
-        # ==========================================
-        # 입력 및 검색 폼
-        # ==========================================
         with st.container(border=True):
             if st.session_state.get('search_mode', False):
                 st.info("🔍 **[검색 모드 활성화]** 빈칸에 찾고 싶은 내용을 입력하고 엔터를 누르시면, 아래 표가 즉시 필터링됩니다.")
@@ -251,7 +226,6 @@ class JamLogTab:
         except Exception as e:
             st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 탭 연결 중 오류가 발생했습니다. (상세에러: {e})")
 
-        # 저장 로직
         if btn_write:
             if st.session_state.get('search_mode', False):
                 st.warning("🚨 현재 '검색 모드'가 켜져 있습니다. 데이터를 저장하시려면 우측의 [❌ 검색 종료] 버튼을 눌러주세요.")
@@ -277,26 +251,32 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 엑셀 다운로드 (★ 100% 필터링 적용 유지)
+        # 통합 조회 표 및 엑셀 다운로드 (★ 무적 필터링 전처리 적용)
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
             if st.session_state.get('search_mode', False):
-                if st.session_state.get('date_search', ""): df_display = df_display[df_display["Date"].astype(str).str.contains(st.session_state.date_search, case=False, na=False)]
-                if st.session_state.get('total_unit', ""): df_display = df_display[df_display["Totalunit"].astype(str).str.contains(st.session_state.total_unit, case=False, na=False)]
-                if st.session_state.get('err_code', ""): df_display = df_display[df_display["Errorcode"].astype(str).str.contains(st.session_state.err_code, case=False, na=False)]
-                if st.session_state.get('err_cnt', ""): df_display = df_display[df_display["Errorcount"].astype(str).str.contains(st.session_state.err_cnt, case=False, na=False)]
-                if st.session_state.get('err_point', ""): df_display = df_display[df_display["Err.Point"].astype(str).str.contains(st.session_state.err_point, case=False, na=False)]
-                if st.session_state.get('err_msg', ""): df_display = df_display[df_display["Error Masage"].astype(str).str.contains(st.session_state.err_msg, case=False, na=False)]
-                if type_val != "전체": df_display = df_display[df_display["분류"] == type_val]
-                if st.session_state.get('symp', ""): df_display = df_display[df_display["현상"].astype(str).str.contains(st.session_state.symp, case=False, na=False)]
-                if st.session_state.get('cause', ""): df_display = df_display[df_display["원인"].astype(str).str.contains(st.session_state.cause, case=False, na=False)]
-                if st.session_state.get('action', ""): df_display = df_display[df_display["조치"].astype(str).str.contains(st.session_state.action, case=False, na=False)]
-                if st.session_state.get('worker', ""): df_display = df_display[df_display["조치자"].astype(str).str.contains(st.session_state.worker, case=False, na=False)]
-                if st.session_state.get('mtba', ""): df_display = df_display[df_display["MTBA"].astype(str).str.contains(st.session_state.mtba, case=False, na=False)]
-                if st.session_state.get('mttr', ""): df_display = df_display[df_display["MTTR"].astype(str).str.contains(st.session_state.mttr, case=False, na=False)]
-                if st.session_state.get('mtbi', ""): df_display = df_display[df_display["MTBI"].astype(str).str.contains(st.session_state.mtbi, case=False, na=False)]
+                # ★ 필터링 전 데이터 전처리: 소수점(.0), 빈칸(nan)을 완전 제거하여 문자열 매칭이 완벽하게 물리도록 세팅
+                df_display = df_display.fillna("")
+                for col in df_display.columns:
+                    df_display[col] = df_display[col].astype(str).str.replace(r"\.0$", "", regex=True).str.replace("nan", "", regex=False).str.strip()
+
+                # ★ 모든 항목에 대한 강력한 필터링 연결 (좌우 공백 strip 포함)
+                search_mapping = {
+                    'date_search': 'Date', 'total_unit': 'Totalunit', 'err_code': 'Errorcode',
+                    'err_cnt': 'Errorcount', 'err_point': 'Err.Point', 'err_msg': 'Error Masage',
+                    'symp': '현상', 'cause': '원인', 'action': '조치', 'worker': '조치자',
+                    'mtba': 'MTBA', 'mttr': 'MTTR', 'mtbi': 'MTBI'
+                }
+                
+                for state_key, col_name in search_mapping.items():
+                    val = str(st.session_state.get(state_key, "")).strip()
+                    if val:
+                        df_display = df_display[df_display[col_name].str.contains(val, case=False, na=False)]
+                
+                if type_val != "전체":
+                    df_display = df_display[df_display["분류"] == type_val]
 
             if "Date" in df_display.columns:
                 df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
