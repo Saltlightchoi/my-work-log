@@ -52,20 +52,16 @@ class EquipmentDataTab:
         for c in numeric_cols:
             df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
 
-        # 조회 기간(날짜) 선택 필터
-        min_date = df['Date'].min().date()
-        max_date = df['Date'].max().date()
+        # ★ 조회 기간(날짜) 선택 필터 (달력 제한 완벽 해제)
+        max_date_data = df['Date'].max().date()
         
         with col2:
-            default_start = max_date - datetime.timedelta(days=30)
-            if default_start < min_date: 
-                default_start = min_date
-                
+            default_start = max_date_data - datetime.timedelta(days=30)
+            
+            # min_value, max_value 제한을 삭제하여 달력에서 미래/과거 날짜를 마음대로 선택 가능하게 오픈했습니다.
             date_range = st.date_input(
-                "📅 조회 기간 선택", 
-                value=(default_start, max_date),
-                min_value=min_date,
-                max_value=max_date
+                "📅 조회 기간 선택 (데이터가 없는 날짜도 자유롭게 선택 가능합니다)", 
+                value=(default_start, max_date_data)
             )
             
         if len(date_range) == 2:
@@ -77,12 +73,13 @@ class EquipmentDataTab:
             st.warning("날짜를 선택해주세요.")
             return
             
+        # 선택한 날짜 구간으로 데이터 필터링
         mask = (df['Date'].dt.date >= start_date) & (df['Date'].dt.date <= end_date)
         df_filtered = df.loc[mask]
 
         date_title_str = f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}"
 
-        # ✅ [핵심 해결] 시작일~종료일 사이의 '모든 달력 날짜'를 강제로 생성합니다.
+        # ✅ [핵심 해결] 시작일~종료일 사이의 '모든 달력 날짜'를 강제로 생성합니다. (결측일 뼈대 세우기)
         full_date_range = pd.date_range(start=start_date, end=end_date).date
 
         # ==========================================
@@ -90,22 +87,27 @@ class EquipmentDataTab:
         # ==========================================
         st.markdown(f"#### 📊 {date_title_str} 기본 가동 현황 (PPJ 및 생산대비 Jam)")
         
-        # 날짜별 그룹화 후, full_date_range(전체 날짜)를 기준으로 뼈대를 다시 맞추고 빈칸을 0으로 채웁니다.
-        df_daily_basic = df_filtered.groupby(df_filtered['Date'].dt.date).agg({
-            'Totalunit': 'max',
-            'Errorcount': 'sum'
-        }).reindex(full_date_range).fillna(0).reset_index()
-        
-        # 컬럼명 정리 및 문자열 변환
+        # ✅ 선택한 구간에 데이터가 아예 한 건도 없는 경우를 완벽 방어하는 로직
+        if not df_filtered.empty:
+            grouped_basic = df_filtered.groupby(df_filtered['Date'].dt.date).agg({
+                'Totalunit': 'max',
+                'Errorcount': 'sum'
+            })
+        else:
+            grouped_basic = pd.DataFrame(columns=['Totalunit', 'Errorcount'])
+
+        # 날짜 뼈대에 데이터를 입히고, 비어있는 날짜는 무조건 0으로 채웁니다.
+        df_daily_basic = grouped_basic.reindex(full_date_range).fillna(0).reset_index()
         df_daily_basic.rename(columns={'index': 'Date'}, inplace=True)
+        
         df_daily_basic['Date'] = pd.to_datetime(df_daily_basic['Date'])
         df_daily_basic['DateStr'] = df_daily_basic['Date'].dt.strftime('%m/%d')
 
-        # 누적합 계산 (빈 날짜의 0도 누적에 그대로 반영되어 평행선 유지)
+        # 누적합 계산 (0이 누적되어도 이전 상태가 그대로 평행선으로 유지됨)
         df_daily_basic['Cum_Totalunit'] = df_daily_basic['Totalunit'].cumsum()
         df_daily_basic['Cum_Errorcount'] = df_daily_basic['Errorcount'].cumsum()
 
-        # PPJ 계산
+        # PPJ 계산 (0 나누기 0 에러 방지)
         df_daily_basic['PPJ'] = df_daily_basic.apply(
             lambda row: row['Totalunit'] / row['Errorcount'] if row['Errorcount'] > 0 else row['Totalunit'], 
             axis=1
@@ -121,7 +123,6 @@ class EquipmentDataTab:
         with col_top1:
             fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
             
-            # ✅ 값이 0이어도 수치가 "0"으로 정직하게 표출되도록 조건식 제거
             fig_tu.add_trace(
                 go.Scatter(
                     x=df_daily_basic['DateStr'], y=df_daily_basic['Totalunit'], 
@@ -182,8 +183,13 @@ class EquipmentDataTab:
         # ==========================================
         st.markdown(f"#### 📈 {date_title_str} 정밀 분석 추이 (MTBA / MTTR / MTBI)")
         
-        # ✅ MT 데이터 역시 빈 날짜를 0으로 강제 세팅합니다.
-        df_daily_mt = df_filtered.groupby(df_filtered['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].max().reindex(full_date_range).fillna(0).reset_index()
+        # ✅ MT 데이터도 빈 날짜를 0으로 강제 세팅합니다.
+        if not df_filtered.empty:
+            grouped_mt = df_filtered.groupby(df_filtered['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].max()
+        else:
+            grouped_mt = pd.DataFrame(columns=['MTBA', 'MTTR', 'MTBI'])
+
+        df_daily_mt = grouped_mt.reindex(full_date_range).fillna(0).reset_index()
         df_daily_mt.rename(columns={'index': 'Date'}, inplace=True)
         df_daily_mt['Date'] = pd.to_datetime(df_daily_mt['Date'])
         df_daily_mt['DateStr'] = df_daily_mt['Date'].dt.strftime('%m/%d')
@@ -233,41 +239,46 @@ class EquipmentDataTab:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # 에러 발생 모듈(파이) & 분류별 발생 건수(가로바)
+        # 에러 발생 모듈(파이) & 분류별 발생 건수(가로바) - 데이터가 없을 때는 깔끔하게 안내 문구 출력
         col_g1, col_g2 = st.columns(2)
         
         with col_g1:
             st.markdown("#### 🍩 에러 발생 모듈 (Err.Point) 점유율")
-            err_point_counts = df_filtered.groupby('Err.Point')['Errorcount'].sum().reset_index()
-            err_point_counts = err_point_counts[(err_point_counts['Err.Point'] != "") & (err_point_counts['Errorcount'] > 0)]
-            
-            if not err_point_counts.empty:
-                fig2 = go.Figure(data=[go.Pie(labels=err_point_counts['Err.Point'], values=err_point_counts['Errorcount'], hole=.4)])
+            if not df_filtered.empty:
+                err_point_counts = df_filtered.groupby('Err.Point')['Errorcount'].sum().reset_index()
+                err_point_counts = err_point_counts[(err_point_counts['Err.Point'] != "") & (err_point_counts['Errorcount'] > 0)]
                 
-                fig2.update_traces(textfont_size=16)
-                fig2.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, legend=dict(font=dict(size=14)))
-                st.plotly_chart(fig2, use_container_width=True, theme="streamlit")
+                if not err_point_counts.empty:
+                    fig2 = go.Figure(data=[go.Pie(labels=err_point_counts['Err.Point'], values=err_point_counts['Errorcount'], hole=.4)])
+                    fig2.update_traces(textfont_size=16)
+                    fig2.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, legend=dict(font=dict(size=14)))
+                    st.plotly_chart(fig2, use_container_width=True, theme="streamlit")
+                else:
+                    st.info("해당 기간에 점유율을 계산할 데이터가 없습니다.")
             else:
-                st.info("해당 기간에 Err.Point 데이터가 없습니다.")
+                st.info("해당 기간에 점유율을 계산할 데이터가 없습니다.")
 
         with col_g2:
             st.markdown("#### 📊 장애 분류별 발생 건수")
-            type_counts = df_filtered.groupby('분류')['Errorcount'].sum().reset_index()
-            type_counts = type_counts[(type_counts['분류'] != "") & (type_counts['Errorcount'] > 0)].sort_values(by='Errorcount', ascending=True)
-            
-            if not type_counts.empty:
-                fig3 = go.Figure(data=[go.Bar(
-                    y=type_counts['분류'], 
-                    x=type_counts['Errorcount'], 
-                    orientation='h', 
-                    marker_color='#F39C12',
-                    text=type_counts['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
-                    textposition='outside', 
-                    textfont=dict(size=14) 
-                )])
-                max_type = type_counts['Errorcount'].max()
-                fig3.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, xaxis_title="발생 건수", yaxis=dict(tickfont=dict(size=13)))
-                fig3.update_xaxes(range=[0, max_type * 1.2 if max_type > 0 else 10])
-                st.plotly_chart(fig3, use_container_width=True, theme="streamlit")
+            if not df_filtered.empty:
+                type_counts = df_filtered.groupby('분류')['Errorcount'].sum().reset_index()
+                type_counts = type_counts[(type_counts['분류'] != "") & (type_counts['Errorcount'] > 0)].sort_values(by='Errorcount', ascending=True)
+                
+                if not type_counts.empty:
+                    fig3 = go.Figure(data=[go.Bar(
+                        y=type_counts['분류'], 
+                        x=type_counts['Errorcount'], 
+                        orientation='h', 
+                        marker_color='#F39C12',
+                        text=type_counts['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
+                        textposition='outside', 
+                        textfont=dict(size=14) 
+                    )])
+                    max_type = type_counts['Errorcount'].max()
+                    fig3.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, xaxis_title="발생 건수", yaxis=dict(tickfont=dict(size=13)))
+                    fig3.update_xaxes(range=[0, max_type * 1.2 if max_type > 0 else 10])
+                    st.plotly_chart(fig3, use_container_width=True, theme="streamlit")
+                else:
+                    st.info("해당 기간에 분류 데이터가 없습니다.")
             else:
                 st.info("해당 기간에 분류 데이터가 없습니다.")
