@@ -104,7 +104,7 @@ class JamLogTab:
             st.session_state.save_success_msg = ""
 
         # ==========================================
-        # 자동완성 로직 (★ 검색 시 내부에서 차단)
+        # 자동완성 로직
         # ==========================================
         def autofill(source_field):
             if st.session_state.get('search_mode', False): return 
@@ -154,7 +154,7 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
 
         # ==========================================
-        # 입력 및 검색 폼 (★ 콜백 유지하여 위젯 붕괴 방지)
+        # 입력 및 검색 폼
         # ==========================================
         with st.container(border=True):
             if search_mode_active:
@@ -175,12 +175,25 @@ class JamLogTab:
                     time_val = st.time_input("Err.Time", value="now", step=60)
             
             with r1[3]: total_unit_val = st.text_input("Totalunit", key="total_unit")
-            with r1[4]: err_code_val = st.text_input("ErrorCode", key="err_code", on_change=autofill, args=("err_code",))
+            with r1[4]: 
+                if search_mode_active:
+                    err_code_val = st.text_input("ErrorCode", key="err_code")
+                else:
+                    err_code_val = st.text_input("ErrorCode", key="err_code", on_change=autofill, args=("err_code",))
             with r1[5]: err_cnt_val = st.text_input("ErrorCount", key="err_cnt")
 
             r2 = st.columns([1.5, 4.0, 1.5])
-            with r2[0]: err_point_val = st.text_input("Err.Point", key="err_point", on_change=autofill, args=("err_point",))
-            with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
+            with r2[0]: 
+                if search_mode_active:
+                    err_point_val = st.text_input("Err.Point", key="err_point")
+                else:
+                    err_point_val = st.text_input("Err.Point", key="err_point", on_change=autofill, args=("err_point",))
+            
+            with r2[1]: 
+                if search_mode_active:
+                    err_msg_val = st.text_input("ErrorMassage", key="err_msg")
+                else:
+                    err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
             
             category_options = [
                 "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
@@ -257,27 +270,25 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 엑셀 다운로드 (★ 핵심: 변수 직접 매칭 무적 필터)
+        # 통합 조회 표 및 엑셀 다운로드 
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
+            # ✅ 에러 방지: get_col 함수를 언제나 사용할 수 있도록 검색 조건 밖으로 분리!
+            def get_col(df, *candidates):
+                df_cols = [c.lower().replace(" ", "") for c in df.columns]
+                for cand in candidates:
+                    cand_clean = cand.lower().replace(" ", "")
+                    if cand_clean in df_cols:
+                        return df.columns[df_cols.index(cand_clean)]
+                return None
+
             if search_mode_active:
-                # 1. 빈칸 및 소수점 등 완전 제거 (데이터 정규화)
                 df_display = df_display.fillna("")
                 for col in df_display.columns:
                     df_display[col] = df_display[col].astype(str).str.replace(r"\.0$", "", regex=True).str.replace("nan", "", regex=False).str.strip()
 
-                # 2. 오타/대소문자를 무시하고 진짜 컬럼을 찾아주는 로직
-                def get_col(df, *candidates):
-                    df_cols = [c.lower().replace(" ", "") for c in df.columns]
-                    for cand in candidates:
-                        cand_clean = cand.lower().replace(" ", "")
-                        if cand_clean in df_cols:
-                            return df.columns[df_cols.index(cand_clean)]
-                    return None
-
-                # 3. 실시간 위젯 변수를 직접 연결 (세션 딜레이 완전 방지!)
                 sv_date = date_val_search.strip().lower()
                 sv_tu = total_unit_val.strip().lower()
                 sv_code = err_code_val.strip().lower()
@@ -292,7 +303,6 @@ class JamLogTab:
                 sv_mttr = mttr_val.strip().lower()
                 sv_mtbi = mtbi_val.strip().lower()
 
-                # 4. 시트 컬럼 맵핑
                 col_date = get_col(df_display, "date", "날짜")
                 col_tu = get_col(df_display, "totalunit", "생산량")
                 col_code = get_col(df_display, "errorcode", "알람코드", "code")
@@ -308,7 +318,6 @@ class JamLogTab:
                 col_mtbi = get_col(df_display, "mtbi")
                 col_type = get_col(df_display, "분류", "type")
 
-                # 5. regex=False 및 소문자 변환으로 무조건 검색 물리게 강제
                 if sv_date and col_date: df_display = df_display[df_display[col_date].str.lower().str.contains(sv_date, regex=False)]
                 if sv_tu and col_tu: df_display = df_display[df_display[col_tu].str.lower().str.contains(sv_tu, regex=False)]
                 if sv_code and col_code: df_display = df_display[df_display[col_code].str.lower().str.contains(sv_code, regex=False)]
@@ -326,7 +335,6 @@ class JamLogTab:
                 if type_val != "전체" and col_type:
                     df_display = df_display[df_display[col_type] == type_val]
 
-            # 오류 방지 정렬
             if not df_display.empty:
                 sort_cols = []
                 col_d = get_col(df_display, "date", "날짜")
