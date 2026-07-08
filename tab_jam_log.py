@@ -92,7 +92,8 @@ class JamLogTab:
 
         if st.session_state.clear_form:
             for k in TEXT_KEYS: 
-                st.session_state[k] = ""
+                if k in st.session_state:
+                    st.session_state[k] = ""
             if not st.session_state.get('search_mode', False):
                 st.session_state.err_cnt = "1" 
             st.session_state.clear_form = False
@@ -155,6 +156,9 @@ class JamLogTab:
 
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
 
+        # ==========================================
+        # 입력 및 검색 폼
+        # ==========================================
         with st.container(border=True):
             if st.session_state.get('search_mode', False):
                 st.info("🔍 **[검색 모드 활성화]** 빈칸에 찾고 싶은 내용을 입력하고 엔터를 누르시면, 아래 표가 즉시 필터링됩니다.")
@@ -166,14 +170,13 @@ class JamLogTab:
                     date_val_search = st.text_input("Date", placeholder="예: 2024-05", key="date_search")
                 else:
                     date_val = st.date_input("Date", value=datetime.today())
-            
-            # ✅ 수정 포인트: 검색 모드일 때 시간(Err.Time) 창을 완전히 비활성화(Disabled) 시켜 오해 방지!
             with r1[2]: 
                 if st.session_state.get('search_mode', False):
                     st.text_input("Err.Time", value="🚫 검색 제외", disabled=True, key="time_disabled")
                 else:
                     time_val = st.time_input("Err.Time", value="now", step=60)
             
+            # ★ 핵심 수정: 이 변수들(err_code_val 등)이 실시간 필터의 핵심이 됩니다!
             with r1[3]: total_unit_val = st.text_input("Totalunit", key="total_unit")
             with r1[4]: err_code_val = st.text_input("ErrorCode", key="err_code", on_change=autofill, args=("err_code",))
             with r1[5]: err_cnt_val = st.text_input("ErrorCount", key="err_cnt")
@@ -257,30 +260,45 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 엑셀 다운로드 (★ 무적 필터링)
+        # 통합 조회 표 및 엑셀 다운로드 (★ 근본원인 해결: Bypass 실시간 필터링)
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
             if st.session_state.get('search_mode', False):
-                df_display = df_display.fillna("")
-                for col in df_display.columns:
-                    df_display[col] = df_display[col].astype(str).str.replace(r"\.0$", "", regex=True).str.replace("nan", "", regex=False).str.strip()
-
-                search_mapping = {
-                    'date_search': 'Date', 'total_unit': 'Totalunit', 'err_code': 'Errorcode',
-                    'err_cnt': 'Errorcount', 'err_point': 'Err.Point', 'err_msg': 'Error Masage',
-                    'symp': '현상', 'cause': '원인', 'action': '조치', 'worker': '조치자',
-                    'mtba': 'MTBA', 'mttr': 'MTTR', 'mtbi': 'MTBI'
+                # 1. 필터 마스크 초기화 (전체 True)
+                mask = pd.Series([True] * len(df_display), index=df_display.index)
+                
+                # 2. 세션 딜레이를 완벽히 무시하기 위해 입력창의 '실제 변수'를 바로 가져옵니다.
+                search_values = {
+                    'Date': date_val_search,
+                    'Totalunit': total_unit_val,
+                    'Errorcode': err_code_val,
+                    'Errorcount': err_cnt_val,
+                    'Err.Point': err_point_val,
+                    'Error Masage': err_msg_val,
+                    '현상': symp_val,
+                    '원인': cause_val,
+                    '조치': action_val,
+                    '조치자': worker_val,
+                    'MTBA': mtba_val,
+                    'MTTR': mttr_val,
+                    'MTBI': mtbi_val
                 }
                 
-                for state_key, col_name in search_mapping.items():
-                    val = str(st.session_state.get(state_key, "")).strip()
-                    if val:
-                        df_display = df_display[df_display[col_name].str.contains(val, case=False, na=False)]
+                # 3. 정규식 오류 원천 차단 필터 루프
+                for col_name, val in search_values.items():
+                    val_str = str(val).strip()
+                    if val_str and col_name in df_display.columns:
+                        # 소수점(.0) 제거 후 전부 소문자로 통일
+                        col_data = df_display[col_name].astype(str).str.replace(r"\.0$", "", regex=True).str.lower()
+                        # ★ regex=False를 통해 괄호, 점, 하이픈 등 모든 문자를 있는 그대로 매칭합니다!
+                        mask = mask & col_data.str.contains(val_str.lower(), regex=False, na=False)
                 
-                if type_val != "전체":
-                    df_display = df_display[df_display["분류"] == type_val]
+                if type_val != "전체" and "분류" in df_display.columns:
+                    mask = mask & (df_display["분류"] == type_val)
+                    
+                df_display = df_display[mask]
 
             if "Date" in df_display.columns:
                 df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
