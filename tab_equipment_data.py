@@ -52,7 +52,7 @@ class EquipmentDataTab:
         for c in numeric_cols:
             df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
 
-        # ★ 조회 기간(날짜) 선택 필터
+        # 조회 기간(날짜) 선택 필터
         min_date = df['Date'].min().date()
         max_date = df['Date'].max().date()
         
@@ -79,27 +79,33 @@ class EquipmentDataTab:
             
         mask = (df['Date'].dt.date >= start_date) & (df['Date'].dt.date <= end_date)
         df_filtered = df.loc[mask]
-        
-        if df_filtered.empty:
-            st.info("선택한 기간에 해당하는 데이터가 없습니다.")
-            return
 
         date_title_str = f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}"
+
+        # ✅ [핵심 해결] 시작일~종료일 사이의 '모든 달력 날짜'를 강제로 생성합니다.
+        full_date_range = pd.date_range(start=start_date, end=end_date).date
 
         # ==========================================
         # 3. 상단: 생산 Unit 대비 Jam 발생 & PPJ 누적 그래프
         # ==========================================
         st.markdown(f"#### 📊 {date_title_str} 기본 가동 현황 (PPJ 및 생산대비 Jam)")
         
+        # 날짜별 그룹화 후, full_date_range(전체 날짜)를 기준으로 뼈대를 다시 맞추고 빈칸을 0으로 채웁니다.
         df_daily_basic = df_filtered.groupby(df_filtered['Date'].dt.date).agg({
             'Totalunit': 'max',
             'Errorcount': 'sum'
-        }).reset_index()
+        }).reindex(full_date_range).fillna(0).reset_index()
+        
+        # 컬럼명 정리 및 문자열 변환
+        df_daily_basic.rename(columns={'index': 'Date'}, inplace=True)
+        df_daily_basic['Date'] = pd.to_datetime(df_daily_basic['Date'])
+        df_daily_basic['DateStr'] = df_daily_basic['Date'].dt.strftime('%m/%d')
 
-        df_daily_basic['DateStr'] = pd.to_datetime(df_daily_basic['Date']).dt.strftime('%m/%d')
+        # 누적합 계산 (빈 날짜의 0도 누적에 그대로 반영되어 평행선 유지)
         df_daily_basic['Cum_Totalunit'] = df_daily_basic['Totalunit'].cumsum()
         df_daily_basic['Cum_Errorcount'] = df_daily_basic['Errorcount'].cumsum()
 
+        # PPJ 계산
         df_daily_basic['PPJ'] = df_daily_basic.apply(
             lambda row: row['Totalunit'] / row['Errorcount'] if row['Errorcount'] > 0 else row['Totalunit'], 
             axis=1
@@ -115,12 +121,12 @@ class EquipmentDataTab:
         with col_top1:
             fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
             
-            # [수정] textfont에서 강제 color 속성 제거 -> 테마 자동 적용 (다크/라이트 완벽 대응)
+            # ✅ 값이 0이어도 수치가 "0"으로 정직하게 표출되도록 조건식 제거
             fig_tu.add_trace(
                 go.Scatter(
                     x=df_daily_basic['DateStr'], y=df_daily_basic['Totalunit'], 
                     mode='lines+markers+text', name='생산량', line=dict(color='#3498DB', width=3),
-                    text=df_daily_basic['Totalunit'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                    text=df_daily_basic['Totalunit'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
                     textposition='top left', textfont=dict(size=12) 
                 ), secondary_y=False
             )
@@ -128,7 +134,7 @@ class EquipmentDataTab:
                 go.Scatter(
                     x=df_daily_basic['DateStr'], y=df_daily_basic['Errorcount'], 
                     mode='lines+markers+text', name='Jam 발생', line=dict(color='#E74C3C', width=3),
-                    text=df_daily_basic['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                    text=df_daily_basic['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
                     textposition='top right', textfont=dict(size=12) 
                 ), secondary_y=True
             )
@@ -141,25 +147,23 @@ class EquipmentDataTab:
             fig_tu.update_yaxes(title_text="생산량", secondary_y=False, range=[0, max_tu * 1.2 if max_tu > 0 else 10])
             fig_tu.update_yaxes(title_text="Jam 건수", secondary_y=True, range=[0, max_err * 1.2 if max_err > 0 else 10])
             
-            # Streamlit 전용 테마 엔진 활성화 (글자색상 등 자동 최적화)
             st.plotly_chart(fig_tu, use_container_width=True, theme="streamlit")
 
         # [그래프 2] 일별 PPJ 및 누적 평균 PPJ
         with col_top2:
             fig_ppj = go.Figure()
             
-            # [수정] textfont color 제거
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['DateStr'], y=df_daily_basic['PPJ'], 
                 mode='lines+markers+text', name='일별 PPJ', line=dict(color='#27AE60', width=3),
-                text=df_daily_basic['PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                text=df_daily_basic['PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
                 textposition='top left', textfont=dict(size=12)
             ))
             
             fig_ppj.add_trace(go.Scatter(
                 x=df_daily_basic['DateStr'], y=df_daily_basic['Cum_PPJ'], 
                 mode='lines+markers+text', name='누적 평균 PPJ', line=dict(color='#F39C12', width=3),
-                text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
                 textposition='top right', textfont=dict(size=12)
             ))
             
@@ -178,8 +182,11 @@ class EquipmentDataTab:
         # ==========================================
         st.markdown(f"#### 📈 {date_title_str} 정밀 분석 추이 (MTBA / MTTR / MTBI)")
         
-        df_daily_mt = df_filtered.groupby(df_filtered['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].max().reset_index()
-        df_daily_mt['DateStr'] = pd.to_datetime(df_daily_mt['Date']).dt.strftime('%m/%d')
+        # ✅ MT 데이터 역시 빈 날짜를 0으로 강제 세팅합니다.
+        df_daily_mt = df_filtered.groupby(df_filtered['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].max().reindex(full_date_range).fillna(0).reset_index()
+        df_daily_mt.rename(columns={'index': 'Date'}, inplace=True)
+        df_daily_mt['Date'] = pd.to_datetime(df_daily_mt['Date'])
+        df_daily_mt['DateStr'] = df_daily_mt['Date'].dt.strftime('%m/%d')
         
         for col in ['MTBA', 'MTTR', 'MTBI']:
             df_daily_mt[f'{col}_cum_avg'] = df_daily_mt[col].expanding().mean()
@@ -193,11 +200,10 @@ class EquipmentDataTab:
         ]
 
         for col, bar_color, line_color in metrics:
-            # [수정] textfont color 제거
             fig1.add_trace(go.Bar(
                 x=df_daily_mt['DateStr'], y=df_daily_mt[col], 
                 name=f'{col} (일별)', marker_color=bar_color,
-                text=df_daily_mt[col].apply(lambda x: f"<b>{x:,.0f}</b>" if x > 0 else ""), 
+                text=df_daily_mt[col].apply(lambda x: f"<b>{x:,.0f}</b>"), 
                 textposition='outside', textfont=dict(size=12)
             ), secondary_y=False)
             
@@ -205,7 +211,7 @@ class EquipmentDataTab:
                 x=df_daily_mt['DateStr'], y=df_daily_mt[f'{col}_cum_avg'], 
                 mode='lines+markers+text', name=f'{col} 누적평균', 
                 line=dict(color=line_color, width=2),
-                text=df_daily_mt[f'{col}_cum_avg'].apply(lambda x: f"<b>{x:,.1f}</b>" if x > 0 else ""), 
+                text=df_daily_mt[f'{col}_cum_avg'].apply(lambda x: f"<b>{x:,.1f}</b>"), 
                 textposition='top right', textfont=dict(size=12)
             ), secondary_y=True)
         
@@ -257,7 +263,7 @@ class EquipmentDataTab:
                     marker_color='#F39C12',
                     text=type_counts['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
                     textposition='outside', 
-                    textfont=dict(size=14) # [수정] color='black' 제거
+                    textfont=dict(size=14) 
                 )])
                 max_type = type_counts['Errorcount'].max()
                 fig3.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=350, xaxis_title="발생 건수", yaxis=dict(tickfont=dict(size=13)))
