@@ -9,6 +9,7 @@ class JamLogTab:
         self.db_jam = db_jam
 
     def render(self):
+        # 상단에 보이지 않는 안전 여백을 주어 천장 짤림을 원천 방지
         st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
 
         # ========================================================
@@ -102,6 +103,9 @@ class JamLogTab:
             st.success(st.session_state.save_success_msg)
             st.session_state.save_success_msg = ""
 
+        # ==========================================
+        # 자동완성 로직
+        # ==========================================
         def autofill(source_field):
             if st.session_state.get('search_mode', False): return 
             
@@ -167,7 +171,7 @@ class JamLogTab:
             with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS, key="equip_val")
             with r1[1]: 
                 if st.session_state.get('search_mode', False):
-                    date_val_search = st.text_input("Date", placeholder="예: 2024-05", key="date_search")
+                    date_val_search = st.text_input("Date (예: 2024-05)", key="date_search")
                 else:
                     date_val = st.date_input("Date", value=datetime.today())
             with r1[2]: 
@@ -176,7 +180,6 @@ class JamLogTab:
                 else:
                     time_val = st.time_input("Err.Time", value="now", step=60)
             
-            # ★ 핵심 수정: 이 변수들(err_code_val 등)이 실시간 필터의 핵심이 됩니다!
             with r1[3]: total_unit_val = st.text_input("Totalunit", key="total_unit")
             with r1[4]: err_code_val = st.text_input("ErrorCode", key="err_code", on_change=autofill, args=("err_code",))
             with r1[5]: err_cnt_val = st.text_input("ErrorCount", key="err_cnt")
@@ -260,44 +263,58 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 엑셀 다운로드 (★ 근본원인 해결: Bypass 실시간 필터링)
+        # 통합 조회 표 및 엑셀 다운로드 (★ 핵심: 스마트 컬럼 매칭 필터 장착)
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
             if st.session_state.get('search_mode', False):
-                # 1. 필터 마스크 초기화 (전체 True)
+                # 1. 소수점(.0), 빈칸(nan) 제거 등 완벽한 전처리
+                df_display = df_display.fillna("")
+                for col in df_display.columns:
+                    df_display[col] = df_display[col].astype(str).str.replace(r"\.0$", "", regex=True).str.replace("nan", "", regex=False).str.strip()
+
+                # 2. 구글 시트의 대소문자/오타와 상관없이 실제 매칭되는 컬럼을 찾아주는 함수
+                def get_real_col(df, *possible_names):
+                    for c in df.columns:
+                        c_clean = str(c).lower().replace(" ", "")
+                        for p in possible_names:
+                            if c_clean == p.lower().replace(" ", ""): return c
+                    return None
+
+                # 3. 입력된 값과 찾을 컬럼명 후보군 연결
+                search_rules = [
+                    (date_val_search, ["date", "날짜"]),
+                    (total_unit_val, ["totalunit", "생산량"]),
+                    (err_code_val, ["errorcode", "알람코드", "code"]),
+                    (err_cnt_val, ["errorcount", "수량", "에러카운트", "cnt"]),
+                    (err_point_val, ["err.point", "errpoint", "모듈", "point"]),
+                    (err_msg_val, ["errormasage", "errormessage", "알람명", "message", "errormassage"]),
+                    (symp_val, ["현상", "symp"]),
+                    (cause_val, ["원인", "cause"]),
+                    (action_val, ["조치", "action"]),
+                    (worker_val, ["조치자", "worker"]),
+                    (mtba_val, ["mtba"]),
+                    (mttr_val, ["mttr"]),
+                    (mtbi_val, ["mtbi"])
+                ]
+                
                 mask = pd.Series([True] * len(df_display), index=df_display.index)
-                
-                # 2. 세션 딜레이를 완벽히 무시하기 위해 입력창의 '실제 변수'를 바로 가져옵니다.
-                search_values = {
-                    'Date': date_val_search,
-                    'Totalunit': total_unit_val,
-                    'Errorcode': err_code_val,
-                    'Errorcount': err_cnt_val,
-                    'Err.Point': err_point_val,
-                    'Error Masage': err_msg_val,
-                    '현상': symp_val,
-                    '원인': cause_val,
-                    '조치': action_val,
-                    '조치자': worker_val,
-                    'MTBA': mtba_val,
-                    'MTTR': mttr_val,
-                    'MTBI': mtbi_val
-                }
-                
-                # 3. 정규식 오류 원천 차단 필터 루프
-                for col_name, val in search_values.items():
+
+                # 4. 일치하는 컬럼이 있으면 조건에 맞게 마스크(필터) 씌우기
+                for val, possible_names in search_rules:
                     val_str = str(val).strip()
-                    if val_str and col_name in df_display.columns:
-                        # 소수점(.0) 제거 후 전부 소문자로 통일
-                        col_data = df_display[col_name].astype(str).str.replace(r"\.0$", "", regex=True).str.lower()
-                        # ★ regex=False를 통해 괄호, 점, 하이픈 등 모든 문자를 있는 그대로 매칭합니다!
-                        mask = mask & col_data.str.contains(val_str.lower(), regex=False, na=False)
+                    if val_str:
+                        real_col = get_real_col(df_display, *possible_names)
+                        if real_col:
+                            col_data = df_display[real_col].astype(str).str.lower()
+                            mask = mask & col_data.str.contains(val_str.lower(), regex=False, na=False)
                 
-                if type_val != "전체" and "분류" in df_display.columns:
-                    mask = mask & (df_display["분류"] == type_val)
-                    
+                if type_val != "전체":
+                    real_type_col = get_real_col(df_display, "분류", "type")
+                    if real_type_col:
+                        mask = mask & (df_display[real_type_col] == type_val)
+                        
                 df_display = df_display[mask]
 
             if "Date" in df_display.columns:
