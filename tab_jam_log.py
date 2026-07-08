@@ -9,7 +9,6 @@ class JamLogTab:
         self.db_jam = db_jam
 
     def render(self):
-        # 상단에 보이지 않는 안전 여백을 주어 천장 짤림을 원천 방지
         st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
 
         # ========================================================
@@ -103,9 +102,7 @@ class JamLogTab:
             st.success(st.session_state.save_success_msg)
             st.session_state.save_success_msg = ""
 
-        # ==========================================
         # 자동완성 로직
-        # ==========================================
         def autofill(source_field):
             if st.session_state.get('search_mode', False): return 
             
@@ -122,8 +119,7 @@ class JamLogTab:
                 db_err = DataManager(self.db_jam.spreadsheet_id, target_error_tab)
                 df_err, _ = db_err.load()
                 if df_err.empty: return 
-            except Exception as e:
-                st.toast(f"⚠️ ErrorList 로드 실패: {e}")
+            except Exception:
                 return 
             
             search_val = str(st.session_state.get(source_field, "")).strip()
@@ -160,39 +156,56 @@ class JamLogTab:
 
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
 
+        search_mode_active = st.session_state.get('search_mode', False)
+
         # ==========================================
-        # 입력 및 검색 폼
+        # 입력 및 검색 폼 (★ 핵심: 검색 모드일 땐 자동완성 콜백 연결 고리를 싹둑 자릅니다)
         # ==========================================
         with st.container(border=True):
-            if st.session_state.get('search_mode', False):
+            if search_mode_active:
                 st.info("🔍 **[검색 모드 활성화]** 빈칸에 찾고 싶은 내용을 입력하고 엔터를 누르시면, 아래 표가 즉시 필터링됩니다.")
 
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
             with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS, key="equip_val")
             with r1[1]: 
-                if st.session_state.get('search_mode', False):
-                    date_val_search = st.text_input("Date (예: 2024-05)", key="date_search")
+                if search_mode_active:
+                    date_val_search = st.text_input("Date", placeholder="예: 2024-05", key="date_search")
                 else:
                     date_val = st.date_input("Date", value=datetime.today())
             with r1[2]: 
-                if st.session_state.get('search_mode', False):
+                if search_mode_active:
                     st.text_input("Err.Time", value="🚫 검색 제외", disabled=True, key="time_disabled")
                 else:
                     time_val = st.time_input("Err.Time", value="now", step=60)
             
             with r1[3]: total_unit_val = st.text_input("Totalunit", key="total_unit")
-            with r1[4]: err_code_val = st.text_input("ErrorCode", key="err_code", on_change=autofill, args=("err_code",))
+            
+            with r1[4]: 
+                if search_mode_active: # 콜백 끊음
+                    err_code_val = st.text_input("ErrorCode", key="err_code")
+                else: # 일반 모드일 때만 콜백 연결
+                    err_code_val = st.text_input("ErrorCode", key="err_code", on_change=autofill, args=("err_code",))
+            
             with r1[5]: err_cnt_val = st.text_input("ErrorCount", key="err_cnt")
 
             r2 = st.columns([1.5, 4.0, 1.5])
-            with r2[0]: err_point_val = st.text_input("Err.Point", key="err_point", on_change=autofill, args=("err_point",))
-            with r2[1]: err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
+            with r2[0]: 
+                if search_mode_active:
+                    err_point_val = st.text_input("Err.Point", key="err_point")
+                else:
+                    err_point_val = st.text_input("Err.Point", key="err_point", on_change=autofill, args=("err_point",))
+            
+            with r2[1]: 
+                if search_mode_active:
+                    err_msg_val = st.text_input("ErrorMassage", key="err_msg")
+                else:
+                    err_msg_val = st.text_input("ErrorMassage", key="err_msg", on_change=autofill, args=("err_msg",))
             
             category_options = [
                 "S/W Logic 불량", "H/W 불량, 파손", "H/W 소모성 교체", "H/W 셋업, 조정",
                 "자재 불량", "작업자 실수", "기타", "작업실수로 인한 재발생", "원인파악불가", "장비대기, 추후 대응"
             ]
-            if st.session_state.get('search_mode', False): category_options.insert(0, "전체") 
+            if search_mode_active: category_options.insert(0, "전체") 
             with r2[2]: type_val = st.selectbox("분류", category_options, key="type_val")
 
             r3 = st.columns([1, 1])
@@ -236,10 +249,10 @@ class JamLogTab:
             db_machine = DataManager(self.db_jam.spreadsheet_id, equip_val, exact_columns)
             df_machine, _ = db_machine.load()
         except Exception as e:
-            st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 탭 연결 중 오류가 발생했습니다. (상세에러: {e})")
+            st.error(f"🚨 구글 시트 연결 실패: (상세에러: {e})")
 
         if btn_write:
-            if st.session_state.get('search_mode', False):
+            if search_mode_active:
                 st.warning("🚨 현재 '검색 모드'가 켜져 있습니다. 데이터를 저장하시려면 우측의 [❌ 검색 종료] 버튼을 눌러주세요.")
             elif db_machine is None:
                 st.error("🚨 구글 시트 탭이 연결되지 않아 저장할 수 없습니다.")
@@ -263,59 +276,59 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 엑셀 다운로드 (★ 핵심: 스마트 컬럼 매칭 필터 장착)
+        # 통합 조회 표 (★ 무식하지만 가장 확실한 순차 필터링)
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
-            if st.session_state.get('search_mode', False):
-                # 1. 소수점(.0), 빈칸(nan) 제거 등 완벽한 전처리
+            if search_mode_active:
+                # 1. 빈칸 방어 및 문자 변환 (소수점 원천 차단)
                 df_display = df_display.fillna("")
                 for col in df_display.columns:
                     df_display[col] = df_display[col].astype(str).str.replace(r"\.0$", "", regex=True).str.replace("nan", "", regex=False).str.strip()
 
-                # 2. 구글 시트의 대소문자/오타와 상관없이 실제 매칭되는 컬럼을 찾아주는 함수
-                def get_real_col(df, *possible_names):
-                    for c in df.columns:
-                        c_clean = str(c).lower().replace(" ", "")
-                        for p in possible_names:
-                            if c_clean == p.lower().replace(" ", ""): return c
-                    return None
+                # 2. 각 빈칸에 적힌 값들을 매칭할 후보군 컬럼명 세팅
+                filters = {
+                    "date_search": ["date", "날짜"],
+                    "total_unit": ["totalunit", "생산량"],
+                    "err_code": ["errorcode", "알람코드", "code"],
+                    "err_cnt": ["errorcount", "수량", "에러카운트", "cnt"],
+                    "err_point": ["err.point", "errpoint", "모듈", "point"],
+                    "err_msg": ["errormasage", "errormessage", "알람명", "message"],
+                    "symp": ["현상", "symp"],
+                    "cause": ["원인", "cause"],
+                    "action": ["조치", "action"],
+                    "worker": ["조치자", "worker"],
+                    "mtba": ["mtba"],
+                    "mttr": ["mttr"],
+                    "mtbi": ["mtbi"]
+                }
 
-                # 3. 입력된 값과 찾을 컬럼명 후보군 연결
-                search_rules = [
-                    (date_val_search, ["date", "날짜"]),
-                    (total_unit_val, ["totalunit", "생산량"]),
-                    (err_code_val, ["errorcode", "알람코드", "code"]),
-                    (err_cnt_val, ["errorcount", "수량", "에러카운트", "cnt"]),
-                    (err_point_val, ["err.point", "errpoint", "모듈", "point"]),
-                    (err_msg_val, ["errormasage", "errormessage", "알람명", "message", "errormassage"]),
-                    (symp_val, ["현상", "symp"]),
-                    (cause_val, ["원인", "cause"]),
-                    (action_val, ["조치", "action"]),
-                    (worker_val, ["조치자", "worker"]),
-                    (mtba_val, ["mtba"]),
-                    (mttr_val, ["mttr"]),
-                    (mtbi_val, ["mtbi"])
-                ]
-                
-                mask = pd.Series([True] * len(df_display), index=df_display.index)
-
-                # 4. 일치하는 컬럼이 있으면 조건에 맞게 마스크(필터) 씌우기
-                for val, possible_names in search_rules:
-                    val_str = str(val).strip()
-                    if val_str:
-                        real_col = get_real_col(df_display, *possible_names)
-                        if real_col:
-                            col_data = df_display[real_col].astype(str).str.lower()
-                            mask = mask & col_data.str.contains(val_str.lower(), regex=False, na=False)
-                
-                if type_val != "전체":
-                    real_type_col = get_real_col(df_display, "분류", "type")
-                    if real_type_col:
-                        mask = mask & (df_display[real_type_col] == type_val)
+                # 3. 빈칸이 입력되어 있다면 무조건 차례대로 필터링 적용 (regex=False 로 특수기호 에러 방어)
+                for state_key, possible_names in filters.items():
+                    val = str(st.session_state.get(state_key, "")).strip().lower()
+                    if val:
+                        real_col = None
+                        for c in df_display.columns:
+                            c_clean = c.lower().replace(" ", "")
+                            for p in possible_names:
+                                if c_clean == p.replace(" ", ""):
+                                    real_col = c
+                                    break
+                            if real_col: break
                         
-                df_display = df_display[mask]
+                        if real_col:
+                            df_display = df_display[df_display[real_col].str.lower().str.contains(val, regex=False)]
+                
+                # 분류 별도 필터
+                if type_val != "전체":
+                    real_type_col = None
+                    for c in df_display.columns:
+                        if c.lower().replace(" ", "") in ["분류", "type"]:
+                            real_type_col = c
+                            break
+                    if real_type_col:
+                        df_display = df_display[df_display[real_type_col] == type_val]
 
             if "Date" in df_display.columns:
                 df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
@@ -343,18 +356,15 @@ class JamLogTab:
             with view_cols[2]:
                 st.empty() 
 
-            if st.session_state.get('search_mode', False):
+            if search_mode_active:
                 st.dataframe(df_display, use_container_width=True, hide_index=True)
                 st.info("💡 검색 모드에서는 데이터 안전과 즉각적인 필터링을 위해 표가 '읽기 전용'으로 전환됩니다.")
             else:
                 edited_df = st.data_editor(df_display, use_container_width=True, hide_index=True, num_rows="dynamic")
                 if st.button(f"💾 '{equip_val}' 표 변경사항 저장", type="primary"):
-                    if st.session_state.get('search_mode', False):
-                        st.warning("⚠️ 검색 모드 중에는 표 수정을 권장하지 않습니다. ❌검색 종료 버튼을 눌러주세요.")
-                    else:
-                        db_machine.save(edited_df.fillna(""))
-                        st.success("✅ 변경사항이 저장되었습니다!")
-                        st.rerun()
+                    db_machine.save(edited_df.fillna(""))
+                    st.success("✅ 변경사항이 저장되었습니다!")
+                    st.rerun()
                         
         elif db_machine is not None:
             st.info(f"'{equip_val}' 시트에 등록된 데이터가 없습니다.")
