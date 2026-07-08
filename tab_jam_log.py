@@ -67,14 +67,17 @@ class JamLogTab:
         with header_cols[3]: 
             btn_del = st.button("🗑️ 삭제", use_container_width=True)
         with header_cols[4]:
-            search_btn_text = "❌ 검색 종료" if st.session_state.get('search_mode', False) else "🔍 상세 검색"
+            search_mode_active = st.session_state.get('search_mode', False)
+            search_btn_text = "❌ 검색 종료" if search_mode_active else "🔍 상세 검색"
+            
             if st.button(search_btn_text, use_container_width=True):
-                st.session_state.search_mode = not st.session_state.get('search_mode', False)
+                st.session_state.search_mode = not search_mode_active
                 st.session_state.clear_form = True 
                 st.rerun()
 
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
+        # 현재 검색 모드 상태
         search_mode_active = st.session_state.get('search_mode', False)
 
         # ==========================================
@@ -104,7 +107,7 @@ class JamLogTab:
             st.session_state.save_success_msg = ""
 
         # ==========================================
-        # 자동완성 로직
+        # 자동완성 로직 (입력 모드에서만 사용)
         # ==========================================
         def autofill(source_field):
             if st.session_state.get('search_mode', False): return 
@@ -154,11 +157,11 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
 
         # ==========================================
-        # 입력 및 검색 폼
+        # 입력 및 검색 폼 (검색 모드 시 자동완성 콜백 완전 제거)
         # ==========================================
         with st.container(border=True):
             if search_mode_active:
-                st.info("🔍 **[검색 모드 활성화]** 빈칸에 찾고 싶은 내용을 입력하고 엔터를 누르시면, 아래 표가 즉시 필터링됩니다.")
+                st.info("🔍 **[검색 모드 활성화]** 단어를 입력하고 Enter를 누르면 해당 열에서 찾아냅니다. (엑셀 Ctrl+F와 동일)")
 
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
             with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS, key="equip_val")
@@ -228,7 +231,7 @@ class JamLogTab:
                 with r6[5]: result_val = st.selectbox("조치결과", ["완료", "진행중", "대기"], key="result")
 
         # ==========================================
-        # DB 연결 및 데이터 로드 
+        # DB 연결 및 데이터 로드 (정확한 컬럼명 고정!)
         # ==========================================
         exact_columns = [
             "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
@@ -245,6 +248,7 @@ class JamLogTab:
         except Exception as e:
             st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 탭 연결 중 오류가 발생했습니다. (상세에러: {e})")
 
+        # 저장 로직
         if btn_write:
             if search_mode_active:
                 st.warning("🚨 현재 '검색 모드'가 켜져 있습니다. 데이터를 저장하시려면 우측의 [❌ 검색 종료] 버튼을 눌러주세요.")
@@ -270,79 +274,56 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 통합 조회 표 및 엑셀 다운로드 
+        # 엑셀과 완벽히 똑같은 Ctrl+F 필터링 구역
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
-            # ✅ 에러 방지: get_col 함수를 언제나 사용할 수 있도록 검색 조건 밖으로 분리!
-            def get_col(df, *candidates):
-                df_cols = [c.lower().replace(" ", "") for c in df.columns]
-                for cand in candidates:
-                    cand_clean = cand.lower().replace(" ", "")
-                    if cand_clean in df_cols:
-                        return df.columns[df_cols.index(cand_clean)]
-                return None
-
             if search_mode_active:
-                df_display = df_display.fillna("")
-                for col in df_display.columns:
-                    df_display[col] = df_display[col].astype(str).str.replace(r"\.0$", "", regex=True).str.replace("nan", "", regex=False).str.strip()
+                # 1. 엑셀처럼 검색하기 위해 전체 데이터를 소문자/문자열로 변환한 '검색용 복사본'을 만듭니다.
+                df_search = df_display.fillna("").astype(str).apply(lambda x: x.str.lower())
+                # 숫자 ".0" 잔재 제거
+                for col in df_search.columns:
+                    df_search[col] = df_search[col].str.replace(r"\.0$", "", regex=True)
 
-                sv_date = date_val_search.strip().lower()
-                sv_tu = total_unit_val.strip().lower()
-                sv_code = err_code_val.strip().lower()
-                sv_cnt = err_cnt_val.strip().lower()
-                sv_point = err_point_val.strip().lower()
-                sv_msg = err_msg_val.strip().lower()
-                sv_symp = symp_val.strip().lower()
-                sv_cause = cause_val.strip().lower()
-                sv_action = action_val.strip().lower()
-                sv_worker = worker_val.strip().lower()
-                sv_mtba = mtba_val.strip().lower()
-                sv_mttr = mttr_val.strip().lower()
-                sv_mtbi = mtbi_val.strip().lower()
+                # 2. 위에서 정의한 구글시트 정확한 컬럼명 1:1 매칭
+                ctrl_f_rules = [
+                    ("date_search", "Date"),
+                    ("total_unit", "Totalunit"),
+                    ("err_code", "Errorcode"),
+                    ("err_cnt", "Errorcount"),
+                    ("err_point", "Err.Point"),
+                    ("err_msg", "Error Masage"),
+                    ("symp", "현상"),
+                    ("cause", "원인"),
+                    ("action", "조치"),
+                    ("worker", "조치자"),
+                    ("mtba", "MTBA"),
+                    ("mttr", "MTTR"),
+                    ("mtbi", "MTBI")
+                ]
 
-                col_date = get_col(df_display, "date", "날짜")
-                col_tu = get_col(df_display, "totalunit", "생산량")
-                col_code = get_col(df_display, "errorcode", "알람코드", "code")
-                col_cnt = get_col(df_display, "errorcount", "수량", "에러카운트", "cnt")
-                col_point = get_col(df_display, "err.point", "errpoint", "모듈", "point")
-                col_msg = get_col(df_display, "errormasage", "errormessage", "알람명", "message")
-                col_symp = get_col(df_display, "현상", "symp")
-                col_cause = get_col(df_display, "원인", "cause")
-                col_action = get_col(df_display, "조치", "action")
-                col_worker = get_col(df_display, "조치자", "worker")
-                col_mtba = get_col(df_display, "mtba")
-                col_mttr = get_col(df_display, "mttr")
-                col_mtbi = get_col(df_display, "mtbi")
-                col_type = get_col(df_display, "분류", "type")
+                # 3. 입력된 칸이 있으면 해당 컬럼에서 그 단어가 포함된(Ctrl+F) 행만 남깁니다.
+                for state_key, exact_col_name in ctrl_f_rules:
+                    # 세션에 입력된 검색어 가져오기
+                    search_keyword = st.session_state.get(state_key, "").strip().lower()
+                    
+                    if search_keyword and exact_col_name in df_search.columns:
+                        # 엑셀 포함(Contains) 로직
+                        match_mask = df_search[exact_col_name].str.contains(search_keyword, regex=False)
+                        
+                        # 실제 보여줄 표와, 검색용 표를 똑같이 잘라냅니다
+                        df_display = df_display[match_mask]
+                        df_search = df_search[match_mask]
 
-                if sv_date and col_date: df_display = df_display[df_display[col_date].str.lower().str.contains(sv_date, regex=False)]
-                if sv_tu and col_tu: df_display = df_display[df_display[col_tu].str.lower().str.contains(sv_tu, regex=False)]
-                if sv_code and col_code: df_display = df_display[df_display[col_code].str.lower().str.contains(sv_code, regex=False)]
-                if sv_cnt and col_cnt: df_display = df_display[df_display[col_cnt].str.lower().str.contains(sv_cnt, regex=False)]
-                if sv_point and col_point: df_display = df_display[df_display[col_point].str.lower().str.contains(sv_point, regex=False)]
-                if sv_msg and col_msg: df_display = df_display[df_display[col_msg].str.lower().str.contains(sv_msg, regex=False)]
-                if sv_symp and col_symp: df_display = df_display[df_display[col_symp].str.lower().str.contains(sv_symp, regex=False)]
-                if sv_cause and col_cause: df_display = df_display[df_display[col_cause].str.lower().str.contains(sv_cause, regex=False)]
-                if sv_action and col_action: df_display = df_display[df_display[col_action].str.lower().str.contains(sv_action, regex=False)]
-                if sv_worker and col_worker: df_display = df_display[df_display[col_worker].str.lower().str.contains(sv_worker, regex=False)]
-                if sv_mtba and col_mtba: df_display = df_display[df_display[col_mtba].str.lower().str.contains(sv_mtba, regex=False)]
-                if sv_mttr and col_mttr: df_display = df_display[df_display[col_mttr].str.lower().str.contains(sv_mttr, regex=False)]
-                if sv_mtbi and col_mtbi: df_display = df_display[df_display[col_mtbi].str.lower().str.contains(sv_mtbi, regex=False)]
-                
-                if type_val != "전체" and col_type:
-                    df_display = df_display[df_display[col_type] == type_val]
+                # 분류 필터 적용
+                if type_val != "전체" and "분류" in df_display.columns:
+                    type_mask = df_display["분류"] == type_val
+                    df_display = df_display[type_mask]
 
-            if not df_display.empty:
-                sort_cols = []
-                col_d = get_col(df_display, "date", "날짜")
-                col_t = get_col(df_display, "err.time", "시간", "err. time", "time")
-                if col_d: sort_cols.append(col_d)
-                if col_t: sort_cols.append(col_t)
-                if sort_cols:
-                    df_display = df_display.sort_values(by=sort_cols, ascending=[False]*len(sort_cols)).reset_index(drop=True)
+            # 정렬
+            if "Date" in df_display.columns:
+                df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
             
             view_cols = st.columns([7.0, 1.5, 1.5])
             with view_cols[0]:
