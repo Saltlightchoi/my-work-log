@@ -77,29 +77,39 @@ class JamLogTab:
 
         st.markdown("<hr style='margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
 
-        # 현재 검색 모드 상태
         search_mode_active = st.session_state.get('search_mode', False)
 
         # ==========================================
-        # Session State 초기화
+        # Session State 초기화 (★ 범인 검거: 분류 필터 강제 리셋 포함)
         # ==========================================
         TEXT_KEYS = [
             "err_code", "err_point", "err_msg", "total_unit", "err_cnt", 
             "symp", "cause", "action", "worker", "mtba", "mttr", "mtbi",
             "part_no", "qty", "in_date", "out_date", "action_loc", "date_search"
         ]
+        
         for k in TEXT_KEYS:
             if k not in st.session_state: st.session_state[k] = ""
+            
+        if "type_val" not in st.session_state: 
+            st.session_state["type_val"] = "S/W Logic 불량"
             
         if "clear_form" not in st.session_state: st.session_state.clear_form = False
         if "save_success_msg" not in st.session_state: st.session_state.save_success_msg = ""
 
         if st.session_state.clear_form:
+            # 1. 텍스트 입력창 싹 비우기
             for k in TEXT_KEYS: 
                 if k in st.session_state:
                     st.session_state[k] = ""
+            
+            # 2. ★ 먹통의 원인이었던 '드롭다운' 필터 완벽 분기 처리
             if not search_mode_active:
                 st.session_state.err_cnt = "1" 
+                st.session_state.type_val = "S/W Logic 불량"
+            else:
+                st.session_state.type_val = "전체" # 검색 모드일 땐 무조건 '전체'로 락 해제!
+                
             st.session_state.clear_form = False
             
         if st.session_state.save_success_msg:
@@ -107,7 +117,7 @@ class JamLogTab:
             st.session_state.save_success_msg = ""
 
         # ==========================================
-        # 자동완성 로직 (입력 모드에서만 사용)
+        # 자동완성 로직 (입력 모드에서만 동작)
         # ==========================================
         def autofill(source_field):
             if st.session_state.get('search_mode', False): return 
@@ -157,11 +167,11 @@ class JamLogTab:
         DB_SHEET_OPTIONS = ["SLH1 #1", "SLH1 #4", "SLH1 #5", "SLH1 #6", "SLH1 #7"]
 
         # ==========================================
-        # 입력 및 검색 폼 (검색 모드 시 자동완성 콜백 완전 제거)
+        # 입력 및 검색 폼
         # ==========================================
         with st.container(border=True):
             if search_mode_active:
-                st.info("🔍 **[검색 모드 활성화]** 단어를 입력하고 Enter를 누르면 해당 열에서 찾아냅니다. (엑셀 Ctrl+F와 동일)")
+                st.info("🔍 **[검색 모드 활성화]** 단어를 입력하고 Enter를 누르면 해당 열에서 데이터를 찾아냅니다. (엑셀 Ctrl+F와 동일)")
 
             r1 = st.columns([1.8, 1.2, 1.0, 1.2, 1.2, 0.8])
             with r1[0]: equip_val = st.selectbox("장비명", DB_SHEET_OPTIONS, key="equip_val")
@@ -231,7 +241,7 @@ class JamLogTab:
                 with r6[5]: result_val = st.selectbox("조치결과", ["완료", "진행중", "대기"], key="result")
 
         # ==========================================
-        # DB 연결 및 데이터 로드 (정확한 컬럼명 고정!)
+        # DB 연결 및 데이터 로드 
         # ==========================================
         exact_columns = [
             "Date", "Totalunit", "Errorcode", "Errorcount", "Error Masage", 
@@ -248,7 +258,6 @@ class JamLogTab:
         except Exception as e:
             st.error(f"🚨 구글 시트 연결 실패: '{equip_val}' 탭 연결 중 오류가 발생했습니다. (상세에러: {e})")
 
-        # 저장 로직
         if btn_write:
             if search_mode_active:
                 st.warning("🚨 현재 '검색 모드'가 켜져 있습니다. 데이터를 저장하시려면 우측의 [❌ 검색 종료] 버튼을 눌러주세요.")
@@ -274,19 +283,13 @@ class JamLogTab:
                 st.error("🚨 ErrorCode와 ErrorMassage는 필수 입력 항목입니다.")
 
         # ==========================================
-        # 엑셀과 완벽히 똑같은 Ctrl+F 필터링 구역
+        # 엑셀과 100% 동일한 직관적 Ctrl+F 필터링 로직
         # ==========================================
         if db_machine is not None and not df_machine.empty:
             df_display = df_machine.copy()
             
             if search_mode_active:
-                # 1. 엑셀처럼 검색하기 위해 전체 데이터를 소문자/문자열로 변환한 '검색용 복사본'을 만듭니다.
-                df_search = df_display.fillna("").astype(str).apply(lambda x: x.str.lower())
-                # 숫자 ".0" 잔재 제거
-                for col in df_search.columns:
-                    df_search[col] = df_search[col].str.replace(r"\.0$", "", regex=True)
-
-                # 2. 위에서 정의한 구글시트 정확한 컬럼명 1:1 매칭
+                # 필터 검색 규칙 맵핑
                 ctrl_f_rules = [
                     ("date_search", "Date"),
                     ("total_unit", "Totalunit"),
@@ -303,25 +306,22 @@ class JamLogTab:
                     ("mtbi", "MTBI")
                 ]
 
-                # 3. 입력된 칸이 있으면 해당 컬럼에서 그 단어가 포함된(Ctrl+F) 행만 남깁니다.
+                # 각 텍스트 입력창 확인하여 필터 적용
                 for state_key, exact_col_name in ctrl_f_rules:
-                    # 세션에 입력된 검색어 가져오기
-                    search_keyword = st.session_state.get(state_key, "").strip().lower()
-                    
-                    if search_keyword and exact_col_name in df_search.columns:
-                        # 엑셀 포함(Contains) 로직
-                        match_mask = df_search[exact_col_name].str.contains(search_keyword, regex=False)
+                    search_val = st.session_state.get(state_key, "")
+                    if search_val and exact_col_name in df_display.columns:
+                        search_str = str(search_val).strip()
                         
-                        # 실제 보여줄 표와, 검색용 표를 똑같이 잘라냅니다
-                        df_display = df_display[match_mask]
-                        df_search = df_search[match_mask]
+                        # 구글 시트 숫자 데이터에서 넘어올 수 있는 소수점(.0) 방어 처리 후 필터링
+                        col_data_str = df_display[exact_col_name].astype(str).str.replace(r"\.0$", "", regex=True)
+                        mask = col_data_str.str.contains(search_str, case=False, na=False, regex=False)
+                        df_display = df_display[mask]
 
-                # 분류 필터 적용
-                if type_val != "전체" and "분류" in df_display.columns:
-                    type_mask = df_display["분류"] == type_val
-                    df_display = df_display[type_mask]
+                # 드롭다운 분류 필터 적용
+                type_val_search = st.session_state.get("type_val", "전체")
+                if type_val_search != "전체" and "분류" in df_display.columns:
+                    df_display = df_display[df_display["분류"] == type_val_search]
 
-            # 정렬
             if "Date" in df_display.columns:
                 df_display = df_display.sort_values(by=["Date", "Err. Time"], ascending=[False, False]).reset_index(drop=True)
             
