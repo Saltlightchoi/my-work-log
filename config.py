@@ -5,6 +5,7 @@ import os
 import streamlit as st
 import json
 
+
 # ========================================================
 # 1. 원본 데이터 및 템플릿
 # ========================================================
@@ -85,6 +86,14 @@ class DataManager:
         self.sheet.clear()
         data_to_save = [df.columns.values.tolist()] + df.values.tolist()
         self.sheet.update(data_to_save)
+    # ========================================================
+    # 📱 API (모바일 앱) 연동을 위해 추가된 함수
+    # ========================================================
+    def save_new_row(self, new_data_dict):
+        """새로운 데이터 1줄(Row)을 구글 시트 맨 아래에 추가"""
+        row_values = list(new_data_dict.values())
+        self.sheet.append_row(row_values)
+        return True
 
 # ========================================================
 # 3. 유틸리티 함수
