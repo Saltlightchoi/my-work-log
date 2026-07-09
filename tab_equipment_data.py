@@ -52,13 +52,12 @@ class EquipmentDataTab:
         for c in numeric_cols:
             df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
 
-        # ★ 조회 기간(날짜) 선택 필터 (달력 제한 완벽 해제)
+        # ★ 조회 기간(날짜) 선택 필터 (달력 제한 해제)
         max_date_data = df['Date'].max().date()
         
         with col2:
             default_start = max_date_data - datetime.timedelta(days=30)
             
-            # min_value, max_value 제한을 삭제하여 달력에서 미래/과거 날짜를 마음대로 선택 가능하게 오픈했습니다.
             date_range = st.date_input(
                 "📅 조회 기간 선택 (데이터가 없는 날짜도 자유롭게 선택 가능합니다)", 
                 value=(default_start, max_date_data)
@@ -79,15 +78,14 @@ class EquipmentDataTab:
 
         date_title_str = f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}"
 
-        # ✅ [핵심 해결] 시작일~종료일 사이의 '모든 달력 날짜'를 강제로 생성합니다. (결측일 뼈대 세우기)
+        # ✅ 시작일~종료일 사이의 '모든 달력 날짜' 뼈대 생성
         full_date_range = pd.date_range(start=start_date, end=end_date).date
 
         # ==========================================
-        # 3. 상단: 생산 Unit 대비 Jam 발생 & PPJ 누적 그래프
+        # 3. 생산 Unit 대비 Jam 발생 & PPJ 누적 그래프 (★ 풀 사이즈 확장)
         # ==========================================
         st.markdown(f"#### 📊 {date_title_str} 기본 가동 현황 (PPJ 및 생산대비 Jam)")
         
-        # ✅ 선택한 구간에 데이터가 아예 한 건도 없는 경우를 완벽 방어하는 로직
         if not df_filtered.empty:
             grouped_basic = df_filtered.groupby(df_filtered['Date'].dt.date).agg({
                 'Totalunit': 'max',
@@ -96,18 +94,15 @@ class EquipmentDataTab:
         else:
             grouped_basic = pd.DataFrame(columns=['Totalunit', 'Errorcount'])
 
-        # 날짜 뼈대에 데이터를 입히고, 비어있는 날짜는 무조건 0으로 채웁니다.
         df_daily_basic = grouped_basic.reindex(full_date_range).fillna(0).reset_index()
         df_daily_basic.rename(columns={'index': 'Date'}, inplace=True)
         
         df_daily_basic['Date'] = pd.to_datetime(df_daily_basic['Date'])
         df_daily_basic['DateStr'] = df_daily_basic['Date'].dt.strftime('%m/%d')
 
-        # 누적합 계산 (0이 누적되어도 이전 상태가 그대로 평행선으로 유지됨)
         df_daily_basic['Cum_Totalunit'] = df_daily_basic['Totalunit'].cumsum()
         df_daily_basic['Cum_Errorcount'] = df_daily_basic['Errorcount'].cumsum()
 
-        # PPJ 계산 (0 나누기 0 에러 방지)
         df_daily_basic['PPJ'] = df_daily_basic.apply(
             lambda row: row['Totalunit'] / row['Errorcount'] if row['Errorcount'] > 0 else row['Totalunit'], 
             axis=1
@@ -117,64 +112,62 @@ class EquipmentDataTab:
             axis=1
         )
 
-        col_top1, col_top2 = st.columns(2)
+        # [그래프 1] 생산 Unit 대비 Jam 발생 (한 칸 전체 차지)
+        fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
         
-        # [그래프 1] 생산 Unit 대비 Jam 발생
-        with col_top1:
-            fig_tu = make_subplots(specs=[[{"secondary_y": True}]])
-            
-            fig_tu.add_trace(
-                go.Scatter(
-                    x=df_daily_basic['DateStr'], y=df_daily_basic['Totalunit'], 
-                    mode='lines+markers+text', name='생산량', line=dict(color='#3498DB', width=3),
-                    text=df_daily_basic['Totalunit'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
-                    textposition='top left', textfont=dict(size=12) 
-                ), secondary_y=False
-            )
-            fig_tu.add_trace(
-                go.Scatter(
-                    x=df_daily_basic['DateStr'], y=df_daily_basic['Errorcount'], 
-                    mode='lines+markers+text', name='Jam 발생', line=dict(color='#E74C3C', width=3),
-                    text=df_daily_basic['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
-                    textposition='top right', textfont=dict(size=12) 
-                ), secondary_y=True
-            )
-            
-            fig_tu.update_layout(title="생산량 대비 Jam 발생", margin=dict(l=20, r=20, t=40, b=20), height=400, hovermode="x unified")
-            fig_tu.update_xaxes(type='category')
-            
-            max_tu = df_daily_basic['Totalunit'].max()
-            max_err = df_daily_basic['Errorcount'].max()
-            fig_tu.update_yaxes(title_text="생산량", secondary_y=False, range=[0, max_tu * 1.2 if max_tu > 0 else 10])
-            fig_tu.update_yaxes(title_text="Jam 건수", secondary_y=True, range=[0, max_err * 1.2 if max_err > 0 else 10])
-            
-            st.plotly_chart(fig_tu, use_container_width=True, theme="streamlit")
+        fig_tu.add_trace(
+            go.Scatter(
+                x=df_daily_basic['DateStr'], y=df_daily_basic['Totalunit'], 
+                mode='lines+markers+text', name='생산량', line=dict(color='#3498DB', width=3),
+                text=df_daily_basic['Totalunit'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
+                textposition='top left', textfont=dict(size=12) 
+            ), secondary_y=False
+        )
+        fig_tu.add_trace(
+            go.Scatter(
+                x=df_daily_basic['DateStr'], y=df_daily_basic['Errorcount'], 
+                mode='lines+markers+text', name='Jam 발생', line=dict(color='#E74C3C', width=3),
+                text=df_daily_basic['Errorcount'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
+                textposition='top right', textfont=dict(size=12) 
+            ), secondary_y=True
+        )
+        
+        fig_tu.update_layout(title="생산량 대비 Jam 발생", margin=dict(l=20, r=20, t=40, b=20), height=400, hovermode="x unified")
+        fig_tu.update_xaxes(type='category')
+        
+        max_tu = df_daily_basic['Totalunit'].max()
+        max_err = df_daily_basic['Errorcount'].max()
+        fig_tu.update_yaxes(title_text="생산량", secondary_y=False, range=[0, max_tu * 1.2 if max_tu > 0 else 10])
+        fig_tu.update_yaxes(title_text="Jam 건수", secondary_y=True, range=[0, max_err * 1.2 if max_err > 0 else 10])
+        
+        st.plotly_chart(fig_tu, use_container_width=True, theme="streamlit")
 
-        # [그래프 2] 일별 PPJ 및 누적 평균 PPJ
-        with col_top2:
-            fig_ppj = go.Figure()
-            
-            fig_ppj.add_trace(go.Scatter(
-                x=df_daily_basic['DateStr'], y=df_daily_basic['PPJ'], 
-                mode='lines+markers+text', name='일별 PPJ', line=dict(color='#27AE60', width=3),
-                text=df_daily_basic['PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
-                textposition='top left', textfont=dict(size=12)
-            ))
-            
-            fig_ppj.add_trace(go.Scatter(
-                x=df_daily_basic['DateStr'], y=df_daily_basic['Cum_PPJ'], 
-                mode='lines+markers+text', name='누적 평균 PPJ', line=dict(color='#F39C12', width=3),
-                text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
-                textposition='top right', textfont=dict(size=12)
-            ))
-            
-            fig_ppj.update_layout(title="일별 PPJ 및 누적 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=400, hovermode="x unified")
-            fig_ppj.update_xaxes(type='category')
-            
-            max_ppj = max(df_daily_basic['PPJ'].max(), df_daily_basic['Cum_PPJ'].max())
-            fig_ppj.update_yaxes(dtick=2500, tickformat=",", range=[0, max_ppj * 1.2 if max_ppj > 0 else 10])
-            
-            st.plotly_chart(fig_ppj, use_container_width=True, theme="streamlit")
+        st.markdown("<br>", unsafe_allow_html=True) # 그래프 사이 간격 띄우기
+
+        # [그래프 2] 일별 PPJ 및 누적 평균 PPJ (한 칸 전체 차지)
+        fig_ppj = go.Figure()
+        
+        fig_ppj.add_trace(go.Scatter(
+            x=df_daily_basic['DateStr'], y=df_daily_basic['PPJ'], 
+            mode='lines+markers+text', name='일별 PPJ', line=dict(color='#27AE60', width=3),
+            text=df_daily_basic['PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
+            textposition='top left', textfont=dict(size=12)
+        ))
+        
+        fig_ppj.add_trace(go.Scatter(
+            x=df_daily_basic['DateStr'], y=df_daily_basic['Cum_PPJ'], 
+            mode='lines+markers+text', name='누적 평균 PPJ', line=dict(color='#F39C12', width=3),
+            text=df_daily_basic['Cum_PPJ'].apply(lambda x: f"<b>{x:,.0f}</b>"), 
+            textposition='top right', textfont=dict(size=12)
+        ))
+        
+        fig_ppj.update_layout(title="일별 PPJ 및 누적 평균 PPJ", margin=dict(l=20, r=20, t=40, b=20), height=400, hovermode="x unified")
+        fig_ppj.update_xaxes(type='category')
+        
+        max_ppj = max(df_daily_basic['PPJ'].max(), df_daily_basic['Cum_PPJ'].max())
+        fig_ppj.update_yaxes(dtick=2500, tickformat=",", range=[0, max_ppj * 1.2 if max_ppj > 0 else 10])
+        
+        st.plotly_chart(fig_ppj, use_container_width=True, theme="streamlit")
 
         st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
@@ -183,7 +176,6 @@ class EquipmentDataTab:
         # ==========================================
         st.markdown(f"#### 📈 {date_title_str} 정밀 분석 추이 (MTBA / MTTR / MTBI)")
         
-        # ✅ MT 데이터도 빈 날짜를 0으로 강제 세팅합니다.
         if not df_filtered.empty:
             grouped_mt = df_filtered.groupby(df_filtered['Date'].dt.date)[['MTBA', 'MTTR', 'MTBI']].max()
         else:
@@ -239,7 +231,7 @@ class EquipmentDataTab:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # 에러 발생 모듈(파이) & 분류별 발생 건수(가로바) - 데이터가 없을 때는 깔끔하게 안내 문구 출력
+        # 에러 발생 모듈(파이) & 분류별 발생 건수(가로바)
         col_g1, col_g2 = st.columns(2)
         
         with col_g1:
